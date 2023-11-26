@@ -1,0 +1,6 @@
+Label {
+    overflow: hidden;
+    opacity: 1;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+}
