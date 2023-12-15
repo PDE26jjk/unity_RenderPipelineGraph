@@ -1,138 +1,253 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using RenderPipelineGraph.Editor.Views.blackborad;
 using RenderPipelineGraph.Editor.Views.Inspector;
-using RenderPipelineGraph.Editor.Views.NodeView;
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+namespace RenderPipelineGraph {
+    public class RPGView : GraphView, IDisposable {
 
-public class RPGView : GraphView {
+        SelectionDragger m_SelectionDragger;
+        RectangleSelector m_RectangleSelector;
+        // internal ICollection<testGraphPort> getPorts() {
+        //     return Ports.AsReadOnlyCollection();
+        // }
+        InspectorView m_Inspector;
+        private Toolbar m_Toolbar;
+        readonly RPGBlackboard m_Blackboard;
+        private RPGAsset m_Asset;
+        readonly internal NodeViewModel m_ViewModel;
+        
+        public RPGAsset Asset => m_Asset;
+        public RPGView(RPGAsset asset) {
+            this.m_Asset = asset;
+            asset.TestInit();
+            SetupZoom(0.125f, 8);
+            m_Blackboard = new RPGBlackboard(this);
+            // m_Inspector = new InspectorView(this);
+            m_ViewModel = new(this);
+            
+            // bool blackboardVisible = BoardPreferenceHelper.IsVisible(BoardPreferenceHelper.Board.blackboard, true);
+            // if (blackboardVisible)
+            Add(m_Blackboard);
 
-    SelectionDragger m_SelectionDragger;
-    RectangleSelector m_RectangleSelector;
-    // internal ICollection<testGraphPort> getPorts() {
-    //     return Ports.AsReadOnlyCollection();
-    // }
-    InspectorView m_Inspector;
-    public RPGView() {
-        SetupZoom(0.125f, 8);
-        m_Blackboard = new RPGBlackboard(this);
-        m_Inspector = new InspectorView(this);
-        // bool blackboardVisible = BoardPreferenceHelper.IsVisible(BoardPreferenceHelper.Board.blackboard, true);
-        // if (blackboardVisible)
-        Add(m_Blackboard);
+            // Add(m_Inspector);
 
-        Add(m_Inspector);
+            this.AddManipulator(new ContentDragger());
+            // 选择
+            m_SelectionDragger = new SelectionDragger();
+            this.AddManipulator(m_SelectionDragger);
+            // 框选
+            m_RectangleSelector = new RectangleSelector();
+            this.AddManipulator(m_RectangleSelector);
+            this.AddManipulator(new FreehandSelector());
 
-        this.AddManipulator(new ContentDragger());
-        m_SelectionDragger = new SelectionDragger();
-        m_RectangleSelector = new RectangleSelector();
-        this.AddManipulator(m_SelectionDragger);
-        this.AddManipulator(m_RectangleSelector);
-        this.AddManipulator(new FreehandSelector());
+            AddLayer(-1);
+            AddLayer(1);
+            AddLayer(2);
+            focusable = true;
 
-        AddLayer(-1);
-        AddLayer(1);
-        AddLayer(2);
-        focusable = true;
+            m_Toolbar = new UnityEditor.UIElements.Toolbar();
+            var b1 = new Button {
+                text = "async"
+            };
+            b1.clicked += () => { Debug.Log("???"); };
+            m_Toolbar.Add(b1);
+            var objectField = new ObjectField {
+                objectType = typeof(RPGAsset)
+            };
+            m_Toolbar.Add(objectField);
+            Add(m_Toolbar);
 
-        m_Toolbar = new UnityEditor.UIElements.Toolbar();
-        Add(m_Toolbar);
+            RegisterCallback<DragUpdatedEvent>(OnDragUpdated);
+            RegisterCallback<DragPerformEvent>(OnDragPerform);
+            RegisterCallback<ValidateCommandEvent>(ValidateCommand);
+            RegisterCallback<ExecuteCommandEvent>(ExecuteCommand);
+            RegisterCallback<AttachToPanelEvent>(OnEnterPanel);
+            RegisterCallback<DetachFromPanelEvent>(OnLeavePanel);
+            RegisterCallback<KeyDownEvent>(OnKeyDownEvent);
+            RegisterCallback<MouseMoveEvent>(OnMouseMoveEvent);
+            
+            foreach (RPGNode loadNode in m_ViewModel.LoadNodes(asset)) {
+                FastAddElement(loadNode);
+            }
 
-        RegisterCallback<DragUpdatedEvent>(OnDragUpdated);
-        RegisterCallback<DragPerformEvent>(OnDragPerform);
-        RegisterCallback<ValidateCommandEvent>(ValidateCommand);
-        RegisterCallback<ExecuteCommandEvent>(ExecuteCommand);
-        RegisterCallback<AttachToPanelEvent>(OnEnterPanel);
-        RegisterCallback<DetachFromPanelEvent>(OnLeavePanel);
-        RegisterCallback<KeyDownEvent>(OnKeyDownEvent);
-        RegisterCallback<MouseMoveEvent>(OnMouseMoveEvent);
+            // var node1 = new PassNode {
+            //     focusable = true,
+            //     tabIndex = 0,
+            //     usageHints = UsageHints.None,
+            //     name = "node1",
+            //     languageDirection = LanguageDirection.Inherit,
+            //     visible = true,
+            //     generateVisualContent = null,
+            //     dataSource = null,
+            //     dataSourcePath = default,
+            //     tooltip = null,
+            //     elementTypeColor = default,
+            //     layer = -1,
+            //     title = "title1",
+            // };
+            // var node2 = new PassNode();
+            // var node3 = new TextureNode();
+            // var node4 = new BufferNode();
+            // node1.SetPosition(new Rect(100, 100, 0, 0));
+            // node2.SetPosition(new Rect(200, 100, 0, 0));
+            // node3.SetPosition(new Rect(300, 100, 0, 0));
+            // node4.SetPosition(new Rect(400, 100, 0, 0));
+            // FastAddElement(node1);
+            // FastAddElement(node2);
+            // FastAddElement(node3);
+            // FastAddElement(node4);
 
-        var node1 = new RPGNode {
-            focusable = true,
-            tabIndex = 0,
-            usageHints = UsageHints.None,
-            name = "node1",
-            languageDirection = LanguageDirection.Inherit,
-            visible = true,
-            generateVisualContent = null,
-            dataSource = null,
-            dataSourcePath = default,
-            tooltip = null,
-            elementTypeColor = default,
-            layer = -1,
-            title = "title1",
-        };
-        var node2 = new RPGNode();
-        node1.SetPosition(new Rect(100, 100, 0, 0));
-        node1.SetPosition(new Rect(100, 200, 0, 0));
-        FastAddElement(node1);
-        FastAddElement(node2);
-    }
-    public void SetBoardToFront(GraphElement board) {
-        board.SendToBack();
-        board.PlaceBehind(m_Toolbar);
-    }
-    void OnMouseMoveEvent(MouseMoveEvent evt) {
-        Debug.Log("OnMouseMoveEvent");
-    }
-    void OnKeyDownEvent(KeyDownEvent evt) {
-        Debug.Log("OnKeyDownEvent");
-    }
-    void OnLeavePanel(DetachFromPanelEvent evt) {
-        Debug.Log("OnLeavePanel");
-    }
-    void OnEnterPanel(AttachToPanelEvent evt) {
-        Debug.Log("OnEnterPanel");
-    }
-    void ExecuteCommand(ExecuteCommandEvent evt) {
-
-        Debug.Log("ExecuteCommand " + evt.commandName);
-    }
-    void ValidateCommand(ValidateCommandEvent evt) {
-        Debug.Log("ValidateCommand");
-    }
-    void OnDragPerform(DragPerformEvent evt) {
-        Debug.Log("OnDragPerform");
-    }
-    void OnDragUpdated(DragUpdatedEvent evt) {
-        Debug.Log("OnDragUpdated");
-    }
-    static FieldInfo s_Member_ContainerLayer = typeof(GraphView).GetField("m_ContainerLayers", BindingFlags.NonPublic | BindingFlags.Instance);
-    static MethodInfo s_Method_GetLayer = typeof(GraphView).GetMethod("GetLayer", BindingFlags.NonPublic | BindingFlags.Instance);
-    private Toolbar m_Toolbar;
-    readonly RPGBlackboard m_Blackboard;
-
-    public void FastAddElement(GraphElement graphElement) {
-        if (graphElement.IsResizable()) {
-            graphElement.hierarchy.Add(new Resizer());
-            graphElement.style.borderBottomWidth = 6;
         }
-
-        int newLayer = graphElement.layer;
-        if (!(s_Member_ContainerLayer.GetValue(this) as IDictionary).Contains(newLayer)) {
-            AddLayer(newLayer);
+        public void Dispose() {
+            UnregisterCallback<DragUpdatedEvent>(OnDragUpdated);
+            UnregisterCallback<DragPerformEvent>(OnDragPerform);
+            UnregisterCallback<ValidateCommandEvent>(ValidateCommand);
+            UnregisterCallback<ExecuteCommandEvent>(ExecuteCommand);
+            UnregisterCallback<AttachToPanelEvent>(OnEnterPanel);
+            UnregisterCallback<DetachFromPanelEvent>(OnLeavePanel);
+            UnregisterCallback<KeyDownEvent>(OnKeyDownEvent);
+            UnregisterCallback<MouseMoveEvent>(OnMouseMoveEvent);
+            // EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
         }
-        (s_Method_GetLayer.Invoke(this, new object[] {
-            newLayer
-        }) as VisualElement).Add(graphElement);
-    }
+        Vector2 m_PasteCenter;
+        public void UpdateGlobalSelection() {
+            var objectSelected = selection
+                .OfType<RPGNode>().Select(t => t.model)
+                .Where(t => t != null)
+                .ToArray();
 
+            if (objectSelected.Length > 0) {
+                Selection.objects = objectSelected;
+                return;
+            }
 
-    public override List<Port> GetCompatiblePorts(Port startAnchor, NodeAdapter nodeAdapter) {
-        List<Port> list = new();
-        if (startAnchor is not RPGPort port) {
-            return list;
-        }
-        foreach (var n in this.nodes.ToList()) {
-            if (n is RPGNode node) {
-                node.GetCompatiblePorts(list, port);
+            var blackBoardSelected = selection.OfType<RPGBlackboardField>().Select(t => t.GetFirstAncestorOfType<RPGBlackboardRow>()?.model).ToArray();
+
+            if (blackBoardSelected.Length > 0)
+            {
+                Selection.objects = blackBoardSelected;
+                return;
             }
         }
-        return list;
-    }
+        public void OnFocus() {
+            Debug.Log("OnFocus");
+            if (selection.Any(x => x.HitTest(m_PasteCenter))) {
+                UpdateGlobalSelection();
+            }
+        }
+        public void AddRangeToSelection(List<ISelectable> selectables) {
+            selectables.ForEach(base.AddToSelection);
+            UpdateGlobalSelection();
+        }
 
+        public override void AddToSelection(ISelectable selectable) {
+            base.AddToSelection(selectable);
+            UpdateGlobalSelection();
+        }
+        bool m_Dirty = false;
+        public bool Dirty {
+            get => m_Dirty;
+            set => m_Dirty = value;
+        }
+        public void SetBoardToFront(GraphElement board) {
+            board.SendToBack();
+            board.PlaceBehind(m_Toolbar);
+        }
+        void OnMouseMoveEvent(MouseMoveEvent evt) {
+            Debug.Log("OnMouseMoveEvent");
+            m_PasteCenter = evt.mousePosition;
+        }
+        void OnKeyDownEvent(KeyDownEvent evt) {
+            Debug.Log("OnKeyDownEvent");
+        }
+        void OnLeavePanel(DetachFromPanelEvent evt) {
+            Debug.Log("OnLeavePanel");
+        }
+        void OnEnterPanel(AttachToPanelEvent evt) {
+            Debug.Log("OnEnterPanel");
+        }
+        void ExecuteCommand(ExecuteCommandEvent evt) {
+
+            Debug.Log("ExecuteCommand " + evt.commandName);
+            if (evt.commandName == "SelectAll") {
+                ClearSelection();
+
+                AddRangeToSelection(graphElements.OfType<ISelectable>().ToList());
+                evt.StopPropagation();
+            }
+        }
+        void ValidateCommand(ValidateCommandEvent evt) {
+            Debug.Log("ValidateCommand");
+        }
+        void OnDragPerform(DragPerformEvent evt) {
+            Debug.Log("OnDragPerform");
+            if (getSelectingBlackboardField(out var rows)) {
+                if (rows.Length > 0) {
+                    DragAndDrop.AcceptDrag();
+                    Vector2 mousePosition = contentViewContainer.WorldToLocal(evt.mousePosition);
+                    float cpt = 0;
+                    // foreach (var row in rows) {
+                    //     ResourceNode node = new TextureNode();
+                    //     node.SetPos(mousePosition - new Vector2(50, 20) + cpt * new Vector2(0, 40));
+                    //     FastAddElement(node);
+                    //     ++cpt;
+                    // }
+                }
+            }
+            evt.StopPropagation();
+        }
+        void OnDragUpdated(DragUpdatedEvent evt) {
+            Debug.Log("OnDragUpdated...");
+            if (getSelectingBlackboardField(out var rows)) {
+                DragAndDrop.visualMode = DragAndDropVisualMode.Link;
+                evt.StopPropagation();
+            }
+        }
+        bool getSelectingBlackboardField(out RPGBlackboardRow[] rows) {
+            rows = selection.OfType<RPGBlackboardField>().Select(t => t.GetFirstAncestorOfType<RPGBlackboardRow>()).Where(t => t != null).ToArray();
+            return DragAndDrop.GetGenericData("DragSelection") != null &&
+                   selection.Any(t => t is RPGBlackboardField && (t as RPGBlackboardField).GetFirstAncestorOfType<RPGBlackboardRow>() != null);
+        }
+        static FieldInfo s_Member_ContainerLayer = typeof(GraphView).GetField("m_ContainerLayers", BindingFlags.NonPublic | BindingFlags.Instance);
+        static MethodInfo s_Method_GetLayer = typeof(GraphView).GetMethod("GetLayer", BindingFlags.NonPublic | BindingFlags.Instance);
+
+
+        public void FastAddElement(GraphElement graphElement) {
+            if (graphElement.IsResizable()) {
+                graphElement.hierarchy.Add(new Resizer());
+                graphElement.style.borderBottomWidth = 6;
+            }
+
+            int newLayer = graphElement.layer;
+            if (!((IDictionary)s_Member_ContainerLayer.GetValue(this)).Contains(newLayer)) {
+                AddLayer(newLayer);
+            }
+            (s_Method_GetLayer.Invoke(this, new object[] {
+                newLayer
+            }) as VisualElement)?.Add(graphElement);
+        }
+
+
+        public override List<Port> GetCompatiblePorts(Port startAnchor, NodeAdapter nodeAdapter) {
+            List<Port> list = new();
+            if (startAnchor is not RPGPort port) {
+                return list;
+            }
+            foreach (var n in this.nodes.ToList()) {
+                if (n is RPGNode node) {
+                    node.GetCompatiblePorts(list, port);
+                }
+            }
+            return list;
+        }
+    }
 }

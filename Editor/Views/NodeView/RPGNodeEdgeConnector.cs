@@ -7,7 +7,7 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace RenderPipelineGraph.Editor.Views.NodeView {
+namespace RenderPipelineGraph {
 
 
     public class RPGNodeEdgeConnector : EdgeConnector<RPGNodeEdge> {

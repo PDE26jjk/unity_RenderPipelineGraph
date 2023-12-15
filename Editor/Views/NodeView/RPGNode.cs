@@ -7,25 +7,49 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace RenderPipelineGraph.Editor.Views.NodeView {
+namespace RenderPipelineGraph {
 
+    public abstract class RPGNode : Node {
 
-    public class RPGNode : Node {
-
-        public RPGNode() {
+        protected NodeData m_Model;
+        readonly internal PortViewModel m_PortViewModel;
+        
+        public NodeData model {
+            get => m_Model;
+            set => m_Model = value;
+        }
+        public RPGNode(NodeData model) {
+            m_Model = model;
             RegisterCallback<PointerEnterEvent>(OnPointerEnter);
             RegisterCallback<PointerLeaveEvent>(OnPointerLeave);
             RegisterCallback<FocusInEvent>(OnFocusIn);
-            Port port1 = RPGPort.inputPort();
-            Port port2 = RPGPort.outputPort();
-            inputContainer.Add(port1);
-            outputContainer.Add(port2);
+            m_PortViewModel = new PortViewModel(this);
+            Init();
+        }
+        protected virtual void Init() {
+            foreach (RPGPort portView in m_PortViewModel.LoadPortViews(RPGPort.DirectionType.Input)) {
+                this.inputContainer.Add(portView);
+            }
+            foreach (RPGPort portView in m_PortViewModel.LoadPortViews(RPGPort.DirectionType.Output)) {
+                this.outputContainer.Add(portView);
+            }
+        }
+        public void SetPos(Vector2 pos) {
+            SetPosition(new Rect(pos.x, pos.y, 0, 0));
         }
         public void GetCompatiblePorts(List<Port> list, RPGPort portToConnect) {
             if (portToConnect.node == this) return;
+            switch (portToConnect.node) {
+                case ResourceNode when this is PassNode:
+                case PassNode when this is ResourceNode:
+                    break;
+                default:
+                    return;
+            }
             var container = portToConnect.direction == Direction.Input ? outputContainer : inputContainer;
             foreach (var p in container.Children()) {
-                list.Add(p as RPGPort);
+                if (p is RPGPort port && port.portType == portToConnect.portType)
+                    list.Add(port);
             }
         }
 
@@ -45,7 +69,5 @@ namespace RenderPipelineGraph.Editor.Views.NodeView {
                 Select(gv, false);
             e.StopPropagation();
         }
-
-
     }
 }

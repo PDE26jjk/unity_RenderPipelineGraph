@@ -1,6 +1,6 @@
 using UnityEditor.Experimental.GraphView;
 
-namespace RenderPipelineGraph.Editor.Views.NodeView {
+namespace RenderPipelineGraph {
 
     public class RPGNodeEdge : Edge {
 

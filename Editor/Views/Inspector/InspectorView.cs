@@ -138,7 +138,8 @@ namespace RenderPipelineGraph.Editor.Views.Inspector {
         public InspectorView(RPGView view) {
             m_View = view;
             this.AddStyleSheetPath("RPGBlackboard.uss");
-            this.m_MainContainer = UXMLHelpers.LoadUXML("RPGInspector.uxml");
+            var tql =  Resources.Load("UXML/RPGInspector")  as VisualTreeAsset;
+            this.m_MainContainer = tql.Instantiate();
             this.m_MainContainer.AddToClassList("mainContainer");
             this.m_Root = this.m_MainContainer.Q("content", (string)null);
             this.m_HeaderItem = this.m_MainContainer.Q("header", (string)null);

@@ -8,19 +8,38 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace RenderPipelineGraph.Editor.Views.NodeView {
+namespace RenderPipelineGraph {
 
 
     public class RPGPort : Port, IEdgeConnectorListener {
 
-        public static RPGPort inputPort() {
-            RPGPort port = new RPGPort(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, typeof(Vector4));
+        public enum DirectionType {
+            Input,
+            Output,
+            Dependence
+        }
+        public static RPGPort InputPort(Type portType) {
+            RPGPort port = new RPGPort(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, portType);
             return port;
         }
-        public static RPGPort outputPort() {
-            RPGPort port = new RPGPort(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, typeof(Vector4));
+        public static RPGPort OutputPort(Type portType) {
+            RPGPort port = new RPGPort(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, portType);
             return port;
         }
+        public static RPGPort DependencePort() {
+            RPGPort port = new RPGPort(Orientation.Horizontal, Direction.Input, Port.Capacity.Multi, typeof(PassNode));
+            return port;
+        }
+        public static RPGPort NewPort(DirectionType directionType, Type portType = null) {
+            RPGPort port = directionType switch {
+                DirectionType.Input => InputPort(portType),
+                DirectionType.Output => OutputPort(portType),
+                DirectionType.Dependence => DependencePort(),
+                _ => throw new ArgumentOutOfRangeException(nameof(directionType), directionType, null)
+            };
+            return port;
+        }
+
 
         protected RPGPort(Orientation portOrientation, Direction portDirection, Capacity portCapacity, Type type) : base(portOrientation, portDirection,
             portCapacity,
