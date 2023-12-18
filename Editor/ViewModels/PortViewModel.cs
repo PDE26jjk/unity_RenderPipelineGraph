@@ -21,9 +21,23 @@ namespace RenderPipelineGraph {
         //     NodeViewModel nodeViewModel = graphView.m_ViewModel;
         //     
         // }
-        public void InitEdge() {
-            RPGView graphView = m_NodeView.GetFirstAncestorOfType<RPGView>();
-            NodeViewModel nodeViewModel = graphView.m_ViewModel;
+        public void InitDependenceEdge() {
+            if (m_NodeView.Model is not PassNodeData passNodeData) return;
+            NodeViewModel nodeViewModel = GetNodeViewModel();
+            DependencePort flowInPort = (m_NodeView as PassNode)?.FlowInPort;
+            foreach (PassNodeData nodeData in passNodeData.dependencies) {
+                if (nodeViewModel.GetNodeView(nodeData, out var nodeView)) {
+                    var dependenceNodeView = nodeView as PassNode;
+                    if (flowInPort != null && dependenceNodeView != null) {
+                        Edge edge = flowInPort.ConnectTo(dependenceNodeView.FlowOutPort);
+                        nodeViewModel.GraphView.Add(edge);
+                    }
+                }
+            }
+        }
+        
+        public void InitAttachEdge() {
+            NodeViewModel nodeViewModel = GetNodeViewModel();
             foreach ((PortData portData, RPGPort portView) in m_PortViews) {
                 foreach (PortData linkToPort in portData.linkTo) {
                     if (nodeViewModel.GetNodeView(linkToPort.owner, out var linkToNodeView)) {
@@ -31,6 +45,7 @@ namespace RenderPipelineGraph {
                         var output = portView.direction == Direction.Output ? portView : linkToPortView;
                         var input = portView.direction == Direction.Input ? portView : linkToPortView;
                         bool hasLinked = false;
+                        // link once
                         foreach (Edge portViewConnection in portView.connections) {
                             if (portViewConnection.input == input && portViewConnection.output == output) {
                                 hasLinked = true;
@@ -39,49 +54,47 @@ namespace RenderPipelineGraph {
                         }
                         if (!hasLinked) {
                             Edge edge = portView.ConnectTo(linkToPortView);
-                            graphView.Add(edge);
+                            nodeViewModel.GraphView.Add(edge);
                         }
                     }
                 }
             }
         }
-        public IEnumerable<RPGPort> LoadPortViews(RPGPort.DirectionType directionType = RPGPort.DirectionType.Output) {
-            IEnumerable<PortData> portDatas = null;
-            if (m_NodeView.model is PassNodeData passNodeData)
-                switch (directionType) {
-                    case RPGPort.DirectionType.Input:
-                        portDatas = passNodeData.inputs.Values;
-                        break;
-                    case RPGPort.DirectionType.Output:
-                        portDatas = passNodeData.outputs.Values;
-                        break;
-                    case RPGPort.DirectionType.Dependence:
-                        portDatas = passNodeData.dependencies;
-                        break;
-                }
-            else if (m_NodeView.model is ResourceNodeData resourceNodeData) {
-                if (directionType == RPGPort.DirectionType.Output) {
-                    portDatas = new PortData[] {
-                        resourceNodeData.attachTo
-                    };
-                }
-            }
-            if (portDatas == null) {
-                yield break;
-            }
+        
+        NodeViewModel GetNodeViewModel() {
+            RPGView graphView = m_NodeView.GetFirstAncestorOfType<RPGView>();
+            NodeViewModel nodeViewModel = graphView.m_NodeViewModel;
+            return nodeViewModel;
+        }
+
+        public IEnumerable<RPGPort> LoadAttachPortViews() {
+            var rpgPortType = RPGPort.RPGPortType.Attach;
+            IEnumerable<PortData> portDatas = m_NodeView.Model switch {
+                PassNodeData passNodeData => passNodeData.Attachments.Values,
+                ResourceNodeData resourceNodeData => new[] {
+                    resourceNodeData.attachTo
+                },
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            Direction direction = m_NodeView.Model switch {
+                PassNodeData passNodeData => Direction.Input,
+                ResourceNodeData resourceNodeData => Direction.Output,
+                _ => throw new ArgumentOutOfRangeException()
+
+            };
             foreach (PortData portData in portDatas) {
                 RPGPort portView = null;
                 switch (portData) {
                     case ResourcePortData resourcePortData:
                         portView = resourcePortData.resourceType switch {
-                            ResourceType.Texture => RPGPort.NewPort(directionType, typeof(TextureHandle)),
-                            ResourceType.Buffer => RPGPort.NewPort(directionType, typeof(BufferHandle)),
-                            ResourceType.AccelerationStructure => RPGPort.NewPort(directionType, typeof(RayTracingAccelerationStructureHandle)),
+                            ResourceType.Texture => RPGPort.NewPort(rpgPortType, direction, typeof(TextureHandle)),
+                            ResourceType.Buffer => RPGPort.NewPort(rpgPortType, direction, typeof(BufferHandle)),
+                            ResourceType.AccelerationStructure => RPGPort.NewPort(rpgPortType, direction, typeof(RayTracingAccelerationStructureHandle)),
                             _ => throw new ArgumentOutOfRangeException()
                         };
                         break;
                     case DependencePortData dependencePortData:
-                        portView = RPGPort.DependencePort();
+                        // portView = RPGPort.DependencePort();
                         break;
                 }
                 if (portView is not null) {

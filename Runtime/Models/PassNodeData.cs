@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
+using RenderPipelineGraph.Attribute;
+using UnityEngine.Serialization;
 
 namespace RenderPipelineGraph {
     public class PassNodeData : NodeData {
         internal RPGPass m_Pass;
 
-        public Dictionary<string, PortData> inputs = new();
-        public Dictionary<string, PortData> outputs = new();
+        public Dictionary<string, PortData> Attachments = new();
         public static PassNodeData Instance(Type passType) {
             var data = ScriptableObject.CreateInstance<PassNodeData>();
             data.Init(passType);
@@ -17,29 +19,33 @@ namespace RenderPipelineGraph {
         }
         internal void Init(Type passType) {
             m_Pass = (RPGPass)Activator.CreateInstance(passType);
-            this.exposedName = m_Pass.name;
-            Type inputType = passType.GetNestedType("Inputs", BindingFlags.Public | BindingFlags.NonPublic);
-            if (inputType is not null)
-                foreach (var fieldInfo in inputType.GetFields()) {
+            this.exposedName = m_Pass.Name;
+            Type PassInputType = passType.GetNestedType("PassData", BindingFlags.Public | BindingFlags.NonPublic);
+            if (PassInputType is not null)
+                foreach (var fieldInfo in PassInputType.GetFields()) {
                     if (fieldInfo.FieldType == typeof(TextureHandle)) {
-                        var resourcePortData = new ResourcePortData(this) {
-                            name = fieldInfo.Name
-                        };
-                        this.inputs[fieldInfo.Name] = resourcePortData;
+                        var customAttributes = fieldInfo.GetCustomAttributes().Select(t=>t.GetType()).ToArray();
+                        
+                        if ( customAttributes.Contains(typeof(ReadAttribute))
+                        ||  customAttributes.Contains(typeof(WriteAttribute))
+                        ||  customAttributes.Contains(typeof(FragmentAttribute))
+                        ) {
+                            var resourcePortData = new ResourcePortData(this) {
+                                name = fieldInfo.Name
+                            };
+                            this.Attachments[fieldInfo.Name] = resourcePortData;
+                        }
+                        // else if (fieldInfo.GetCustomAttribute<WriteAttribute>() is not null) {
+                        //     var resourcePortData = new ResourcePortData(this) {
+                        //         name = fieldInfo.Name
+                        //     };
+                        //     this.outputs[fieldInfo.Name] = resourcePortData;
+                        // }
                     }
                 }
-            Type outputType = passType.GetNestedType("Outputs", BindingFlags.Public | BindingFlags.NonPublic);
-            if (outputType is not null)
-                foreach (var fieldInfo in outputType.GetFields()) {
-                    if (fieldInfo.FieldType == typeof(TextureHandle)) {
-                        var resourcePortData = new ResourcePortData(this) {
-                            name = fieldInfo.Name
-                        };
-                        this.outputs[fieldInfo.Name] = resourcePortData;
-                    }
-                }
+
         }
-        public List<PortData> dependencies;
+        public List<PassNodeData> dependencies = new();
         public RPGPass Pass {
             get => m_Pass;
         }

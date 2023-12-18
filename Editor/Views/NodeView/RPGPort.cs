@@ -13,29 +13,15 @@ namespace RenderPipelineGraph {
 
     public class RPGPort : Port, IEdgeConnectorListener {
 
-        public enum DirectionType {
-            Input,
-            Output,
+        public enum RPGPortType {
+            Attach,
             Dependence
         }
-        public static RPGPort InputPort(Type portType) {
-            RPGPort port = new RPGPort(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, portType);
-            return port;
-        }
-        public static RPGPort OutputPort(Type portType) {
-            RPGPort port = new RPGPort(Orientation.Horizontal, Direction.Output, Port.Capacity.Multi, portType);
-            return port;
-        }
-        public static RPGPort DependencePort() {
-            RPGPort port = new RPGPort(Orientation.Horizontal, Direction.Input, Port.Capacity.Multi, typeof(PassNode));
-            return port;
-        }
-        public static RPGPort NewPort(DirectionType directionType, Type portType = null) {
-            RPGPort port = directionType switch {
-                DirectionType.Input => InputPort(portType),
-                DirectionType.Output => OutputPort(portType),
-                DirectionType.Dependence => DependencePort(),
-                _ => throw new ArgumentOutOfRangeException(nameof(directionType), directionType, null)
+        public static RPGPort NewPort(RPGPortType rpgPortType,Direction direction, Type portType = null) {
+            RPGPort port = rpgPortType switch {
+                RPGPortType.Attach => new AttachPort(direction,portType),
+                RPGPortType.Dependence => new DependencePort(direction),
+                _ => throw new ArgumentOutOfRangeException(nameof(rpgPortType), rpgPortType, null)
             };
             return port;
         }
@@ -48,13 +34,13 @@ namespace RenderPipelineGraph {
             this.AddManipulator(m_EdgeConnector);
             this.m_GraphViewChange.edgesToCreate = this.m_EdgesToCreate;
         }
-        public void OnDropOutsidePort(Edge edge, Vector2 position) {
-            Debug.Log("OnDropOutsidePort " + edge.ToString() + position);
+        public virtual void OnDropOutsidePort(Edge edge, Vector2 position) {
+            // Debug.Log("OnDropOutsidePort");
         }
         private GraphViewChange m_GraphViewChange;
         private List<Edge> m_EdgesToCreate = new();
         private List<GraphElement> m_EdgesToDelete = new();
-        public void OnDrop(GraphView graphView, Edge edge) {
+        public virtual void OnDrop(GraphView graphView, Edge edge) {
             // copy from decompiled Port.DefaultEdgeConnectorListener
             this.m_EdgesToCreate.Clear();
             this.m_EdgesToCreate.Add(edge);
@@ -83,8 +69,8 @@ namespace RenderPipelineGraph {
             }
             // copy end
 
-            Debug.Log("OnDrop " + edge.input + edge.output);
-            Debug.Log(this.connections.Count());
+            // Debug.Log("OnDrop " + edge.input + edge.output);
+            // Debug.Log(this.connections.Count());
 
         }
     }

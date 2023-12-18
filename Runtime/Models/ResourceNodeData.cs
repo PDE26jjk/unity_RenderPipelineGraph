@@ -5,7 +5,7 @@ using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
     public abstract class ResourceNodeData : NodeData {
-        internal ResourceData m_Resource;
+        ResourceData m_Resource;
         public ResourceData Resource {
             get => m_Resource;
             set => SetResource(value);

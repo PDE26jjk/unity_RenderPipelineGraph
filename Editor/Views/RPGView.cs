@@ -22,18 +22,14 @@ namespace RenderPipelineGraph {
         InspectorView m_Inspector;
         private Toolbar m_Toolbar;
         readonly RPGBlackboard m_Blackboard;
-        private RPGAsset m_Asset;
-        readonly internal NodeViewModel m_ViewModel;
-        
-        public RPGAsset Asset => m_Asset;
+        readonly internal NodeViewModel m_NodeViewModel;
+        public RPGAsset Asset => m_NodeViewModel.Asset;
         public RPGView(RPGAsset asset) {
-            this.m_Asset = asset;
-            asset.TestInit();
-            SetupZoom(0.125f, 8);
+            asset.TestInit3();
             m_Blackboard = new RPGBlackboard(this);
-            // m_Inspector = new InspectorView(this);
-            m_ViewModel = new(this);
-            
+            m_NodeViewModel = new(this, asset);
+            SetupZoom(0.125f, 8);
+
             // bool blackboardVisible = BoardPreferenceHelper.IsVisible(BoardPreferenceHelper.Board.blackboard, true);
             // if (blackboardVisible)
             Add(m_Blackboard);
@@ -74,8 +70,8 @@ namespace RenderPipelineGraph {
             RegisterCallback<DetachFromPanelEvent>(OnLeavePanel);
             RegisterCallback<KeyDownEvent>(OnKeyDownEvent);
             RegisterCallback<MouseMoveEvent>(OnMouseMoveEvent);
-            
-            foreach (RPGNode loadNode in m_ViewModel.LoadNodes(asset)) {
+
+            foreach (RPGNode loadNode in m_NodeViewModel.LoadNodeViews(asset)) {
                 FastAddElement(loadNode);
             }
 
@@ -121,7 +117,7 @@ namespace RenderPipelineGraph {
         Vector2 m_PasteCenter;
         public void UpdateGlobalSelection() {
             var objectSelected = selection
-                .OfType<RPGNode>().Select(t => t.model)
+                .OfType<RPGNode>().Select(t => t.Model)
                 .Where(t => t != null)
                 .ToArray();
 
@@ -132,8 +128,7 @@ namespace RenderPipelineGraph {
 
             var blackBoardSelected = selection.OfType<RPGBlackboardField>().Select(t => t.GetFirstAncestorOfType<RPGBlackboardRow>()?.model).ToArray();
 
-            if (blackBoardSelected.Length > 0)
-            {
+            if (blackBoardSelected.Length > 0) {
                 Selection.objects = blackBoardSelected;
                 return;
             }
@@ -163,7 +158,7 @@ namespace RenderPipelineGraph {
             board.PlaceBehind(m_Toolbar);
         }
         void OnMouseMoveEvent(MouseMoveEvent evt) {
-            Debug.Log("OnMouseMoveEvent");
+            // Debug.Log("OnMouseMoveEvent");
             m_PasteCenter = evt.mousePosition;
         }
         void OnKeyDownEvent(KeyDownEvent evt) {
@@ -186,7 +181,8 @@ namespace RenderPipelineGraph {
             }
         }
         void ValidateCommand(ValidateCommandEvent evt) {
-            Debug.Log("ValidateCommand");
+            Debug.Log("ValidateCommand" + evt.commandName);
+
         }
         void OnDragPerform(DragPerformEvent evt) {
             Debug.Log("OnDragPerform");
@@ -242,6 +238,7 @@ namespace RenderPipelineGraph {
             if (startAnchor is not RPGPort port) {
                 return list;
             }
+            (port.node as RPGNode)?.NotifyPortDraggingStart(port);
             foreach (var n in this.nodes.ToList()) {
                 if (n is RPGNode node) {
                     node.GetCompatiblePorts(list, port);

@@ -13,22 +13,7 @@ namespace RenderPipelineGraph {
             RPGAsset asset = m_GraphView.Asset;
             foreach (ResourceData resourceData in asset.ResourceList) {
 
-                RPGBlackboardRow row = null;
-                row = new RPGBlackboardRow(resourceData);
-                
-                // switch (resourceData.type) {
-                //     case ResourceType.Texture:
-                //         row.m_Field.typeText = "Texture";
-                //         break;
-                //     case ResourceType.Buffer:
-                //         row.m_Field.typeText = "Buffer";
-                //         break;
-                //     case ResourceType.AccelerationStructure:
-                //         row.m_Field.typeText = "Texture";
-                //         break;
-                //     default:
-                //         throw new ArgumentOutOfRangeException();
-                // }
+                var row = new RPGBlackboardRow(resourceData);
                 row.m_Field.typeText = Enum.GetName(typeof(ResourceType), resourceData.type);
                 row.m_Field.text = resourceData.name;
                 m_Resources[resourceData] = row;

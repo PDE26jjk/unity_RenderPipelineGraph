@@ -1,32 +1,27 @@
 ﻿using System;
 using UnityEngine.Rendering.RenderGraphModule;
+using Object = UnityEngine.Object;
 
 namespace RenderPipelineGraph {
-    
-public enum PassNodeType {
-    Legacy,
-    Unsafe,
-    Raster,
-    Compute
-}
-    public abstract class RPGPass : RPGModel{
+
+    public enum PassNodeType {
+        Legacy,
+        Unsafe,
+        Raster,
+        Compute
+    }
+    public abstract class RPGPass : RPGModel {
 
         string m_Name;
+        public virtual bool Valid() {
+            return true;
+        }
+        public virtual void LoadData(Object passData) {
+        }
         public PassNodeType PassType { get; protected set; }
-        public string name {
+        public string Name {
             get => m_Name ?? GetType().Name;
             protected set => m_Name = value;
-        }
-        public static void Run(Inputs inputs, Outputs outputs) {
-            throw new Exception(nameof(RPGPass) + " no impl");
-        }
-        public class Inputs {
-            public TextureHandle t1;
-            public TextureHandle t2;
-        }
-        public class Outputs {
-            public TextureHandle t3;
-            public TextureHandle t4;
         }
     }
 }

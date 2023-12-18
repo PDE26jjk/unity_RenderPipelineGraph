@@ -12,13 +12,15 @@ namespace RenderPipelineGraph {
     public abstract class RPGNode : Node {
 
         protected NodeData m_Model;
-        readonly internal PortViewModel m_PortViewModel;
-        
-        public NodeData model {
+        internal readonly PortViewModel m_PortViewModel;
+
+        // for show in inspector
+        public NodeData Model {
             get => m_Model;
             set => m_Model = value;
         }
-        public RPGNode(NodeData model) {
+        protected RPGNode(NodeData model, string uxml = "UXML/GraphView/Node.uxml") : base(uxml) {
+            base.UseDefaultStyling();
             m_Model = model;
             RegisterCallback<PointerEnterEvent>(OnPointerEnter);
             RegisterCallback<PointerLeaveEvent>(OnPointerLeave);
@@ -26,18 +28,18 @@ namespace RenderPipelineGraph {
             m_PortViewModel = new PortViewModel(this);
             Init();
         }
-        protected virtual void Init() {
-            foreach (RPGPort portView in m_PortViewModel.LoadPortViews(RPGPort.DirectionType.Input)) {
+        void Init() {
+            foreach (RPGPort portView in m_PortViewModel.LoadAttachPortViews()) {
                 this.inputContainer.Add(portView);
             }
-            foreach (RPGPort portView in m_PortViewModel.LoadPortViews(RPGPort.DirectionType.Output)) {
-                this.outputContainer.Add(portView);
-            }
+            // foreach (RPGPort portView in m_PortViewModel.LoadPortViews(RPGPort.RPGPortType.Output)) {
+            //     this.outputContainer.Add(portView);
+            // }
         }
         public void SetPos(Vector2 pos) {
             SetPosition(new Rect(pos.x, pos.y, 0, 0));
         }
-        public void GetCompatiblePorts(List<Port> list, RPGPort portToConnect) {
+        public virtual void GetCompatiblePorts(List<Port> list, RPGPort portToConnect) {
             if (portToConnect.node == this) return;
             switch (portToConnect.node) {
                 case ResourceNode when this is PassNode:
@@ -53,17 +55,19 @@ namespace RenderPipelineGraph {
             }
         }
 
+        public virtual void NotifyPortDraggingStart(Port port) {
+        }
         void OnPointerEnter(PointerEnterEvent e) {
-            Debug.Log("OnPointerEnter");
+            // Debug.Log("OnPointerEnter");
             e.StopPropagation();
         }
 
         void OnPointerLeave(PointerLeaveEvent e) {
-            Debug.Log("OnPointerLeave");
+            // Debug.Log("OnPointerLeave");
             e.StopPropagation();
         }
         void OnFocusIn(FocusInEvent e) {
-            Debug.Log("OnFocusIn");
+            // Debug.Log("OnFocusIn");
             var gv = GetFirstAncestorOfType<RPGView>();
             if (!IsSelected(gv))
                 Select(gv, false);

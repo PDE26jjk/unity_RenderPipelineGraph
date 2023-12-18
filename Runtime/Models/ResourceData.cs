@@ -1,4 +1,7 @@
-﻿using UnityEngine.Rendering.RenderGraphModule;
+﻿using System;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
 
@@ -9,7 +12,7 @@ namespace RenderPipelineGraph {
     }
     public enum UseType {
         Imported,
-        Transient,
+        Default,
         Shared,
     }
     public class ResourceData : RPGModel {
@@ -21,13 +24,35 @@ namespace RenderPipelineGraph {
         public BufferData() {
             type = ResourceType.Buffer;
         }
+        [NonSerialized]
         public BufferDesc desc;
+        [NonSerialized]
+        public BufferHandle handle;
+        [NonSerialized]
+        public GraphicsBuffer graphicsBuffer;
     }
     public class TextureData : ResourceData {
         public TextureData() {
             type = ResourceType.Texture;
         }
+        [NonSerialized]
         public TextureDesc desc;
+        [NonSerialized]
+        public TextureHandle handle;
+        
+        [NonSerialized]
+        public RTHandle rtHandle;
     }
 
+    public class RTAData : ResourceData {
+        public RTAData() {
+            type = ResourceType.AccelerationStructure;
+        }
+        // [NonSerialized]
+        // public RayTracingAccelerationStructureDesc desc;
+        [NonSerialized]
+        public RayTracingAccelerationStructureHandle handle;
+        [NonSerialized]
+        public RayTracingAccelerationStructure accelStruct;
+    }
 }
