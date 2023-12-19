@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using RenderPipelineGraph.Serialization;
 
 namespace RenderPipelineGraph {
     public class NodeViewModel {
@@ -23,7 +24,7 @@ namespace RenderPipelineGraph {
             loading = true;
             m_NodeViews.Clear();
             // Load Node from asset.
-            foreach (NodeData nodeData in asset.NodeList) {
+            foreach (var nodeData in asset.Graph.NodeList) {
                 RPGNode nodeView = nodeData switch {
                     PassNodeData passNodeData => new PassNode(passNodeData),
                     ResourceNodeData resourceNodeData => new TextureNode(resourceNodeData),
@@ -38,7 +39,7 @@ namespace RenderPipelineGraph {
                 }
             }
             // Link Nodes
-            foreach (NodeData nodeData in asset.NodeList) {
+            foreach (NodeData nodeData in asset.Graph.NodeList) {
                 var nodeView = m_NodeViews[nodeData];
                 nodeView.m_PortViewModel.InitAttachEdge();
                 if (nodeView is PassNode) nodeView.m_PortViewModel.InitDependenceEdge();

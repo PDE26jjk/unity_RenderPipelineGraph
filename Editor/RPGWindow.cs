@@ -41,7 +41,7 @@ namespace RenderPipelineGraph {
         static List<RPGWindow> windows = new();
         ShortcutHandler m_ShortcutHandler;
         protected void SetupFramingShortcutHandler(RPGView view) {
-            m_ShortcutHandler = new ShortcutHandler(
+            m_ShortcutHandler ??= new ShortcutHandler(
                 new Dictionary<Event, ShortcutDelegate> {
                     {
                         Event.KeyboardEvent("a"), view.FrameAll
@@ -58,7 +58,7 @@ namespace RenderPipelineGraph {
                 });
         }
         protected void CreateGUI() {
-            graphView.StretchToParentSize();
+            if (graphView == null) return;
             rootVisualElement.Add(graphView);
             SetupFramingShortcutHandler(graphView);
             if (rootVisualElement.panel != null) {
@@ -70,8 +70,10 @@ namespace RenderPipelineGraph {
         }
 
         void OnFocus() {
-            if (graphView != null)
+            if (graphView != null) {
+                graphView.StretchToParentSize();
                 graphView.OnFocus();
+            }
         }
     }
 }

@@ -185,7 +185,7 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             RPGView graphView = GetFirstAncestorOfType<RPGView>();
             // graphView.m_ViewModel
 
-            var row = new RPGBlackboardRow(ScriptableObject.CreateInstance<TextureData>());
+            var row = new RPGBlackboardRow(new TextureData());
             row.name = "tete";
             selectedCategory.Add(row);
             

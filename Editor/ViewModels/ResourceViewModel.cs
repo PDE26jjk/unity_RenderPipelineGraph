@@ -11,7 +11,7 @@ namespace RenderPipelineGraph {
         }
         public IEnumerable<RPGBlackboardRow> LoadResources() {
             RPGAsset asset = m_GraphView.Asset;
-            foreach (ResourceData resourceData in asset.ResourceList) {
+            foreach (ResourceData resourceData in asset.Graph.ResourceList) {
 
                 var row = new RPGBlackboardRow(resourceData);
                 row.m_Field.typeText = Enum.GetName(typeof(ResourceType), resourceData.type);

@@ -25,9 +25,10 @@ namespace RenderPipelineGraph {
         readonly internal NodeViewModel m_NodeViewModel;
         public RPGAsset Asset => m_NodeViewModel.Asset;
         public RPGView(RPGAsset asset) {
-            asset.TestInit3();
-            m_Blackboard = new RPGBlackboard(this);
+            asset.Graph.TestInit3();
+            asset.m_Graph = asset.Save();
             m_NodeViewModel = new(this, asset);
+            m_Blackboard = new RPGBlackboard(this);
             SetupZoom(0.125f, 8);
 
             // bool blackboardVisible = BoardPreferenceHelper.IsVisible(BoardPreferenceHelper.Board.blackboard, true);
@@ -52,9 +53,9 @@ namespace RenderPipelineGraph {
 
             m_Toolbar = new UnityEditor.UIElements.Toolbar();
             var b1 = new Button {
-                text = "async"
+                text = "save"
             };
-            b1.clicked += () => { Debug.Log("???"); };
+            b1.clicked += () => { Asset.Save(); };
             m_Toolbar.Add(b1);
             var objectField = new ObjectField {
                 objectType = typeof(RPGAsset)
@@ -122,14 +123,14 @@ namespace RenderPipelineGraph {
                 .ToArray();
 
             if (objectSelected.Length > 0) {
-                Selection.objects = objectSelected;
+                Selection.objects = objectSelected.toMonoBehaviours();
                 return;
             }
 
             var blackBoardSelected = selection.OfType<RPGBlackboardField>().Select(t => t.GetFirstAncestorOfType<RPGBlackboardRow>()?.model).ToArray();
 
             if (blackBoardSelected.Length > 0) {
-                Selection.objects = blackBoardSelected;
+                Selection.objects = blackBoardSelected.toMonoBehaviours();
                 return;
             }
         }

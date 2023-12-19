@@ -1,7 +1,9 @@
 ﻿using System;
+using RenderPipelineGraph.Serialization;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
+using UnityEngine.Serialization;
 
 namespace RenderPipelineGraph {
 
@@ -11,8 +13,8 @@ namespace RenderPipelineGraph {
         AccelerationStructure,
     }
     public enum UseType {
-        Imported,
         Default,
+        Imported,
         Shared,
     }
     public class ResourceData : RPGModel {
@@ -24,19 +26,50 @@ namespace RenderPipelineGraph {
         public BufferData() {
             type = ResourceType.Buffer;
         }
-        [NonSerialized]
-        public BufferDesc desc;
+        // [NonSerialized]
+        public BufferDesc desc = new();
         [NonSerialized]
         public BufferHandle handle;
         [NonSerialized]
-        public GraphicsBuffer graphicsBuffer;
+        public GraphicsBuffer graphicsBuffer; 
+    }
+    public class RPGTextureDesc:JsonObject {
+        ///<summary>Texture sizing mode.</summary>
+        public TextureSizeMode sizeMode;
+        ///<summary>Texture width.</summary>
+        public int width;
+        ///<summary>Texture height.</summary>
+        public int height;
+        ///<summary>Number of texture slices..</summary>
+        public int slices;
+        ///<summary>Texture scale.</summary>
+        public Vector2 scale;
+        
+        [NonSerialized]
+        TextureDesc m_TextureDesc;
+        public TextureDesc GetDescStruct() {
+            this.m_TextureDesc = new() {
+                sizeMode = sizeMode,
+                width = width,
+                height = height,
+                slices = slices,
+                scale = scale
+            };
+            return this.m_TextureDesc;
+        }
     }
     public class TextureData : ResourceData {
         public TextureData() {
             type = ResourceType.Texture;
+            m_desc = new RPGTextureDesc();
         }
-        [NonSerialized]
-        public TextureDesc desc;
+        public override void OnBeforeSerialize() {
+            this.m_desc.OnBeforeSerialize();
+            base.OnBeforeSerialize();
+        }
+
+        public JsonData<RPGTextureDesc> m_desc;
+        
         [NonSerialized]
         public TextureHandle handle;
         
