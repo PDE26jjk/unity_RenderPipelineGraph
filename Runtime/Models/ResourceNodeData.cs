@@ -15,12 +15,12 @@ namespace RenderPipelineGraph {
         [SerializeField]
         public JsonData<ResourcePortData>  m_AttachTo;
         public ResourcePortData AttachTo {
-            get => m_AttachTo;
+            get => m_AttachTo.value;
             set => m_AttachTo = value;
         }
         public virtual void SetResource(ResourceData value) {
             m_Resource = value;
-            AttachTo = new ResourcePortData(this);
+            AttachTo ??= new ResourcePortData(this);
             AttachTo.resourceType = this.Resource.type;
             AttachTo.name = "Attach To";
         }

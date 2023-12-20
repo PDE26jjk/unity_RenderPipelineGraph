@@ -26,8 +26,6 @@ namespace RenderPipelineGraph {
             }
         }
         internal RPGGraphData(){}
-        public override void OnAfterDeserialize() {
-        }
 
         #region Test
 

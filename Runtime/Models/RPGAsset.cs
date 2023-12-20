@@ -54,15 +54,47 @@ namespace RenderPipelineGraph {
         public RPGGraphData Graph => m_Graph;
 
         public RPGGraphData Save() {
-            m_Graph.TestInit3();
+            m_Graph.TestInit1();
+            printDebug(m_Graph);
             var json = MultiJson.Serialize(m_Graph);
             content = json;
-            Debug.Log(json);
+            // Debug.Log(json);
             var deserializedGraph = new RPGGraphData();
             MultiJson.Deserialize(deserializedGraph, json);
+            printDebug(deserializedGraph);
             return deserializedGraph;
         }
+        public void debug1() {
+            Debug.Log(m_Graph);
+        }
+        public void printDebug(RPGGraphData graphData) {
+            var str = "";
+            foreach (NodeData nodeData in graphData.NodeList) {
+                str += (nodeData.exposedName + ":" + nodeData.objectId) + "\n";
+                str += "port:\n";
+                switch (nodeData) {
+                    case PassNodeData passNodeData:
+                        foreach (ResourcePortData resourcePortData in passNodeData.Attachments.Values) {
+                            str += resourcePortData.name + ":" + resourcePortData.objectId + "\n";
+                            str += "linkTo:\n";
+                            foreach (PortData data in resourcePortData.LinkTo) {
+                                str += data.name + ":" + data.objectId + "\n";
+                            }
+                        }
+                        break;
+                    case TextureNodeData textureNodeData:
+                        var at = textureNodeData.AttachTo;
+                        str += at.name + ":" + at.objectId + "\n";
+                        str += "linkTo:\n";
+                        foreach (PortData data in at.LinkTo) {
+                            str += data.name + ":" + data.objectId + "\n";
+                        }
+                        break;
+                }
+                str += "\n";
+            }
 
+            Debug.Log(str);
+        }
     }
-
 }

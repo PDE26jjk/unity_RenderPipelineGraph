@@ -38,8 +38,8 @@ namespace RenderPipelineGraph {
             }
             base.OnBeforeSerialize();
         }
-        public override void OnAfterDeserialize(string json) {
-            base.OnAfterDeserialize(json);
+        public override void OnAfterMultiDeserialize(string json) {
+            base.OnAfterMultiDeserialize(json);
             if (m_PassType != null) {
                 var passType = Type.GetType(m_PassType);
                 if (passType != null) {
@@ -69,6 +69,9 @@ namespace RenderPipelineGraph {
                                 resourcePortData = a[0];
                             }
                             else {
+                                if (MultiJsonInternal.isDeserializing) {
+                                    Debug.LogError("port lost:" + fieldInfo.Name+ " l:" + m_Attachments.Count);
+                                }
                                 resourcePortData = new ResourcePortData(this) {
                                     name = fieldInfo.Name
                                 };

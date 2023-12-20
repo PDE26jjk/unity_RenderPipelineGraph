@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
@@ -19,6 +20,12 @@ namespace RenderPipelineGraph {
         public PortViewModel(RPGNode nodeView) {
             m_NodeView = nodeView;
             Reset();
+        }
+
+        NodeViewModel GetNodeViewModel() {
+            RPGView graphView = m_NodeView.GetFirstAncestorOfType<RPGView>();
+            NodeViewModel nodeViewModel = graphView.m_NodeViewModel;
+            return nodeViewModel;
         }
 
         internal void Reset() {
@@ -46,8 +53,8 @@ namespace RenderPipelineGraph {
         public void InitAttachEdge() {
             NodeViewModel nodeViewModel = GetNodeViewModel();
             foreach ((PortData portData, RPGPort portView) in m_PortViews) {
-                foreach (PortData linkToPort in portData.linkTo) {
-                    if (nodeViewModel.GetNodeView(linkToPort.owner, out var linkToNodeView)) {
+                foreach (PortData linkToPort in portData.LinkTo) {
+                    if (nodeViewModel.GetNodeView(linkToPort.Owner, out var linkToNodeView)) {
                         if (linkToNodeView.m_PortViewModel.TryGetPortView(linkToPort, out var linkToPortView)) {
 
                             var output = portView.direction == Direction.Output ? portView : linkToPortView;
@@ -65,16 +72,15 @@ namespace RenderPipelineGraph {
                                 nodeViewModel.GraphView.Add(edge);
                             }
                         }
+                        else {
+                            Debug.LogError(linkToPort.Owner.exposedName + ":" + linkToPort.name + "-->" + portData.Owner.exposedName + ':' + portData.name);
+
+                        }
                     }
                 }
             }
         }
 
-        NodeViewModel GetNodeViewModel() {
-            RPGView graphView = m_NodeView.GetFirstAncestorOfType<RPGView>();
-            NodeViewModel nodeViewModel = graphView.m_NodeViewModel;
-            return nodeViewModel;
-        }
 
         public IEnumerable<RPGPort> LoadAttachPortViews() {
             var rpgPortType = RPGPort.RPGPortType.Attach;

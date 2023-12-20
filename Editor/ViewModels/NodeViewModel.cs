@@ -4,7 +4,7 @@ using RenderPipelineGraph.Serialization;
 
 namespace RenderPipelineGraph {
     public class NodeViewModel {
-        Dictionary<NodeData, RPGNode> m_NodeViews = new();
+        internal Dictionary<NodeData, RPGNode> m_NodeViews = new();
         RPGView m_GraphView;
         public RPGView GraphView => m_GraphView;
         public NodeViewModel(RPGView graphView, RPGAsset asset) {

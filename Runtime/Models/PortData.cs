@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using RenderPipelineGraph.Serialization;
+using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RenderPipelineGraph {
     public enum PortType {
@@ -7,24 +10,29 @@ namespace RenderPipelineGraph {
         Dependence
     }
     public class PortData : RPGModel {
-        public JsonRef<NodeData> owner;
+        [SerializeField]
+        protected JsonRef<NodeData> m_Owner;
+        public NodeData Owner => m_Owner.value;
         public PortType portType;
-        public List<JsonRef<PortData>> linkTo = new();
+        [SerializeField]
+        List<JsonRef<PortData>> m_LinkTo = new();
+        public List<PortData> LinkTo => m_LinkTo.SelectValue().ToList();
+
         public string name;
         public static void Connect(PortData p1, PortData p2) {
-            if (!p1.linkTo.Contains(p2)) {
-                p1.linkTo.Add(p2);
+            if (!p1.m_LinkTo.Contains(p2)) {
+                p1.m_LinkTo.Add(p2);
             }
-            if (!p2.linkTo.Contains(p1)) {
-                p2.linkTo.Add(p1);
+            if (!p2.m_LinkTo.Contains(p1)) {
+                p2.m_LinkTo.Add(p1);
             }
         }
         public static bool Disconnect(PortData p1, PortData p2) {
-            if (p1.linkTo.Contains(p2)) {
-                p1.linkTo.Remove(p2);
+            if (p1.m_LinkTo.Contains(p2)) {
+                p1.m_LinkTo.Remove(p2);
             }
-            if (p2.linkTo.Contains(p1)) {
-                p2.linkTo.Remove(p1);
+            if (p2.m_LinkTo.Contains(p1)) {
+                p2.m_LinkTo.Remove(p1);
             }
             return true;
         }
@@ -33,7 +41,7 @@ namespace RenderPipelineGraph {
         public ResourceType resourceType;
         public ResourcePortData(NodeData owner) {
             this.portType = PortType.Resource;
-            this.owner = owner;
+            this.m_Owner = owner;
         }
         internal ResourcePortData() {
         }
@@ -41,7 +49,7 @@ namespace RenderPipelineGraph {
     public class DependencePortData : PortData {
         public DependencePortData(NodeData owner) {
             this.portType = PortType.Dependence;
-            this.owner = owner;
+            this.m_Owner = owner;
         }
     }
 

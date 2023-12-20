@@ -25,7 +25,7 @@ namespace RenderPipelineGraph {
         readonly internal NodeViewModel m_NodeViewModel;
         public RPGAsset Asset => m_NodeViewModel.Asset;
         public RPGView(RPGAsset asset) {
-            asset.Graph.TestInit3();
+            // asset.Graph.TestInit3();
             asset.m_Graph = asset.Save();
             m_NodeViewModel = new(this, asset);
             m_Blackboard = new RPGBlackboard(this);
@@ -53,9 +53,9 @@ namespace RenderPipelineGraph {
 
             m_Toolbar = new UnityEditor.UIElements.Toolbar();
             var b1 = new Button {
-                text = "save"
+                text = "debug"
             };
-            b1.clicked += () => { Asset.Save(); };
+            b1.clicked += () => { Asset.debug1(); };
             m_Toolbar.Add(b1);
             var objectField = new ObjectField {
                 objectType = typeof(RPGAsset)
@@ -75,34 +75,6 @@ namespace RenderPipelineGraph {
             foreach (RPGNode loadNode in m_NodeViewModel.LoadNodeViews(asset)) {
                 FastAddElement(loadNode);
             }
-
-            // var node1 = new PassNode {
-            //     focusable = true,
-            //     tabIndex = 0,
-            //     usageHints = UsageHints.None,
-            //     name = "node1",
-            //     languageDirection = LanguageDirection.Inherit,
-            //     visible = true,
-            //     generateVisualContent = null,
-            //     dataSource = null,
-            //     dataSourcePath = default,
-            //     tooltip = null,
-            //     elementTypeColor = default,
-            //     layer = -1,
-            //     title = "title1",
-            // };
-            // var node2 = new PassNode();
-            // var node3 = new TextureNode();
-            // var node4 = new BufferNode();
-            // node1.SetPosition(new Rect(100, 100, 0, 0));
-            // node2.SetPosition(new Rect(200, 100, 0, 0));
-            // node3.SetPosition(new Rect(300, 100, 0, 0));
-            // node4.SetPosition(new Rect(400, 100, 0, 0));
-            // FastAddElement(node1);
-            // FastAddElement(node2);
-            // FastAddElement(node3);
-            // FastAddElement(node4);
-
         }
         public void Dispose() {
             UnregisterCallback<DragUpdatedEvent>(OnDragUpdated);
@@ -183,8 +155,8 @@ namespace RenderPipelineGraph {
         }
         void ValidateCommand(ValidateCommandEvent evt) {
             Debug.Log("ValidateCommand" + evt.commandName);
-
         }
+
         void OnDragPerform(DragPerformEvent evt) {
             Debug.Log("OnDragPerform");
             if (getSelectingBlackboardField(out var rows)) {
