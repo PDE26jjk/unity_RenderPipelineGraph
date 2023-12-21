@@ -1,38 +1,11 @@
 ﻿using System;
 using RenderPipelineGraph.Serialization;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
-using UnityEngine.Serialization;
 
 namespace RenderPipelineGraph {
-
-    public enum ResourceType {
-        Texture,
-        Buffer,
-        AccelerationStructure,
-    }
-    public enum UseType {
-        Default,
-        Imported,
-        Shared,
-    }
-    public class ResourceData : RPGModel {
-        public ResourceType type;
-        public UseType useType;
-        public string name;
-    }
-    public class BufferData : ResourceData {
-        public BufferData() {
-            type = ResourceType.Buffer;
-        }
-        // [NonSerialized]
-        public BufferDesc desc = new();
-        [NonSerialized]
-        public BufferHandle handle;
-        [NonSerialized]
-        public GraphicsBuffer graphicsBuffer; 
-    }
     public class RPGTextureDesc:JsonObject {
         ///<summary>Texture sizing mode.</summary>
         public TextureSizeMode sizeMode;
@@ -45,6 +18,10 @@ namespace RenderPipelineGraph {
         ///<summary>Texture scale.</summary>
         public Vector2 scale;
         
+        public GraphicsFormat colorFormat;
+        
+        public DepthBits depthBufferBits;
+        
         [NonSerialized]
         TextureDesc m_TextureDesc;
         public TextureDesc GetDescStruct() {
@@ -53,7 +30,9 @@ namespace RenderPipelineGraph {
                 width = width,
                 height = height,
                 slices = slices,
-                scale = scale
+                scale = scale,
+                colorFormat = colorFormat,
+                depthBufferBits = depthBufferBits
             };
             return this.m_TextureDesc;
         }
@@ -77,15 +56,4 @@ namespace RenderPipelineGraph {
         public RTHandle rtHandle;
     }
 
-    public class RTAData : ResourceData {
-        public RTAData() {
-            type = ResourceType.AccelerationStructure;
-        }
-        // [NonSerialized]
-        // public RayTracingAccelerationStructureDesc desc;
-        [NonSerialized]
-        public RayTracingAccelerationStructureHandle handle;
-        [NonSerialized]
-        public RayTracingAccelerationStructure accelStruct;
-    }
 }

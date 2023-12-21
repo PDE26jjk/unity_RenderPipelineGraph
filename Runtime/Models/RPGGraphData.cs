@@ -3,15 +3,17 @@ using System.Linq;
 using RenderPipelineGraph.Serialization;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Serialization;
 
 namespace RenderPipelineGraph {
     public class RPGGraphData : RPGModel {
         [SerializeField]
         List<JsonData<ResourceData>> m_ResourceList = new();
-        public List<ResourceData> ResourceList =>m_ResourceList.SelectValue().ToList();
-        
+        public List<ResourceData> ResourceList => m_ResourceList.SelectValue().ToList();
+
         [SerializeField]
         List<JsonData<NodeData>> m_NodeList = new();
         public List<NodeData> NodeList => m_NodeList.SelectValue().ToList();
@@ -25,7 +27,8 @@ namespace RenderPipelineGraph {
                 data.OnBeforeSerialize();
             }
         }
-        internal RPGGraphData(){}
+        internal RPGGraphData() {
+        }
 
         #region Test
 
@@ -46,6 +49,10 @@ namespace RenderPipelineGraph {
                 rtHandle = RTHandles.Alloc(AssetDatabase.LoadAssetAtPath<RenderTexture>("Assets/RPG/output.renderTexture"))
             };
 
+            var rendererListData = new RendererListData() {
+                name = "rendererList1"
+            };
+
             var tn1 = TextureNodeData.Instance(textureimport1);
             var tn2 = TextureNodeData.Instance(textureimport2);
 
@@ -55,17 +62,16 @@ namespace RenderPipelineGraph {
 
             m_ResourceList.Add(textureimport1);
             m_ResourceList.Add(textureimport2);
+            m_ResourceList.Add(rendererListData);
             m_NodeList.Add(pn1);
             m_NodeList.Add(tn1);
             m_NodeList.Add(tn2);
 
-            PortData.Connect(pn1.Attachments["read1"], tn1.AttachTo);
-            PortData.Connect(pn1.Attachments["write1"], tn2.AttachTo);
+            PortData.Connect(pn1.Parameters["read1"].Port, tn1.AttachTo);
+            PortData.Connect(pn1.Parameters["write1"].Port, tn2.AttachTo);
 
         }
         public void TestInit2() {
-            m_ResourceList ??= new();
-            m_NodeList ??= new();
             m_ResourceList.Clear();
             m_NodeList.Clear();
 
@@ -106,41 +112,50 @@ namespace RenderPipelineGraph {
             m_ResourceList.Clear();
             m_NodeList.Clear();
 
-            var pn1 = PassNodeData.Instance(typeof(TestPass1));
-            var pn2 = PassNodeData.Instance(typeof(TestPass1));
-            var textureimport1 = new TextureData();
-            textureimport1.name = "textureimport1";
-            textureimport1.useType = UseType.Imported;
-            textureimport1.rtHandle = RTHandles.Alloc(AssetDatabase.LoadAssetAtPath<Texture>("Assets/RPG/input.png"));
+            var pn1 = PassNodeData.Instance(typeof(TestPassUnlit));
+            var colorRT = new TextureData {
+                isDefault = true,
+                name = "defaultColor",
+                useType = UseType.Imported,
+                m_desc = new RPGTextureDesc {
+                    sizeMode = TextureSizeMode.Scale,
+                    scale = Vector2.one,
+                    colorFormat = GraphicsFormat.R8G8B8A8_SRGB
+                }
+            };
+            var depthRT = new TextureData {
+                isDefault = true,
+                name = "defaultDepth",
+                useType = UseType.Imported,
+                m_desc = new RPGTextureDesc {
+                    sizeMode = TextureSizeMode.Scale,
+                    scale = Vector2.one,
+                    depthBufferBits = DepthBits.Depth32
+                }
+            };
 
-            var textureimport2 = new TextureData();
-            textureimport2.name = "textureimport2";
-            textureimport2.useType = UseType.Imported;
-            textureimport2.rtHandle = RTHandles.Alloc(AssetDatabase.LoadAssetAtPath<RenderTexture>("Assets/RPG/output.renderTexture"));
-
-            var tn1 = TextureNodeData.Instance(textureimport1);
-            var tn2 = TextureNodeData.Instance(textureimport2);
+            var tn1 = new ResourceNodeData();
+            tn1.SetResource(new RendererListData());
 
             pn1.pos = new Vector2(300, 100);
-            pn2.pos = new Vector2(300, 300);
             tn1.pos = new Vector2(100, 100);
-            tn2.pos = new Vector2(100, 200);
 
-            m_ResourceList.Add(textureimport1);
-            m_ResourceList.Add(textureimport2);
+            m_ResourceList.Add(colorRT);
+            m_ResourceList.Add(depthRT);
             m_NodeList.Add(pn1);
-            m_NodeList.Add(pn2);
             m_NodeList.Add(tn1);
-            m_NodeList.Add(tn2);
 
-            pn2.dependencies.Add(pn1);
-
-            PortData.Connect(pn1.Attachments["read1"], tn1.AttachTo);
-            PortData.Connect(pn1.Attachments["write1"], tn2.AttachTo);
-
+            var p1 = (pn1.Parameters["depthAttachment"] as TextureParameter);
+            p1.UseDefault = true;
+            p1.SetDefaultResource(depthRT);
+            var p2 = (pn1.Parameters["colorAttachment"] as TextureParameter);
+            p2.UseDefault = true;
+            p2.SetDefaultResource(colorRT);
+            PortData.Connect(pn1.Parameters["rendererList"].Port, tn1.AttachTo);
         }
 
         #endregion
+
     }
 
 }

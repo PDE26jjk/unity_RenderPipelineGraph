@@ -4,14 +4,14 @@ using RenderPipelineGraph.Serialization;
 
 namespace RenderPipelineGraph {
     public class NodeViewModel {
-        internal Dictionary<NodeData, RPGNode> m_NodeViews = new();
+        internal Dictionary<Slottable, RPGNode> m_NodeViews = new();
         RPGView m_GraphView;
         public RPGView GraphView => m_GraphView;
         public NodeViewModel(RPGView graphView, RPGAsset asset) {
             this.m_GraphView = graphView;
             this.m_Asset = asset;
         }
-        public bool GetNodeView(NodeData nodeData, out RPGNode nodeView) {
+        public bool GetNodeView(Slottable nodeData, out RPGNode nodeView) {
             return m_NodeViews.TryGetValue(nodeData, out nodeView);
         }
         bool loading = false;

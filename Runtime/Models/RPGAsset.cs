@@ -16,14 +16,15 @@ namespace RenderPipelineGraph {
 
     public class RPGModel : JsonObject {
         internal RPGModel() {
+            
         }
         public class RPGModelBinding : ScriptableObject {
             public int aaa = 1;
         }
-        RPGModelBinding m_Obj;
+        protected RPGModelBinding m_ObjBinding;
         public virtual RPGModelBinding getInspectorBinding() {
-            m_Obj ??= new();
-            return m_Obj;
+            m_ObjBinding ??= new();
+            return m_ObjBinding;
         }
 
     }
@@ -36,7 +37,7 @@ namespace RenderPipelineGraph {
         }
     }
 
-    public class NodeData : RPGModel {
+    public class NodeData : Slottable {
         public string exposedName;
         public Vector2 pos;
         public Color color;
@@ -54,7 +55,7 @@ namespace RenderPipelineGraph {
         public RPGGraphData Graph => m_Graph;
 
         public RPGGraphData Save() {
-            m_Graph.TestInit1();
+            m_Graph.TestInit3();
             printDebug(m_Graph);
             var json = MultiJson.Serialize(m_Graph);
             content = json;
@@ -74,7 +75,8 @@ namespace RenderPipelineGraph {
                 str += "port:\n";
                 switch (nodeData) {
                     case PassNodeData passNodeData:
-                        foreach (ResourcePortData resourcePortData in passNodeData.Attachments.Values) {
+                        foreach (var portData in passNodeData.Parameters.Values.Select(t=>t.Port)) {
+                            var resourcePortData = (ResourcePortData)portData;
                             str += resourcePortData.name + ":" + resourcePortData.objectId + "\n";
                             str += "linkTo:\n";
                             foreach (PortData data in resourcePortData.LinkTo) {

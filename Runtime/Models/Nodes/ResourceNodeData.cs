@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
-    public abstract class ResourceNodeData : NodeData {
+    public class ResourceNodeData : NodeData {
         [SerializeField]
         JsonRef<ResourceData> m_Resource;
         public ResourceData Resource {

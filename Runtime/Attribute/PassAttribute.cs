@@ -20,4 +20,21 @@ namespace RenderPipelineGraph.Attribute {
             this.index = index;
         }
     }
+    [AttributeUsage(AttributeTargets.Field)]
+    public class DepthAttribute : System.Attribute {
+        public int index;
+        public DepthAttribute(int index = 0) {
+            this.index = index;
+        }
+    }
+    [AttributeUsage(AttributeTargets.Field)]
+    public class DefaultAttribute : System.Attribute {
+        public DefaultAttribute() {
+        }
+    }
+    [AttributeUsage(AttributeTargets.Field)]
+    public class CullingWhenEmptyAttribute : System.Attribute {
+        public CullingWhenEmptyAttribute() {
+        }
+    }
 }

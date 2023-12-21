@@ -54,28 +54,28 @@ namespace RenderPipelineGraph {
             NodeViewModel nodeViewModel = GetNodeViewModel();
             foreach ((PortData portData, RPGPort portView) in m_PortViews) {
                 foreach (PortData linkToPort in portData.LinkTo) {
-                    if (nodeViewModel.GetNodeView(linkToPort.Owner, out var linkToNodeView)) {
-                        if (linkToNodeView.m_PortViewModel.TryGetPortView(linkToPort, out var linkToPortView)) {
+                    if (!nodeViewModel.GetNodeView(linkToPort.Owner, out var linkToNodeView))
+                        continue;
+                    if (linkToNodeView.m_PortViewModel.TryGetPortView(linkToPort, out var linkToPortView)) {
 
-                            var output = portView.direction == Direction.Output ? portView : linkToPortView;
-                            var input = portView.direction == Direction.Input ? portView : linkToPortView;
-                            bool hasLinked = false;
-                            // link once
-                            foreach (Edge portViewConnection in portView.connections) {
-                                if (portViewConnection.input == input && portViewConnection.output == output) {
-                                    hasLinked = true;
-                                    break;
-                                }
-                            }
-                            if (!hasLinked) {
-                                Edge edge = portView.ConnectTo(linkToPortView);
-                                nodeViewModel.GraphView.Add(edge);
+                        var output = portView.direction == Direction.Output ? portView : linkToPortView;
+                        var input = portView.direction == Direction.Input ? portView : linkToPortView;
+                        bool hasLinked = false;
+                        // link once
+                        foreach (Edge portViewConnection in portView.connections) {
+                            if (portViewConnection.input == input && portViewConnection.output == output) {
+                                hasLinked = true;
+                                break;
                             }
                         }
-                        else {
-                            Debug.LogError(linkToPort.Owner.exposedName + ":" + linkToPort.name + "-->" + portData.Owner.exposedName + ':' + portData.name);
-
+                        if (!hasLinked) {
+                            Edge edge = portView.ConnectTo(linkToPortView);
+                            nodeViewModel.GraphView.Add(edge);
                         }
+                    }
+                    else {
+                        // Debug.LogError((linkToPort.Owner as PassNodeData).exposedName + ":" + linkToPort.name + "-->" + (portData.Owner as PassNodeData).exposedName + ':' + portData.name);
+
                     }
                 }
             }
@@ -83,9 +83,10 @@ namespace RenderPipelineGraph {
 
 
         public IEnumerable<RPGPort> LoadAttachPortViews() {
+            yield break;
             var rpgPortType = RPGPort.RPGPortType.Attach;
             IEnumerable<PortData> portDatas = m_NodeView.Model switch {
-                PassNodeData passNodeData => passNodeData.Attachments.Values,
+                // PassNodeData passNodeData => passNodeData.Parameters.Values,
                 ResourceNodeData resourceNodeData => new[] {
                     resourceNodeData.AttachTo
                 },
@@ -95,7 +96,6 @@ namespace RenderPipelineGraph {
                 PassNodeData passNodeData => Direction.Input,
                 ResourceNodeData resourceNodeData => Direction.Output,
                 _ => throw new ArgumentOutOfRangeException()
-
             };
             foreach (PortData portData in portDatas) {
                 RPGPort portView = null;
