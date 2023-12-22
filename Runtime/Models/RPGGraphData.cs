@@ -39,13 +39,13 @@ namespace RenderPipelineGraph {
             var pn1 = PassNodeData.Instance(typeof(TestPass1));
             var textureimport1 = new TextureData {
                 name = "textureimport1",
-                useType = UseType.Imported,
+                usage = Usage.Imported,
                 rtHandle = RTHandles.Alloc(AssetDatabase.LoadAssetAtPath<Texture>("Assets/RPG/input.png"))
             };
 
             var textureimport2 = new TextureData {
                 name = "textureimport2",
-                useType = UseType.Imported,
+                usage = Usage.Imported,
                 rtHandle = RTHandles.Alloc(AssetDatabase.LoadAssetAtPath<RenderTexture>("Assets/RPG/output.renderTexture"))
             };
 
@@ -113,45 +113,66 @@ namespace RenderPipelineGraph {
             m_NodeList.Clear();
 
             var pn1 = PassNodeData.Instance(typeof(TestPassUnlit));
+            var pn2 = PassNodeData.Instance(typeof(TestFinalBlitPass));
             var colorRT = new TextureData {
                 isDefault = true,
                 name = "defaultColor",
-                useType = UseType.Imported,
+                usage = Usage.Created,
                 m_desc = new RPGTextureDesc {
                     sizeMode = TextureSizeMode.Scale,
                     scale = Vector2.one,
-                    colorFormat = GraphicsFormat.R8G8B8A8_SRGB
+                    depthBufferBits = DepthBits.None,
+                    filterMode = FilterMode.Bilinear,
+                    name = "colorAttachment",
+                    colorFormat = GraphicsFormat.R8G8B8A8_SRGB,
+                    clearBuffer = true,
+                    clearColor = Color.clear,
+                    enableRandomWrite = true
                 }
             };
             var depthRT = new TextureData {
                 isDefault = true,
                 name = "defaultDepth",
-                useType = UseType.Imported,
+                usage = Usage.Created,
                 m_desc = new RPGTextureDesc {
                     sizeMode = TextureSizeMode.Scale,
                     scale = Vector2.one,
-                    depthBufferBits = DepthBits.Depth32
+                    depthBufferBits = DepthBits.Depth32,
+                    filterMode = FilterMode.Bilinear,
+                    name = "depthAttachment",
+                    clearBuffer = true,
+                    clearColor = new Color(0.5f, 0, 0)
                 }
             };
 
             var tn1 = new ResourceNodeData();
-            tn1.SetResource(new RendererListData());
+            var rendererListData = new RendererListData();
+            RPGRenderListDesc rpgRenderListDesc = rendererListData.m_RenderListDesc.value;
+            rpgRenderListDesc.shaderTagIdStrs.Add("MySRPMode1");
+            tn1.SetResource(rendererListData);
 
             pn1.pos = new Vector2(300, 100);
             tn1.pos = new Vector2(100, 100);
+            
+            pn2.dependencies.Add(pn1);
 
             m_ResourceList.Add(colorRT);
             m_ResourceList.Add(depthRT);
+            m_ResourceList.Add(tn1.Resource);
             m_NodeList.Add(pn1);
+            m_NodeList.Add(pn2);
             m_NodeList.Add(tn1);
 
-            var p1 = (pn1.Parameters["depthAttachment"] as TextureParameter);
+            var p1 = (pn1.Parameters["depthAttachment"] as TextureParameterData);
             p1.UseDefault = true;
             p1.SetDefaultResource(depthRT);
-            var p2 = (pn1.Parameters["colorAttachment"] as TextureParameter);
+            var p2 = (pn1.Parameters["colorAttachment"] as TextureParameterData);
             p2.UseDefault = true;
             p2.SetDefaultResource(colorRT);
-            PortData.Connect(pn1.Parameters["rendererList"].Port, tn1.AttachTo);
+            var p3 = pn1.Parameters["rendererList"];
+            p3.UseDefault = false;
+            
+            PortData.Connect(p3.Port, tn1.AttachTo);
         }
 
         #endregion

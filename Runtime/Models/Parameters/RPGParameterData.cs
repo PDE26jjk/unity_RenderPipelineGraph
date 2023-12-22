@@ -10,6 +10,8 @@ namespace RenderPipelineGraph {
             m_Port.OnBeforeSerialize();
         }
         protected ResourceData m_DefaultResource;
+        public ResourceData DefaultResource =>
+            m_DefaultResource;
         public void SetDefaultResource(ResourceData resourceData) {
             m_DefaultResource = resourceData;
         }

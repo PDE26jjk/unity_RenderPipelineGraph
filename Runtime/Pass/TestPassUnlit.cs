@@ -20,7 +20,7 @@ namespace RenderPipelineGraph {
         public override bool Valid() {
             return true;
         }
-
+        
         public TestPassUnlit() {
             PassType = PassNodeType.Raster;
         }

@@ -1,6 +1,4 @@
-﻿using System;
-using UnityEngine.Rendering.RenderGraphModule;
-using Object = UnityEngine.Object;
+﻿using UnityEngine;
 
 namespace RenderPipelineGraph {
 
@@ -10,13 +8,13 @@ namespace RenderPipelineGraph {
         Raster,
         Compute
     }
-    public abstract class RPGPass : RPGModel {
+    public abstract class RPGPass {
 
         string m_Name;
         public virtual bool Valid() {
             return true;
         }
-        public virtual void LoadData(Object passData) {
+        public virtual void LoadData(object passData,Camera camera) {
         }
         public PassNodeType PassType { get; protected set; }
         public string Name {

@@ -13,14 +13,15 @@ namespace RenderPipelineGraph {
         AccelerationStructure,
         RendererList,
     }
-    public enum UseType {
-        Default,
+    public enum Usage {
+        Created,
         Imported,
         Shared,
     }
     public class ResourceData : RPGModel {
         public ResourceType type;
-        public UseType useType;
+        [FormerlySerializedAs("useType")]
+        public Usage usage;
         public string name;
         public bool isDefault;
     }

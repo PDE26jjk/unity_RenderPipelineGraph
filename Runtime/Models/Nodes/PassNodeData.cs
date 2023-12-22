@@ -79,10 +79,15 @@ namespace RenderPipelineGraph {
                 var customAttributes = fieldInfo.GetCustomAttributes().Select(t => t.GetType()).ToArray();
                 if (needCreate) {
                     if (fieldInfo.FieldType == typeof(TextureHandle)) {
-                        var textureParameter = new TextureParameter() {
+                        var textureParameter = new TextureParameterData() {
                             Name = fieldInfo.Name
                         };
                         parameterData = textureParameter;
+                        if (customAttributes.Contains(typeof(DepthAttribute))) {
+                            textureParameter.depth = true;
+                            textureParameter.read = true;
+                            textureParameter.write = true;
+                        }
                         if (customAttributes.Contains(typeof(FragmentAttribute))) {
                             textureParameter.fragment = true;
                             textureParameter.write = true;
@@ -97,7 +102,7 @@ namespace RenderPipelineGraph {
                         }
                         m_Parameters.Add(parameterData);
                     }else if (fieldInfo.FieldType == typeof(RendererList)) {
-                        var rendererListParameter = new RendererListParameter();
+                        var rendererListParameter = new RendererListParameterData();
                         parameterData = rendererListParameter;
                         
                         if (customAttributes.Contains(typeof(CullingWhenEmptyAttribute))) {
