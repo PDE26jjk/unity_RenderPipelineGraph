@@ -1,0 +1,254 @@
+﻿using System;
+using RenderPipelineGraph.Attribute;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
+
+namespace RenderPipelineGraph {
+    internal static class ShaderPropertyId {
+        public static readonly int glossyEnvironmentColor = Shader.PropertyToID("_GlossyEnvironmentColor");
+        public static readonly int subtractiveShadowColor = Shader.PropertyToID("_SubtractiveShadowColor");
+
+        public static readonly int glossyEnvironmentCubeMap = Shader.PropertyToID("_GlossyEnvironmentCubeMap");
+        public static readonly int glossyEnvironmentCubeMapHDR = Shader.PropertyToID("_GlossyEnvironmentCubeMap_HDR");
+
+        public static readonly int ambientSkyColor = Shader.PropertyToID("unity_AmbientSky");
+        public static readonly int ambientEquatorColor = Shader.PropertyToID("unity_AmbientEquator");
+        public static readonly int ambientGroundColor = Shader.PropertyToID("unity_AmbientGround");
+
+        public static readonly int time = Shader.PropertyToID("_Time");
+        public static readonly int sinTime = Shader.PropertyToID("_SinTime");
+        public static readonly int cosTime = Shader.PropertyToID("_CosTime");
+        public static readonly int deltaTime = Shader.PropertyToID("unity_DeltaTime");
+        public static readonly int timeParameters = Shader.PropertyToID("_TimeParameters");
+        public static readonly int lastTimeParameters = Shader.PropertyToID("_LastTimeParameters");
+
+        public static readonly int scaledScreenParams = Shader.PropertyToID("_ScaledScreenParams");
+        public static readonly int worldSpaceCameraPos = Shader.PropertyToID("_WorldSpaceCameraPos");
+        public static readonly int screenParams = Shader.PropertyToID("_ScreenParams");
+        public static readonly int alphaToMaskAvailable = Shader.PropertyToID("_AlphaToMaskAvailable");
+        public static readonly int projectionParams = Shader.PropertyToID("_ProjectionParams");
+        public static readonly int zBufferParams = Shader.PropertyToID("_ZBufferParams");
+        public static readonly int orthoParams = Shader.PropertyToID("unity_OrthoParams");
+        public static readonly int globalMipBias = Shader.PropertyToID("_GlobalMipBias");
+
+        public static readonly int screenSize = Shader.PropertyToID("_ScreenSize");
+        public static readonly int screenCoordScaleBias = Shader.PropertyToID("_ScreenCoordScaleBias");
+        public static readonly int screenSizeOverride = Shader.PropertyToID("_ScreenSizeOverride");
+
+        public static readonly int viewMatrix = Shader.PropertyToID("unity_MatrixV");
+        public static readonly int projectionMatrix = Shader.PropertyToID("glstate_matrix_projection");
+        public static readonly int viewAndProjectionMatrix = Shader.PropertyToID("unity_MatrixVP");
+
+        public static readonly int inverseViewMatrix = Shader.PropertyToID("unity_MatrixInvV");
+        public static readonly int inverseProjectionMatrix = Shader.PropertyToID("unity_MatrixInvP");
+        public static readonly int inverseViewAndProjectionMatrix = Shader.PropertyToID("unity_MatrixInvVP");
+
+        public static readonly int cameraProjectionMatrix = Shader.PropertyToID("unity_CameraProjection");
+        public static readonly int inverseCameraProjectionMatrix = Shader.PropertyToID("unity_CameraInvProjection");
+        public static readonly int worldToCameraMatrix = Shader.PropertyToID("unity_WorldToCamera");
+        public static readonly int cameraToWorldMatrix = Shader.PropertyToID("unity_CameraToWorld");
+
+        public static readonly int cameraWorldClipPlanes = Shader.PropertyToID("unity_CameraWorldClipPlanes");
+
+        public static readonly int billboardNormal = Shader.PropertyToID("unity_BillboardNormal");
+        public static readonly int billboardTangent = Shader.PropertyToID("unity_BillboardTangent");
+        public static readonly int billboardCameraParams = Shader.PropertyToID("unity_BillboardCameraParams");
+
+        public static readonly int previousViewProjectionNoJitter = Shader.PropertyToID("_PrevViewProjMatrix");
+        public static readonly int viewProjectionNoJitter = Shader.PropertyToID("_NonJitteredViewProjMatrix");
+#if ENABLE_VR && ENABLE_XR_MODULE
+        public static readonly int previousViewProjectionNoJitterStereo = Shader.PropertyToID("_PrevViewProjMatrixStereo");
+        public static readonly int viewProjectionNoJitterStereo = Shader.PropertyToID("_NonJitteredViewProjMatrixStereo");
+#endif
+
+        public static readonly int blitTexture = Shader.PropertyToID("_BlitTexture");
+        public static readonly int blitScaleBias = Shader.PropertyToID("_BlitScaleBias");
+        public static readonly int sourceTex = Shader.PropertyToID("_SourceTex");
+        public static readonly int scaleBias = Shader.PropertyToID("_ScaleBias");
+        public static readonly int scaleBiasRt = Shader.PropertyToID("_ScaleBiasRt");
+
+        // This uniform is specific to the RTHandle system
+        public static readonly int rtHandleScale = Shader.PropertyToID("_RTHandleScale");
+
+        // Required for 2D Unlit Shadergraph master node as it doesn't currently support hidden properties.
+        public static readonly int rendererColor = Shader.PropertyToID("_RendererColor");
+
+        public static readonly int ditheringTexture = Shader.PropertyToID("_DitheringTexture");
+        public static readonly int ditheringTextureInvSize = Shader.PropertyToID("_DitheringTextureInvSize");
+
+        public static readonly int renderingLayerMaxInt = Shader.PropertyToID("_RenderingLayerMaxInt");
+        public static readonly int renderingLayerRcpMaxInt = Shader.PropertyToID("_RenderingLayerRcpMaxInt");
+
+        public static readonly int overlayUITexture = Shader.PropertyToID("_OverlayUITexture");
+        public static readonly int hdrOutputLuminanceParams = Shader.PropertyToID("_HDROutputLuminanceParams");
+        public static readonly int hdrOutputGradingParams = Shader.PropertyToID("_HDROutputGradingParams");
+    }
+
+    public class SetupGlobalConstantPass : RPGPass {
+        public class PassData {
+            internal Camera camera;
+        }
+        public override void LoadData(object passData, Camera camera) {
+            ((PassData)passData).camera = camera;
+        }
+
+        public override bool Valid() {
+            return true;
+        }
+
+        public SetupGlobalConstantPass() {
+            PassType = PassNodeType.Raster;
+            m_AllowPassCulling = false;
+            m_AllowGlobalStateModification = true;
+        }
+
+        static bool isFirstTimePerFrame = true;
+
+        public static void Record(PassData passData, RasterGraphContext context) {
+            bool yFlip = !SystemInfo.graphicsUVStartsAtTop;
+            var cmd = context.cmd;
+            if (isFirstTimePerFrame) {
+                isFirstTimePerFrame = false;
+                SetupPerFrameShaderConstants(cmd);
+            }
+            SetPerCameraShaderVariables(cmd, passData.camera, yFlip);
+        }
+
+        public override void EndFrame() {
+            isFirstTimePerFrame = true;
+        }
+
+
+        static void SetupPerFrameShaderConstants(IBaseCommandBuffer cmd) {
+#if UNITY_EDITOR
+            float time = Application.isPlaying ? Time.time : Time.realtimeSinceStartup;
+#else
+            float time = Time.time;
+#endif
+            float deltaTime = Time.deltaTime;
+            float smoothDeltaTime = Time.smoothDeltaTime;
+            SetShaderTimeValues(cmd, time, deltaTime, smoothDeltaTime);
+        }
+
+        static void SetShaderTimeValues(IBaseCommandBuffer cmd, float time, float deltaTime, float smoothDeltaTime) {
+            float timeEights = time / 8f;
+            float timeFourth = time / 4f;
+            float timeHalf = time / 2f;
+
+            float lastTime = time - deltaTime;
+
+            // Time values
+            Vector4 timeVector = time * new Vector4(1f / 20f, 1f, 2f, 3f);
+            Vector4 sinTimeVector = new Vector4(Mathf.Sin(timeEights), Mathf.Sin(timeFourth), Mathf.Sin(timeHalf), Mathf.Sin(time));
+            Vector4 cosTimeVector = new Vector4(Mathf.Cos(timeEights), Mathf.Cos(timeFourth), Mathf.Cos(timeHalf), Mathf.Cos(time));
+            Vector4 deltaTimeVector = new Vector4(deltaTime, 1f / deltaTime, smoothDeltaTime, 1f / smoothDeltaTime);
+            Vector4 timeParametersVector = new Vector4(time, Mathf.Sin(time), Mathf.Cos(time), 0.0f);
+            Vector4 lastTimeParametersVector = new Vector4(lastTime, Mathf.Sin(lastTime), Mathf.Cos(lastTime), 0.0f);
+
+            cmd.SetGlobalVector(ShaderPropertyId.time, timeVector);
+            cmd.SetGlobalVector(ShaderPropertyId.sinTime, sinTimeVector);
+            cmd.SetGlobalVector(ShaderPropertyId.cosTime, cosTimeVector);
+            cmd.SetGlobalVector(ShaderPropertyId.deltaTime, deltaTimeVector);
+            cmd.SetGlobalVector(ShaderPropertyId.timeParameters, timeParametersVector);
+            cmd.SetGlobalVector(ShaderPropertyId.lastTimeParameters, lastTimeParametersVector);
+        }
+        // from URP
+        static void SetPerCameraShaderVariables(RasterCommandBuffer cmd, Camera camera, bool isTargetFlipped) {
+
+            float scaledCameraWidth = camera.pixelWidth;
+            float scaledCameraHeight = camera.pixelHeight;
+            float cameraWidth = (float)camera.pixelWidth;
+            float cameraHeight = (float)camera.pixelHeight;
+
+            if (camera.allowDynamicResolution) {
+                scaledCameraWidth *= ScalableBufferManager.widthScaleFactor;
+                scaledCameraHeight *= ScalableBufferManager.heightScaleFactor;
+            }
+
+            float near = camera.nearClipPlane;
+            float far = camera.farClipPlane;
+            float invNear = Mathf.Approximately(near, 0.0f) ? 0.0f : 1.0f / near;
+            float invFar = Mathf.Approximately(far, 0.0f) ? 0.0f : 1.0f / far;
+            float isOrthographic = camera.orthographic ? 1.0f : 0.0f;
+
+            float zc0 = 1.0f - far * invNear;
+            float zc1 = far * invNear;
+
+            Vector4 zBufferParams = new Vector4(zc0, zc1, zc0 * invFar, zc1 * invFar);
+
+            if (SystemInfo.usesReversedZBuffer) {
+                zBufferParams.y += zBufferParams.x;
+                zBufferParams.x = -zBufferParams.x;
+                zBufferParams.w += zBufferParams.z;
+                zBufferParams.z = -zBufferParams.z;
+            }
+
+            // Projection flip sign logic is very deep in GfxDevice::SetInvertProjectionMatrix
+            // This setup is tailored especially for overlay camera game view
+            // For other scenarios this will be overwritten correctly by SetupCameraProperties
+            float projectionFlipSign = isTargetFlipped ? -1.0f : 1.0f;
+            Vector4 projectionParams = new Vector4(projectionFlipSign, near, far, 1.0f * invFar);
+            cmd.SetGlobalVector(ShaderPropertyId.projectionParams, projectionParams);
+
+            Vector4 orthoParams = new Vector4(camera.orthographicSize * cameraWidth / cameraHeight, camera.orthographicSize, 0.0f, isOrthographic);
+
+            // Camera and Screen variables as described in https://docs.unity3d.com/Manual/SL-UnityShaderVariables.html
+            cmd.SetGlobalVector(ShaderPropertyId.worldSpaceCameraPos, camera.transform.position);
+            cmd.SetGlobalVector(ShaderPropertyId.screenParams, new Vector4(cameraWidth, cameraHeight, 1.0f + 1.0f / cameraWidth, 1.0f + 1.0f / cameraHeight));
+            cmd.SetGlobalVector(ShaderPropertyId.scaledScreenParams,
+                new Vector4(scaledCameraWidth, scaledCameraHeight, 1.0f + 1.0f / scaledCameraWidth, 1.0f + 1.0f / scaledCameraHeight));
+            cmd.SetGlobalVector(ShaderPropertyId.zBufferParams, zBufferParams);
+            cmd.SetGlobalVector(ShaderPropertyId.orthoParams, orthoParams);
+
+            cmd.SetGlobalVector(ShaderPropertyId.screenSize, new Vector4(scaledCameraWidth, scaledCameraHeight, 1.0f / scaledCameraWidth, 1.0f / scaledCameraHeight));
+            // cmd.SetKeyword(ShaderGlobalKeywords.SCREEN_COORD_OVERRIDE, cameraData.useScreenCoordOverride);
+            // cmd.SetGlobalVector(ShaderPropertyId.screenSizeOverride, cameraData.screenSizeOverride);
+            // cmd.SetGlobalVector(ShaderPropertyId.screenCoordScaleBias, cameraData.screenCoordScaleBias);
+
+            // { w / RTHandle.maxWidth, h / RTHandle.maxHeight } : xy = currFrame, zw = prevFrame
+            // TODO(@sandy-carter) set to RTHandles.rtHandleProperties.rtHandleScale once dynamic scaling is set up
+            cmd.SetGlobalVector(ShaderPropertyId.rtHandleScale, Vector4.one);
+
+            // Calculate a bias value which corrects the mip lod selection logic when image scaling is active.
+            // We clamp this value to 0.0 or less to make sure we don't end up reducing image detail in the downsampling case.
+            float mipBias = Math.Min((float)-Math.Log(cameraWidth / scaledCameraWidth, 2.0f), 0.0f);
+            // Temporal Anti-aliasing can use negative mip bias to increase texture sharpness and new information for the jitter.
+            // float taaMipBias = Math.Min(cameraData.taaSettings.mipBias, 0.0f);
+            // mipBias = Math.Min(mipBias, taaMipBias);
+            cmd.SetGlobalVector(ShaderPropertyId.globalMipBias, new Vector2(mipBias, Mathf.Pow(2.0f, mipBias)));
+
+            //Set per camera matrices.
+            SetCameraMatrices(cmd, camera, true, isTargetFlipped);
+        }
+
+        internal static void SetCameraMatrices(RasterCommandBuffer cmd, Camera camera, bool setInverseMatrices, bool isTargetFlipped) {
+
+            // NOTE: the URP default main view/projection matrices are the CameraData view/projection matrices.
+            Matrix4x4 viewMatrix = camera.worldToCameraMatrix;
+            Matrix4x4 projectionMatrix = camera.projectionMatrix; // Jittered, non-gpu
+
+            // Set the default view/projection, note: projectionMatrix will be set as a gpu-projection (gfx api adjusted) for rendering.
+            cmd.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
+
+            if (setInverseMatrices) {
+                Matrix4x4 gpuProjectionMatrix = GL.GetGPUProjectionMatrix(projectionMatrix, isTargetFlipped);
+                Matrix4x4 inverseViewMatrix = Matrix4x4.Inverse(viewMatrix);
+                Matrix4x4 inverseProjectionMatrix = Matrix4x4.Inverse(gpuProjectionMatrix);
+                Matrix4x4 inverseViewProjection = inverseViewMatrix * inverseProjectionMatrix;
+
+
+                Matrix4x4 worldToCameraMatrix = Matrix4x4.Scale(new Vector3(1.0f, 1.0f, -1.0f)) * viewMatrix;
+                Matrix4x4 cameraToWorldMatrix = worldToCameraMatrix.inverse;
+                cmd.SetGlobalMatrix(ShaderPropertyId.worldToCameraMatrix, worldToCameraMatrix);
+                cmd.SetGlobalMatrix(ShaderPropertyId.cameraToWorldMatrix, cameraToWorldMatrix);
+
+                cmd.SetGlobalMatrix(ShaderPropertyId.inverseViewMatrix, inverseViewMatrix);
+                cmd.SetGlobalMatrix(ShaderPropertyId.inverseProjectionMatrix, inverseProjectionMatrix);
+                cmd.SetGlobalMatrix(ShaderPropertyId.inverseViewAndProjectionMatrix, inverseViewProjection);
+            }
+
+        }
+
+    }
+}

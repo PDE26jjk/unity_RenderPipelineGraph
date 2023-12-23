@@ -19,7 +19,6 @@ namespace RenderPipelineGraph {
         public TestPass1() {
             PassType = PassNodeType.Raster;
         }
-        public string str;
         public static void Record(PassData passData, RasterGraphContext context) {
             var cmd = context.cmd;
             Blitter.BlitTexture(cmd, passData.read1, new Vector4(1, 1, 0, 0), 0, false);

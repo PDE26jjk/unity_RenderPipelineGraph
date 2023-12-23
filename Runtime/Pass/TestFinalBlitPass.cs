@@ -8,7 +8,7 @@ namespace RenderPipelineGraph {
 
     public class TestFinalBlitPass : RPGPass {
         static readonly Shader _shader = Shader.Find("MySRP/FinalBlit");
-        static Material _material;
+        static readonly Material _material= new Material(_shader);
         public class PassData {
             
             [Read]
@@ -17,9 +17,8 @@ namespace RenderPipelineGraph {
             [Fragment]
             public TextureHandle targetAttachment;
 
-            public bool yFlip;
+            internal bool yFlip;
         }
-        string m_Name;
         public TestFinalBlitPass() {
             PassType = PassNodeType.Raster;
         }

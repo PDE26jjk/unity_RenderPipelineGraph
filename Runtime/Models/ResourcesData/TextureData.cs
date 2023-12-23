@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using RenderPipelineGraph.Serialization;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
@@ -57,7 +58,8 @@ namespace RenderPipelineGraph {
             return this.m_TextureDesc;
         }
     }
-    public class TextureData : ResourceData {
+    public class TextureData : CanSetGlobalResourceData {
+        
         public TextureData() {
             type = ResourceType.Texture;
             m_desc = new RPGTextureDesc();
@@ -74,15 +76,29 @@ namespace RenderPipelineGraph {
         
         [NonSerialized]
         public RTHandle rtHandle;
+
     }
-    
+    public enum RPGBuildInRTType {
+        CameraTarget = (int)BuiltinRenderTextureType.CameraTarget,
+        CameraDepth = (int)BuiltinRenderTextureType.Depth,
+    }
     public class BuildInRenderTextureData : TextureData {
-        public BuildInRenderTextureData() {
+        BuildInRenderTextureData(RPGBuildInRTType textureType) {
             usage = Usage.Imported;
-            m_desc = null;
+            isDefault = true;
+            this.textureType = textureType;
+            // m_desc = null;
+        }
+        public readonly RPGBuildInRTType textureType;
+        public static Dictionary<RPGBuildInRTType, BuildInRenderTextureData> buildInRenderTextureDatas = new();
+        public static BuildInRenderTextureData GetTexture(RPGBuildInRTType textureType) {
+            if (!buildInRenderTextureDatas.TryGetValue(textureType, out var buildInRenderTextureData)) {
+                buildInRenderTextureDatas[textureType] = buildInRenderTextureData = new(textureType);
+            }
+            return buildInRenderTextureData;
         }
 
-        public BuiltinRenderTextureType textureType = BuiltinRenderTextureType.None;
+        // public BuiltinRenderTextureType textureType = BuiltinRenderTextureType.None;
     }
 
 }

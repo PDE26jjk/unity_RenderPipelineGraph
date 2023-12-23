@@ -112,6 +112,7 @@ namespace RenderPipelineGraph {
             m_ResourceList.Clear();
             m_NodeList.Clear();
 
+            var pn0 = PassNodeData.Instance(typeof(SetupGlobalConstantPass));
             var pn1 = PassNodeData.Instance(typeof(TestPassUnlit));
             var pn2 = PassNodeData.Instance(typeof(TestFinalBlitPass));
             var colorRT = new TextureData {
@@ -145,6 +146,8 @@ namespace RenderPipelineGraph {
                 }
             };
 
+            var targetRT = BuildInRenderTextureData.GetTexture(RPGBuildInRTType.CameraTarget);
+
             var tn1 = new ResourceNodeData();
             var rendererListData = new RendererListData();
             RPGRenderListDesc rpgRenderListDesc = rendererListData.m_RenderListDesc.value;
@@ -153,12 +156,15 @@ namespace RenderPipelineGraph {
 
             pn1.pos = new Vector2(300, 100);
             tn1.pos = new Vector2(100, 100);
-            
+
+            pn1.dependencies.Add(pn0);
             pn2.dependencies.Add(pn1);
 
             m_ResourceList.Add(colorRT);
             m_ResourceList.Add(depthRT);
             m_ResourceList.Add(tn1.Resource);
+            m_ResourceList.Add(targetRT);
+            m_NodeList.Add(pn0);
             m_NodeList.Add(pn1);
             m_NodeList.Add(pn2);
             m_NodeList.Add(tn1);
@@ -171,7 +177,13 @@ namespace RenderPipelineGraph {
             p2.SetDefaultResource(colorRT);
             var p3 = pn1.Parameters["rendererList"];
             p3.UseDefault = false;
-            
+
+            var p4 = (pn2.Parameters["colorAttachment"] as TextureParameterData);
+            p4.UseDefault = true;
+            p4.SetDefaultResource(colorRT);
+            var p5 = (pn2.Parameters["targetAttachment"] as TextureParameterData);
+            p5.UseDefault = true;
+            p5.SetDefaultResource(targetRT);
             PortData.Connect(p3.Port, tn1.AttachTo);
         }
 

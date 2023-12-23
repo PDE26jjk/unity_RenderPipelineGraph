@@ -37,4 +37,11 @@ namespace RenderPipelineGraph.Attribute {
         public CullingWhenEmptyAttribute() {
         }
     }
+    // [AttributeUsage(AttributeTargets.Field)]
+    // public class SetGlobalPropertyIdAttribute : System.Attribute {
+    //     public string propertyIdStr;
+    //     public SetGlobalPropertyIdAttribute(string propertyIdStr) {
+    //         this.propertyIdStr = propertyIdStr;
+    //     }
+    // }
 }

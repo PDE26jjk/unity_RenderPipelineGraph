@@ -25,7 +25,7 @@ namespace RenderPipelineGraph {
         public string name;
         public bool isDefault;
     }
-    public class BufferData : ResourceData {
+    public class BufferData : CanSetGlobalResourceData {
         public BufferData() {
             type = ResourceType.Buffer;
         }
@@ -38,7 +38,7 @@ namespace RenderPipelineGraph {
     }
 
 
-    public class RTAData : ResourceData {
+    public class RTAData : CanSetGlobalResourceData {
         public RTAData() {
             type = ResourceType.AccelerationStructure;
         }

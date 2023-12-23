@@ -60,7 +60,7 @@ namespace RenderPipelineGraph {
             Parameters.Clear();
             m_Pass = (RPGPass)Activator.CreateInstance(passType);
             this.exposedName = m_Pass.Name;
-            Type PassInputType = passType.GetNestedType("PassData", BindingFlags.Public | BindingFlags.NonPublic);
+            Type PassInputType = passType.GetNestedType("PassData", BindingFlags.Public);
             if (PassInputType is null)
                 return;
             foreach (var fieldInfo in PassInputType.GetFields()) {
