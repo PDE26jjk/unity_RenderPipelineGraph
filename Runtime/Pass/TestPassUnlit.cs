@@ -14,7 +14,7 @@ namespace RenderPipelineGraph {
             public TextureHandle colorAttachment;
 
             [Default]
-            public RendererList rendererList;
+            public RendererListHandle rendererList;
         }
 
         public override bool Valid() {

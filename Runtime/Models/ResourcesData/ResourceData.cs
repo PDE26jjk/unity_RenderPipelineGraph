@@ -12,6 +12,7 @@ namespace RenderPipelineGraph {
         Buffer,
         AccelerationStructure,
         RendererList,
+        CullingResult,
     }
     public enum Usage {
         Created,

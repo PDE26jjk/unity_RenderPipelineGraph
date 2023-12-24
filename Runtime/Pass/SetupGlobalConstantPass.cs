@@ -6,15 +6,6 @@ using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
     internal static class ShaderPropertyId {
-        public static readonly int glossyEnvironmentColor = Shader.PropertyToID("_GlossyEnvironmentColor");
-        public static readonly int subtractiveShadowColor = Shader.PropertyToID("_SubtractiveShadowColor");
-
-        public static readonly int glossyEnvironmentCubeMap = Shader.PropertyToID("_GlossyEnvironmentCubeMap");
-        public static readonly int glossyEnvironmentCubeMapHDR = Shader.PropertyToID("_GlossyEnvironmentCubeMap_HDR");
-
-        public static readonly int ambientSkyColor = Shader.PropertyToID("unity_AmbientSky");
-        public static readonly int ambientEquatorColor = Shader.PropertyToID("unity_AmbientEquator");
-        public static readonly int ambientGroundColor = Shader.PropertyToID("unity_AmbientGround");
 
         public static readonly int time = Shader.PropertyToID("_Time");
         public static readonly int sinTime = Shader.PropertyToID("_SinTime");
@@ -49,54 +40,24 @@ namespace RenderPipelineGraph {
         public static readonly int worldToCameraMatrix = Shader.PropertyToID("unity_WorldToCamera");
         public static readonly int cameraToWorldMatrix = Shader.PropertyToID("unity_CameraToWorld");
 
-        public static readonly int cameraWorldClipPlanes = Shader.PropertyToID("unity_CameraWorldClipPlanes");
 
-        public static readonly int billboardNormal = Shader.PropertyToID("unity_BillboardNormal");
-        public static readonly int billboardTangent = Shader.PropertyToID("unity_BillboardTangent");
-        public static readonly int billboardCameraParams = Shader.PropertyToID("unity_BillboardCameraParams");
-
-        public static readonly int previousViewProjectionNoJitter = Shader.PropertyToID("_PrevViewProjMatrix");
-        public static readonly int viewProjectionNoJitter = Shader.PropertyToID("_NonJitteredViewProjMatrix");
-#if ENABLE_VR && ENABLE_XR_MODULE
-        public static readonly int previousViewProjectionNoJitterStereo = Shader.PropertyToID("_PrevViewProjMatrixStereo");
-        public static readonly int viewProjectionNoJitterStereo = Shader.PropertyToID("_NonJitteredViewProjMatrixStereo");
-#endif
-
-        public static readonly int blitTexture = Shader.PropertyToID("_BlitTexture");
-        public static readonly int blitScaleBias = Shader.PropertyToID("_BlitScaleBias");
-        public static readonly int sourceTex = Shader.PropertyToID("_SourceTex");
-        public static readonly int scaleBias = Shader.PropertyToID("_ScaleBias");
-        public static readonly int scaleBiasRt = Shader.PropertyToID("_ScaleBiasRt");
 
         // This uniform is specific to the RTHandle system
         public static readonly int rtHandleScale = Shader.PropertyToID("_RTHandleScale");
 
-        // Required for 2D Unlit Shadergraph master node as it doesn't currently support hidden properties.
-        public static readonly int rendererColor = Shader.PropertyToID("_RendererColor");
-
-        public static readonly int ditheringTexture = Shader.PropertyToID("_DitheringTexture");
-        public static readonly int ditheringTextureInvSize = Shader.PropertyToID("_DitheringTextureInvSize");
-
-        public static readonly int renderingLayerMaxInt = Shader.PropertyToID("_RenderingLayerMaxInt");
-        public static readonly int renderingLayerRcpMaxInt = Shader.PropertyToID("_RenderingLayerRcpMaxInt");
-
-        public static readonly int overlayUITexture = Shader.PropertyToID("_OverlayUITexture");
-        public static readonly int hdrOutputLuminanceParams = Shader.PropertyToID("_HDROutputLuminanceParams");
-        public static readonly int hdrOutputGradingParams = Shader.PropertyToID("_HDROutputGradingParams");
     }
 
     public class SetupGlobalConstantPass : RPGPass {
         public class PassData {
             internal Camera camera;
         }
-        public override void LoadData(object passData, Camera camera) {
+        public override void Setup(object passData, Camera camera, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
             ((PassData)passData).camera = camera;
         }
 
-        public override bool Valid() {
-            return true;
-        }
-
+        // public override bool Valid() {
+        //     return true;
+        // }
         public SetupGlobalConstantPass() {
             PassType = PassNodeType.Raster;
             m_AllowPassCulling = false;

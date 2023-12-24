@@ -33,6 +33,8 @@ namespace RenderPipelineGraph {
         public Color clearColor;
 
         public bool enableRandomWrite;
+        
+        public bool isShadowMap;
 
         public MSAASamples msaaSamples = MSAASamples.None;
         
@@ -53,7 +55,8 @@ namespace RenderPipelineGraph {
                 clearBuffer = clearBuffer,
                 clearColor = clearColor,
                 enableRandomWrite = enableRandomWrite,
-                msaaSamples = msaaSamples 
+                msaaSamples = msaaSamples,
+                isShadowMap = isShadowMap
             };
             return this.m_TextureDesc;
         }

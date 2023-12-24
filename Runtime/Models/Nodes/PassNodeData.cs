@@ -101,13 +101,19 @@ namespace RenderPipelineGraph {
                             textureParameter.read = true;
                         }
                         m_Parameters.Add(parameterData);
-                    }else if (fieldInfo.FieldType == typeof(RendererList)) {
+                    }
+                    else if (fieldInfo.FieldType == typeof(RendererListHandle)) {
                         var rendererListParameter = new RendererListParameterData();
                         parameterData = rendererListParameter;
-                        
+
                         if (customAttributes.Contains(typeof(CullingWhenEmptyAttribute))) {
                             rendererListParameter.cullingWhenEmpty = true;
                         }
+                    }
+                    else if (fieldInfo.FieldType == typeof(CullingResults)) {
+                        var cullingResultParameter = new CullingResultParameterData();
+                        parameterData = cullingResultParameter;
+
                     }
                 }
                 if (customAttributes.Contains(typeof(DefaultAttribute))) {

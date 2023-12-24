@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
 
@@ -18,7 +19,7 @@ namespace RenderPipelineGraph {
         public virtual bool Valid() {
             return true;
         }
-        public virtual void LoadData(object passData, Camera camera) {
+        public virtual void Setup(object passData, Camera camera, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
         }
         public PassNodeType PassType { get; protected set; }
         public string Name {
@@ -27,6 +28,9 @@ namespace RenderPipelineGraph {
         }
         
         public virtual void EndFrame() {
+        }
+        protected RPGPass() {
+            PassType = PassNodeType.Raster;
         }
     }
 }

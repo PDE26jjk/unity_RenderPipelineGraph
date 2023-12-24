@@ -3,22 +3,11 @@ using System.Collections.Generic;
 using RenderPipelineGraph.Serialization;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Serialization;
 
 namespace RenderPipelineGraph {
 
-    public class RPGCullingDesc : JsonObject {
-        public string cullingFunctionTypeName = typeof(CullingDefault).FullName;
-
-        public override bool Equals(object obj) {
-            if (obj is RPGCullingDesc)
-                return Equals((RPGCullingDesc)obj);
-            return  false;
-        }
-        protected bool Equals(RPGCullingDesc obj) {
-            return obj.cullingFunctionTypeName == cullingFunctionTypeName;
-        }
-    }
     public class RPGRenderListDesc : JsonObject {
 
         public SortingCriteria sortingCriteria = SortingCriteria.CommonOpaque;
@@ -46,7 +35,7 @@ namespace RenderPipelineGraph {
         public CullingResults cullingResults;
         
         [NonReorderable]
-        public RendererList rendererList;
+        public RendererListHandle rendererList;
         public class RendererListBinding : RPGModel.RPGModelBinding {
             readonly RendererListData m_Data;
 

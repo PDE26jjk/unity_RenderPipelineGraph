@@ -112,8 +112,11 @@ namespace RenderPipelineGraph {
             m_ResourceList.Clear();
             m_NodeList.Clear();
 
-            var pn0 = PassNodeData.Instance(typeof(SetupGlobalConstantPass));
-            var pn1 = PassNodeData.Instance(typeof(TestPassUnlit));
+            var setupGlobalPass = PassNodeData.Instance(typeof(SetupGlobalConstantPass));
+            var setupLightPass = PassNodeData.Instance(typeof(SetupLightShadow));
+            var dirLightPass = PassNodeData.Instance(typeof(DirectionLightShadowMap));
+            var otherLightPass = PassNodeData.Instance(typeof(OtherLightShadowMap));
+            var unlitPass = PassNodeData.Instance(typeof(TestPassUnlit));
             var pn2 = PassNodeData.Instance(typeof(TestFinalBlitPass));
             var colorRT = new TextureData {
                 isDefault = true,
@@ -145,6 +148,46 @@ namespace RenderPipelineGraph {
                     clearColor = new Color(0.5f, 0, 0)
                 }
             };
+            
+            var dirShadowMapRT = new TextureData {
+                isDefault = true,
+                name = "dirShadowMapRT",
+                usage = Usage.Created,
+                m_desc = new RPGTextureDesc {
+                    sizeMode = TextureSizeMode.Explicit,
+                    width = 1024,
+                    height = 1024,
+                    colorFormat = GraphicsFormat.R8G8B8A8_SRGB,
+                    depthBufferBits = DepthBits.Depth32,
+                    filterMode = FilterMode.Bilinear,
+                    name = "dirShadowMapRT",
+                    clearBuffer = true,
+                    clearColor = new Color(0.0f, 0, 0),
+                    isShadowMap = true
+                },
+                SetGlobalTextureAfterAfterWritten = true,
+                ShaderPropertyIdStr = "_DirectionalShadowAtlas"
+            };
+            
+            var otherShadowMapRT = new TextureData {
+                isDefault = true,
+                name = "otherShadowMapRT",
+                usage = Usage.Created,
+                m_desc = new RPGTextureDesc {
+                    sizeMode = TextureSizeMode.Explicit,
+                    width = 1024,
+                    height = 1024,
+                    colorFormat = GraphicsFormat.R8G8B8A8_SRGB,
+                    depthBufferBits = DepthBits.Depth32,
+                    filterMode = FilterMode.Bilinear,
+                    name = "otherShadowMapRT",
+                    clearBuffer = true,
+                    clearColor = new Color(0.0f, 0, 0),
+                    isShadowMap = true
+                },
+                SetGlobalTextureAfterAfterWritten = true,
+                ShaderPropertyIdStr = "_OtherShadowAtlas"
+            };
 
             var targetRT = BuildInRenderTextureData.GetTexture(RPGBuildInRTType.CameraTarget);
 
@@ -154,28 +197,42 @@ namespace RenderPipelineGraph {
             rpgRenderListDesc.shaderTagIdStrs.Add("MySRPMode1");
             tn1.SetResource(rendererListData);
 
-            pn1.pos = new Vector2(300, 100);
+            unlitPass.pos = new Vector2(300, 100);
             tn1.pos = new Vector2(100, 100);
-
-            pn1.dependencies.Add(pn0);
-            pn2.dependencies.Add(pn1);
+            
+            
+            var cullingResultData = new CullingResultData();
+            dirLightPass.dependencies.Add(setupLightPass);
+            otherLightPass.dependencies.Add(setupLightPass);
+            setupGlobalPass.dependencies.Add(dirLightPass);
+            setupGlobalPass.dependencies.Add(otherLightPass);
+            unlitPass.dependencies.Add(setupGlobalPass);
+            unlitPass.dependencies.Add(setupGlobalPass); 
+            pn2.dependencies.Add(unlitPass);
 
             m_ResourceList.Add(colorRT);
             m_ResourceList.Add(depthRT);
+            m_ResourceList.Add(dirShadowMapRT);
+            m_ResourceList.Add(otherShadowMapRT);
             m_ResourceList.Add(tn1.Resource);
             m_ResourceList.Add(targetRT);
-            m_NodeList.Add(pn0);
-            m_NodeList.Add(pn1);
+            m_ResourceList.Add(cullingResultData);
+            
+            m_NodeList.Add(setupLightPass);
+            m_NodeList.Add(setupGlobalPass);
+            m_NodeList.Add(unlitPass);
             m_NodeList.Add(pn2);
             m_NodeList.Add(tn1);
+            m_NodeList.Add(dirLightPass);
+            m_NodeList.Add(otherLightPass);
 
-            var p1 = (pn1.Parameters["depthAttachment"] as TextureParameterData);
+            var p1 = (unlitPass.Parameters["depthAttachment"] as TextureParameterData);
             p1.UseDefault = true;
             p1.SetDefaultResource(depthRT);
-            var p2 = (pn1.Parameters["colorAttachment"] as TextureParameterData);
+            var p2 = (unlitPass.Parameters["colorAttachment"] as TextureParameterData);
             p2.UseDefault = true;
             p2.SetDefaultResource(colorRT);
-            var p3 = pn1.Parameters["rendererList"];
+            var p3 = unlitPass.Parameters["rendererList"];
             p3.UseDefault = false;
 
             var p4 = (pn2.Parameters["colorAttachment"] as TextureParameterData);
@@ -184,6 +241,18 @@ namespace RenderPipelineGraph {
             var p5 = (pn2.Parameters["targetAttachment"] as TextureParameterData);
             p5.UseDefault = true;
             p5.SetDefaultResource(targetRT);
+
+            var p6 = (dirLightPass.Parameters["shadowMap"] as TextureParameterData);
+            p6.UseDefault = true;
+            p6.SetDefaultResource(dirShadowMapRT);
+            
+            var p7 = (otherLightPass.Parameters["shadowMap"] as TextureParameterData);
+            p7.UseDefault = true;
+            p7.SetDefaultResource(otherShadowMapRT);
+            
+            var cullingResultParameterData = setupLightPass.Parameters["cullingResults"] as CullingResultParameterData;
+            cullingResultParameterData.SetDefaultResource(cullingResultData);
+            
             PortData.Connect(p3.Port, tn1.AttachTo);
         }
 

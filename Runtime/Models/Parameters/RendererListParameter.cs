@@ -9,6 +9,5 @@ namespace RenderPipelineGraph {
             m_Port = new ResourcePortData(this); 
             ((ResourcePortData)m_Port.value).resourceType = ResourceType.RendererList;
         }
-        internal TextureData m_TextureData;
     }
 }

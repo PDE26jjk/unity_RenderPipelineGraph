@@ -23,7 +23,7 @@ namespace RenderPipelineGraph {
             PassType = PassNodeType.Raster;
         }
         
-        public override void LoadData(object passData,Camera camera) {
+        public override void Setup(object passData, Camera camera, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
             var yflip = false;
             var cameraType = camera.cameraType;
             if (cameraType == CameraType.SceneView || cameraType == CameraType.Preview)
