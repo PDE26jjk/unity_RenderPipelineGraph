@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -136,6 +137,7 @@ public class ShadowMapHelper {
         this.cullingResults = cullingResults;
         shadowedDirLightCount = shadowedOtherLightCount = 0;
         useShadowMask = false;
+        rendererListHandles.Clear();
     }
     internal void AfterSetupLights() {
         SetupDirectionalShadows();
@@ -365,6 +367,8 @@ public class ShadowMapHelper {
 
     static ShadowRenderStruct[] otherShadowRenderStructs = new ShadowRenderStruct[maxShadowedOtherLightCount];
 
+    static List<RendererListHandle> rendererListHandles = new();
+
     void SetupDirectionalShadows(int index, int split, int tileSize) {
         ShadowedDirectionalLight light = ShadowedDirectionalLights[index];
         var shadowSettings =
@@ -388,12 +392,14 @@ public class ShadowMapHelper {
             int titleIndex = tileOffset + i;
             Vector2 offset = GetTileOffset(titleIndex, split, tileSize);
             dirShadowMatrices[titleIndex] = GetShadowTransform(projectionMatrix, viewMatrix, offset, split);
+            RendererListHandle shadowRendererList = renderGraph.CreateShadowRendererList(ref shadowSettings);
             directionShadowRenderStructs[titleIndex] = new ShadowRenderStruct {
                 viewMatrix = viewMatrix,
                 projectionMatrix = projectionMatrix,
-                rendererListHandle = renderGraph.CreateShadowRendererList(ref shadowSettings),
+                rendererListHandle = shadowRendererList,
                 viewPortRect = GetViewPortRect(tileSize, offset)
             };
+            rendererListHandles.Add(shadowRendererList);
         }
 
     }
@@ -428,12 +434,14 @@ public class ShadowMapHelper {
             projectionMatrix, viewMatrix,
             offset, split
         );
+        RendererListHandle shadowRendererList = renderGraph.CreateShadowRendererList(ref shadowSettings);
         otherShadowRenderStructs[index] = new ShadowRenderStruct {
             viewMatrix = viewMatrix,
             projectionMatrix = projectionMatrix,
-            rendererListHandle = renderGraph.CreateShadowRendererList(ref shadowSettings),
+            rendererListHandle = shadowRendererList,
             viewPortRect = GetViewPortRect(tileSize, offset)
         };
+        rendererListHandles.Add(shadowRendererList);
     }
 
     void SetupPointShadows(int index, int split, int tileSize) {
@@ -462,12 +470,14 @@ public class ShadowMapHelper {
             otherShadowMatrices[tileIndex] = GetShadowTransform(
                 projectionMatrix, viewMatrix, offset, split
             );
+            RendererListHandle shadowRendererList = renderGraph.CreateShadowRendererList(ref shadowSettings);
             otherShadowRenderStructs[tileIndex] = new ShadowRenderStruct {
                 viewMatrix = viewMatrix,
                 projectionMatrix = projectionMatrix,
-                rendererListHandle = renderGraph.CreateShadowRendererList(ref shadowSettings),
+                rendererListHandle = shadowRendererList,
                 viewPortRect = GetViewPortRect(tileSize, offset)
             };
+            rendererListHandles.Add(shadowRendererList);
 
             // cmd.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
             // cmd.SetGlobalDepthBias(0f, light.slopeScaleBias);
@@ -561,7 +571,7 @@ public class ShadowMapHelper {
     }
 
     public void RecordRendererLists(IBaseRenderGraphBuilder builder) {
-        foreach (RendererListHandle rendererListHandle in directionShadowRenderStructs.Union(otherShadowRenderStructs).Select(t=>t.rendererListHandle)) {
+        foreach (RendererListHandle rendererListHandle in rendererListHandles) {
             builder.UseRendererList(rendererListHandle);
         }
     }

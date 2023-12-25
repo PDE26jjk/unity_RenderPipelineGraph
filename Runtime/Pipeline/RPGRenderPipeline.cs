@@ -8,23 +8,18 @@ using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.Rendering.RenderGraphModule;
 using LightType = UnityEngine.LightType;
 public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
-    ShadowSettingsLegacy shadowSettings;
-
-    PostFXSettings postFXSettings;
 
     RPGAsset Asset;
 
     readonly RenderGraph renderGraph = new("Some Render Graph");
-    public RPGRenderPipeline(ref RPGAsset asset, ShadowSettingsLegacy shadowSettings, PostFXSettings postFXSettings) {
+    public RPGRenderPipeline(ref RPGAsset asset) {
         this.Asset = asset;
         GraphicsSettings.useScriptableRenderPipelineBatching = true;
         GraphicsSettings.lightsUseLinearIntensity = true;
-        this.shadowSettings = shadowSettings;
-        this.postFXSettings = postFXSettings;
+
         VolumeManager.instance.Initialize(VolumeProfileSetting.GetOrCreateDefaultVolumeProfile());
         DebugManager.instance.RefreshEditor();
         InitializeForEditor();
-
     }
     protected override void Dispose(bool disposing) {
         base.Dispose(disposing);
@@ -33,7 +28,6 @@ public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
         VolumeManager.instance.Deinitialize();
         Blitter.Cleanup();
     }
-    CameraRenderer renderer = new();
     RPGRenderer m_RpgRenderer = new();
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras) {
@@ -47,7 +41,7 @@ public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
         // Iterate over all Cameras
         foreach (Camera camera in cameras) {
             // renderer.Render(renderGraph, context, camera, shadowSettings, postFXSettings);
-            m_RpgRenderer.Render(Asset,renderGraph,context,camera,postFXSettings);
+            m_RpgRenderer.Render(Asset,renderGraph,context,camera);
         }
         
         foreach (RPGPass pass in Asset.m_Graph.NodeList.OfType<PassNodeData>().Select(t=>t.Pass)) {

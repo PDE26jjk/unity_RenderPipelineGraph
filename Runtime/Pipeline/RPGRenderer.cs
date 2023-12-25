@@ -1,19 +1,14 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using RenderPipelineGraph;
-using RenderPipelineGraph.Serialization;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using Object = UnityEngine.Object;
-using RenderSettings = UnityEngine.RenderSettings;
 
 
 public class RPGRenderer {
@@ -49,8 +44,7 @@ public class RPGRenderer {
     List<PassSortData> passSorted = new();
     RPGAsset asset;
     RenderGraph renderGraph;
-    public void Render(RPGAsset asset, RenderGraph renderGraph, ScriptableRenderContext context, Camera camera,
-        PostFXSettings postFXSettings) {
+    public void Render(RPGAsset asset, RenderGraph renderGraph, ScriptableRenderContext context, Camera camera) {
         this.context = context;
         this.camera = camera;
         this.asset = asset;

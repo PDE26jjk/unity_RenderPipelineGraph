@@ -1,0 +1,24 @@
+{
+    "name": "RenderPipelineGraph.Editor",
+    "rootNamespace": "",
+    "references": [
+        "RenderPipelineGraph.Runtime",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Core.Runtime.Shared",
+        "Unity.RenderPipelines.Core.Editor",
+        "Unity.RenderPipelines.Core.Editor.Shared",
+        "UnityEditor.UI",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

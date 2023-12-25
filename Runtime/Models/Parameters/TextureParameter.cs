@@ -1,6 +1,7 @@
 ﻿using RenderPipelineGraph.Serialization;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
     public class TextureParameterData : RPGParameterData {
@@ -12,6 +13,31 @@ namespace RenderPipelineGraph {
         internal TextureParameterData() {
             m_Port = new ResourcePortData(this);
             ((ResourcePortData)m_Port.value).resourceType = ResourceType.Texture;
+        }
+        public override void LoadDataField(object passData, IBaseRenderGraphBuilder builder) {
+            if (GetValue() is not TextureData textureData) {
+                Debug.LogError($"texture error: {Name} cannot load.");
+                return;
+            }
+            passTypeFieldInfo.SetValue(passData, textureData.handle);
+            if (depth) {
+                (builder as IRasterRenderGraphBuilder)?.SetRenderAttachmentDepth(textureData.handle);
+            }
+            else if (fragment) {
+                (builder as IRasterRenderGraphBuilder)?.SetRenderAttachment(textureData.handle, 0);
+            }
+            else if (read || write) {
+                AccessFlags flag = AccessFlags.None;
+                if (read) flag |= AccessFlags.Read;
+                if (write) flag |= AccessFlags.Write;
+                builder.UseTexture(textureData.handle, flag);
+            }
+            // Set Global Texture After Write.
+            if (write || depth || fragment) {
+                if (textureData.usage == Usage.Created && textureData.SetGlobalTextureAfterAfterWritten && textureData.ShaderPropertyIdStr != string.Empty) {
+                    builder.SetGlobalTextureAfterPass(textureData.handle, RenderGraphUtils.GetShaderPropertyId(textureData.ShaderPropertyIdStr));
+                }
+            }
         }
     }
 }

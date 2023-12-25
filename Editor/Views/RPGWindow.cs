@@ -20,7 +20,7 @@ namespace RenderPipelineGraph {
         //     win.titleContent.text = "haha";
         //     win.Show();
         //     win.Focus();
-        // }
+        // } 
         public static void ShowWindow(RPGAsset rpgAsset) {
             foreach (RPGWindow window in windows) {
                 if (window.graphView?.Asset == rpgAsset) {
@@ -32,7 +32,7 @@ namespace RenderPipelineGraph {
             var win = CreateInstance<RPGWindow>();
             windows.Add(win);
             win.graphView = new(rpgAsset);
-            win.titleContent.text = rpgAsset.name;
+            win.titleContent.text = rpgAsset.name; 
             win.Show();
             win.Focus();
             // GetWindow((VisualEffectResource)null, true);

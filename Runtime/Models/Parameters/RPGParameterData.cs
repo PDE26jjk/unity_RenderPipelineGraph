@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Reflection;
 using RenderPipelineGraph.Serialization;
 using UnityEngine;
+using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Serialization;
 
 namespace RenderPipelineGraph {
@@ -32,12 +34,27 @@ namespace RenderPipelineGraph {
         protected JsonData<PortData> m_Port;
         public PortData Port =>
             m_Port;
-        public bool UseDefault  = false;
+        public bool UseDefault = false;
         public virtual bool NeedPort() {
             return true;
         }
         public virtual bool CanConvertTo(Type type) {
             return false;
         }
+
+        #region Runtime
+
+        [NonSerialized]
+        public FieldInfo passTypeFieldInfo;
+
+        // something like 
+        // passTypeFieldInfo.SetValue(passData,GetValue());
+        // or
+        // passTypeFieldInfo.SetValueDirect(reference,GetValue());
+        // and builder.UseXXX
+        public abstract void LoadDataField(object passData, IBaseRenderGraphBuilder builder);
+
+        #endregion
+
     }
 }

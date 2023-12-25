@@ -6,12 +6,6 @@ using UnityEngine.Rendering;
 
 [CreateAssetMenu(menuName = "Rendering/myRenderPipelineAsset")]
 public class RPGRenderPipelineAsset : RenderPipelineAsset<RPGRenderPipeline> {
-
-    [SerializeField]
-    ShadowSettingsLegacy shadows = default;
-    [SerializeField]
-    PostFXSettings postFXSettings = default;
-
     [SerializeField]
     RPGAsset RpgAsset = default;
 
@@ -23,8 +17,7 @@ public class RPGRenderPipelineAsset : RenderPipelineAsset<RPGRenderPipeline> {
         }
         catch {
         }
-        return new RPGRenderPipeline(ref RpgAsset,shadows, postFXSettings);
-
+        return new RPGRenderPipeline(ref RpgAsset);
     }
     protected void OnDestroy() {
     }
