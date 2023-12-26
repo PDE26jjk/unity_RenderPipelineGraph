@@ -1,12 +1,14 @@
-﻿using RenderPipelineGraph.Serialization;
+﻿using System.Reflection;
+using RenderPipelineGraph.Serialization;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
     public class CullingResultParameterData : RPGParameterData {
-        internal CullingResultParameterData() {
+        internal CullingResultParameterData(FieldInfo fieldInfo):base(fieldInfo) {
             UseDefault = true;
+            m_Port.value.resourceType = ResourceType.CullingResult;
         }
         public override bool NeedPort() {
             return false;
@@ -15,6 +17,8 @@ namespace RenderPipelineGraph {
             var cullingResultData = GetValue() as CullingResultData;
             passTypeFieldInfo.SetValue(passData, cullingResultData.cullingResults);
         }
+        
+        CullingResultParameterData(){}
 
     }
 }

@@ -101,6 +101,7 @@ namespace RenderPipelineGraph {
             return buildInRenderTextureData;
         }
 
+        BuildInRenderTextureData(){}
         // public BuiltinRenderTextureType textureType = BuiltinRenderTextureType.None;
     }
 

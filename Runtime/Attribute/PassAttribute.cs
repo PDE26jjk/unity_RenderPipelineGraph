@@ -1,30 +1,36 @@
 ﻿using System;
 
 namespace RenderPipelineGraph.Attribute {
+
     [AttributeUsage(AttributeTargets.Field)]
-    public class ReadAttribute : System.Attribute {
-        public ReadAttribute() {
+    public abstract class ListIndexAttribute : System.Attribute {
+        public int[] listIndex;
+        protected ListIndexAttribute(int[] listIndex) {
+            this.listIndex = listIndex ?? Array.Empty<int>();
+        }
+    }
+    public class ReadAttribute : ListIndexAttribute {
+        public ReadAttribute(int[] listIndex = null) : base(listIndex) {
 
         }
     }
-    [AttributeUsage(AttributeTargets.Field)]
-    public class WriteAttribute : System.Attribute {
-        public WriteAttribute() {
+    public class WriteAttribute : ListIndexAttribute {
+        public WriteAttribute(int[] listIndex = null) : base(listIndex) {
 
         }
     }
     [AttributeUsage(AttributeTargets.Field)]
     public class FragmentAttribute : System.Attribute {
         public int index;
-        public FragmentAttribute(int index = 0) {
+        public int listIndex;
+        public FragmentAttribute(int index = 0, int listIndex = 0) {
             this.index = index;
+            this.listIndex = listIndex;
         }
     }
     [AttributeUsage(AttributeTargets.Field)]
-    public class DepthAttribute : System.Attribute {
-        public int index;
-        public DepthAttribute(int index = 0) {
-            this.index = index;
+    public class DepthAttribute : FragmentAttribute {
+        public DepthAttribute(int index = 0, int listIndex = 0) : base(index, listIndex) {
         }
     }
     [AttributeUsage(AttributeTargets.Field)]
@@ -37,11 +43,19 @@ namespace RenderPipelineGraph.Attribute {
         public CullingWhenEmptyAttribute() {
         }
     }
-    // [AttributeUsage(AttributeTargets.Field)]
-    // public class SetGlobalPropertyIdAttribute : System.Attribute {
-    //     public string propertyIdStr;
-    //     public SetGlobalPropertyIdAttribute(string propertyIdStr) {
-    //         this.propertyIdStr = propertyIdStr;
-    //     }
-    // }
+
+    [AttributeUsage(AttributeTargets.Field)]
+    public class ListSizeAttribute : System.Attribute {
+        public int size;
+        public ListSizeAttribute(int size) {
+            this.size = size;
+        }
+    }
+// [AttributeUsage(AttributeTargets.Field)]
+// public class SetGlobalPropertyIdAttribute : System.Attribute {
+//     public string propertyIdStr;
+//     public SetGlobalPropertyIdAttribute(string propertyIdStr) {
+//         this.propertyIdStr = propertyIdStr;
+//     }
+// }
 }

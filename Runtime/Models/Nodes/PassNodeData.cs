@@ -31,15 +31,18 @@ namespace RenderPipelineGraph {
 
         internal RPGPass m_Pass;
 
+        internal bool inited = false;
+
         public static PassNodeData Instance(Type passType) {
             var data = new PassNodeData();
             data.Init(passType);
             return data;
         }
+
         [SerializeField]
-        string m_PassType;
+        string m_PassClassName;
         public override void OnBeforeSerialize() {
-            m_PassType = m_Pass.GetType().FullName;
+            m_PassClassName = m_Pass.GetType().FullName;
             foreach (var para in m_Parameters) {
                 para.OnBeforeSerialize();
             }
@@ -47,8 +50,8 @@ namespace RenderPipelineGraph {
         }
         public override void OnAfterMultiDeserialize(string json) {
             base.OnAfterMultiDeserialize(json);
-            if (m_PassType != null) {
-                var passType = Type.GetType(m_PassType);
+            if (m_PassClassName != null) {
+                var passType = Type.GetType(m_PassClassName);
                 if (passType != null) {
                     Init(passType);
                     return;
@@ -57,6 +60,8 @@ namespace RenderPipelineGraph {
             Debug.LogError("No pass class found.");
         }
         internal void Init(Type passType) {
+            if (inited) return;
+            inited = true;
             Parameters.Clear();
             m_Pass = (RPGPass)Activator.CreateInstance(passType);
             this.exposedName = m_Pass.Name;
@@ -72,53 +77,18 @@ namespace RenderPipelineGraph {
                 }
                 else {
                     if (MultiJsonInternal.isDeserializing) {
-                        Debug.LogError("port lost:" + fieldInfo.Name + " l:" + m_Parameters.Count);
+                        Debug.LogError("param lost:" + fieldInfo.Name + " l:" + m_Parameters.Count);
                     }
                     needCreate = true;
                 }
-                var customAttributes = fieldInfo.GetCustomAttributes().Select(t => t.GetType()).ToArray();
-                if (needCreate) {
-                    if (fieldInfo.FieldType == typeof(TextureHandle)) {
-                        var textureParameter = new TextureParameterData() {
-                            Name = fieldInfo.Name
-                        };
-                        parameterData = textureParameter;
-                        if (customAttributes.Contains(typeof(DepthAttribute))) {
-                            textureParameter.depth = true;
-                            textureParameter.read = true;
-                            textureParameter.write = true;
-                        }
-                        if (customAttributes.Contains(typeof(FragmentAttribute))) {
-                            textureParameter.fragment = true;
-                            textureParameter.write = true;
-                        }
-                        if (customAttributes.Contains(typeof(WriteAttribute))
-                        ) {
-                            textureParameter.write = true;
-                        }
-                        if (customAttributes.Contains(typeof(ReadAttribute))
-                        ) {
-                            textureParameter.read = true;
-                        }
-                        m_Parameters.Add(parameterData);
-                    }
-                    else if (fieldInfo.FieldType == typeof(RendererListHandle)) {
-                        var rendererListParameter = new RendererListParameterData();
-                        parameterData = rendererListParameter;
-
-                        if (customAttributes.Contains(typeof(CullingWhenEmptyAttribute))) {
-                            rendererListParameter.cullingWhenEmpty = true;
-                        }
-                    }
-                    else if (fieldInfo.FieldType == typeof(CullingResults)) {
-                        var cullingResultParameter = new CullingResultParameterData();
-                        parameterData = cullingResultParameter;
-
-                    }
+                if (needCreate || parameterData == null) {
+                    parameterData = RPGParameterData.Instance(fieldInfo);
+                    if (parameterData == null)
+                        continue;
+                    m_Parameters.Add(parameterData);
                 }
-                if (customAttributes.Contains(typeof(DefaultAttribute))) {
-                    parameterData.UseDefault = true;
-                }
+                parameterData.passTypeFieldInfo = fieldInfo;
+                parameterData.Init();
                 this.Parameters[fieldInfo.Name] = parameterData;
             }
 

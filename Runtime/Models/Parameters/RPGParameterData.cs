@@ -1,7 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
+using RenderPipelineGraph.Attribute;
 using RenderPipelineGraph.Serialization;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Serialization;
 
@@ -31,10 +36,40 @@ namespace RenderPipelineGraph {
             set => m_Name = value;
         }
         [SerializeField]
-        protected JsonData<PortData> m_Port;
-        public PortData Port =>
+        protected JsonData<ResourcePortData> m_Port;
+        public ResourcePortData Port =>
             m_Port;
         public bool UseDefault = false;
+
+
+        protected RPGParameterData(FieldInfo fieldInfo) {
+            passTypeFieldInfo = fieldInfo;
+            m_Port = new ResourcePortData(this);
+        }
+        // For Json
+        protected RPGParameterData(){}
+
+        // load Attributes
+        public virtual void Init() {
+            m_Name = passTypeFieldInfo.Name;
+            customAttributes ??= passTypeFieldInfo.GetCustomAttributes().Select(t => t.GetType()).ToArray();
+            if (customAttributes.Contains(typeof(DefaultAttribute))) {
+                UseDefault = true;
+            }
+        }
+
+        public static RPGParameterData Instance(FieldInfo fieldInfo) {
+            Type type = fieldInfo.FieldType;
+            RPGParameterData parameterData = type switch {
+                not null when type == typeof(TextureHandle) => new TextureParameterData(fieldInfo),
+                not null when type == typeof(RendererListHandle) => new RendererListParameterData(fieldInfo),
+                not null when type == typeof(CullingResults) => new CullingResultParameterData(fieldInfo),
+                not null when type == typeof(List<TextureHandle>) => new TextureListParameterData(fieldInfo),
+                _ => null
+            };
+            return parameterData;
+        }
+
         public virtual bool NeedPort() {
             return true;
         }
@@ -46,6 +81,7 @@ namespace RenderPipelineGraph {
 
         [NonSerialized]
         public FieldInfo passTypeFieldInfo;
+        protected Type[] customAttributes;
 
         // something like 
         // passTypeFieldInfo.SetValue(passData,GetValue());

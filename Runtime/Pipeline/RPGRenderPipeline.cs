@@ -27,6 +27,7 @@ public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
         renderGraph.Cleanup();
         VolumeManager.instance.Deinitialize();
         Blitter.Cleanup();
+        m_RpgRenderer.Dispose();
     }
     RPGRenderer m_RpgRenderer = new();
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using NUnit.Framework;
 using RenderPipelineGraph.Serialization;
 using UnityEditor;
@@ -16,7 +17,7 @@ namespace RenderPipelineGraph {
 
     public class RPGModel : JsonObject {
         internal RPGModel() {
-            
+
         }
         public class RPGModelBinding : ScriptableObject {
             public int aaa = 1;
@@ -29,10 +30,10 @@ namespace RenderPipelineGraph {
 
     }
     public static class RPGModelExtensions {
-        public static List<RPGModel.RPGModelBinding> toMonoBehaviours<T>(this List<T> models) where T : RPGModel {
+        public static List<RPGModel.RPGModelBinding> toInspectorBinding<T>(this List<T> models) where T : RPGModel {
             return models.Select(t => t.getInspectorBinding()).ToList();
         }
-        public static RPGModel.RPGModelBinding[] toMonoBehaviours<T>(this T[] models) where T : RPGModel {
+        public static RPGModel.RPGModelBinding[] toInspectorBinding<T>(this T[] models) where T : RPGModel {
             return models.Select(t => t.getInspectorBinding()).ToArray();
         }
     }
@@ -69,34 +70,54 @@ namespace RenderPipelineGraph {
             Debug.Log(m_Graph);
         }
         public void printDebug(RPGGraphData graphData) {
-            var str = "";
+            var str = new StringBuilder();
             foreach (NodeData nodeData in graphData.NodeList) {
-                str += (nodeData.exposedName + ":" + nodeData.objectId) + "\n";
-                str += "port:\n";
+                str.Append( nodeData.exposedName + ":" + nodeData.objectId + "\n");
+                str.Append("param:\n");
                 switch (nodeData) {
                     case PassNodeData passNodeData:
-                        foreach (var portData in passNodeData.Parameters.Values.Select(t=>t.Port)) {
-                            var resourcePortData = (ResourcePortData)portData;
-                            str += resourcePortData.name + ":" + resourcePortData.objectId + "\n";
-                            str += "linkTo:\n";
-                            foreach (PortData data in resourcePortData.LinkTo) {
-                                str += data.name + ":" + data.objectId + "\n";
+                        foreach (var parameter in passNodeData.Parameters.Values) {
+                            switch (parameter) {
+                                case CullingResultParameterData cullingResultParameterData:
+                                    // str.Append(cullingResultParameterData)
+                                    break;
+                                case RendererListParameterData rendererListParameterData:
+                                    str.Append(rendererListParameterData.cullingWhenEmpty); 
+                                    break;
+                                case TextureListParameterData textureListParameter:
+                                    str.Append(textureListParameter);
+                                    break;
+                                case TextureParameterData textureParameterData:
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException(nameof(parameter));
+
+                            }
+                            var portData = parameter.Port;
+                            if (parameter.NeedPort() && portData is not null) {
+                                var resourcePortData = (ResourcePortData)portData;
+                                str.Append(resourcePortData.name + ":" + resourcePortData.objectId + "\n");
+                                str.Append("linkTo:\n");
+                                foreach (PortData data in resourcePortData.LinkTo) {
+                                    str.Append(data.name + ":" + data.objectId + "\n");
+                                }
+
                             }
                         }
                         break;
                     case TextureNodeData textureNodeData:
                         var at = textureNodeData.AttachTo;
-                        str += at.name + ":" + at.objectId + "\n";
-                        str += "linkTo:\n";
+                        str.Append(at.name + ":" + at.objectId + "\n"); 
+                        str.Append("linkTo:\n");
                         foreach (PortData data in at.LinkTo) {
-                            str += data.name + ":" + data.objectId + "\n";
+                            str.Append(data.name + ":" + data.objectId + "\n");
                         }
                         break;
                 }
-                str += "\n";
+                str.Append("\n");
             }
 
-            Debug.Log(str);
+            Debug.Log(str.ToString());
         }
     }
 }

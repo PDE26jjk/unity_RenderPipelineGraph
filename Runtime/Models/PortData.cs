@@ -41,18 +41,23 @@ namespace RenderPipelineGraph {
         internal PortData(Slottable owner) {
             m_Owner = owner;
         }
+        protected PortData(){}
     }
     public class ResourcePortData : PortData {
         public ResourceType resourceType;
         internal ResourcePortData(Slottable owner):base(owner) {
             this.portType = PortType.Resource;
         }
+        
+        ResourcePortData(){}
 
     }
-    public class DependencePortData : PortData {
+    public sealed class DependencePortData : PortData {
         internal DependencePortData(Slottable owner):base(owner) {
             this.portType = PortType.Dependence;
         }
+        
+        DependencePortData(){}
     }
 
 }

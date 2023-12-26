@@ -18,7 +18,7 @@ namespace RenderPipelineGraph {
 
         public override void Setup(object passData, Camera camera, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
             var data = passData as PassData;
-        }
+        } 
 
         public static void Record(PassData passData, RasterGraphContext context) {
             var cmd = context.cmd;

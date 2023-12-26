@@ -95,14 +95,14 @@ namespace RenderPipelineGraph {
                 .ToArray();
 
             if (objectSelected.Length > 0) {
-                Selection.objects = objectSelected.toMonoBehaviours();
+                Selection.objects = objectSelected.toInspectorBinding();
                 return;
             }
 
             var blackBoardSelected = selection.OfType<RPGBlackboardField>().Select(t => t.GetFirstAncestorOfType<RPGBlackboardRow>()?.model).ToArray();
 
             if (blackBoardSelected.Length > 0) {
-                Selection.objects = blackBoardSelected.toMonoBehaviours();
+                Selection.objects = blackBoardSelected.toInspectorBinding();
                 return;
             }
         }

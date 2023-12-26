@@ -1,4 +1,7 @@
-﻿using RenderPipelineGraph.Serialization;
+﻿using System.Linq;
+using System.Reflection;
+using RenderPipelineGraph.Attribute;
+using RenderPipelineGraph.Serialization;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
@@ -10,9 +13,31 @@ namespace RenderPipelineGraph {
         public bool fragment;
         public bool depth;
         public bool randomAccess;
-        internal TextureParameterData() {
-            m_Port = new ResourcePortData(this);
-            ((ResourcePortData)m_Port.value).resourceType = ResourceType.Texture;
+        public int listIndex;
+
+        public override void Init() {
+            base.Init();
+
+            if (customAttributes.Contains(typeof(DepthAttribute))) {
+                depth = true;
+                read = true;
+                write = true;
+            }
+            if (customAttributes.Contains(typeof(FragmentAttribute))) {
+                fragment = true;
+                write = true;
+            }
+            if (customAttributes.Contains(typeof(WriteAttribute))
+            ) {
+                write = true;
+            }
+            if (customAttributes.Contains(typeof(ReadAttribute))
+            ) {
+                read = true;
+            }
+        }
+        internal TextureParameterData(FieldInfo fieldInfo) : base(fieldInfo) {
+            m_Port.value.resourceType = ResourceType.Texture;
         }
         public override void LoadDataField(object passData, IBaseRenderGraphBuilder builder) {
             if (GetValue() is not TextureData textureData) {
@@ -39,5 +64,6 @@ namespace RenderPipelineGraph {
                 }
             }
         }
+        TextureParameterData(){}
     }
 }

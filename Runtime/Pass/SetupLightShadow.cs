@@ -28,6 +28,7 @@ namespace RenderPipelineGraph {
             m_ShadowSettings.directional.cascadeRatio1 = cascadeShadowSplits[0];
             m_ShadowSettings.directional.cascadeRatio2 = cascadeShadowSplits[1];
             m_ShadowSettings.directional.cascadeRatio3 = cascadeShadowSplits[2];
+            // TODO Add other shadow settings
             LightingHelper.instance.Setup(data.cullingResults,m_ShadowSettings,renderGraph);
             LightingHelper.instance.RecordRendererLists(builder);
         }

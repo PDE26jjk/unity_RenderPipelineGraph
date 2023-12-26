@@ -11,12 +11,14 @@ using UnityEngine.Rendering.RenderGraphModule;
 using Object = UnityEngine.Object;
 
 
-public class RPGRenderer {
+public class RPGRenderer :IDisposable{
     ScriptableRenderContext context;
 
     internal Camera camera;
 
     internal CommandBuffer cmd;
+
+    BufferedRTHandleSystem bufferedRTHandleSystem;
 
     // TextureHandle sharedTex;
 
@@ -44,6 +46,46 @@ public class RPGRenderer {
     List<PassSortData> passSorted = new();
     RPGAsset asset;
     RenderGraph renderGraph;
+
+    Dictionary<Camera, CameraData> CameraDataMap = new();
+    class CameraData :IDisposable {
+        internal readonly RTHandleSystem rtHandleSystem = new();
+        internal readonly BufferedRTHandleSystem historyRTHandleSystem = new();
+        internal Camera m_Camera;
+        public void Dispose() {
+            RestoreRTHandels();
+            rtHandleSystem.Dispose();
+            historyRTHandleSystem.Dispose();
+        }
+        internal Vector2Int sizeInPixel = Vector2Int.zero;
+        FieldInfo m_DefaultRTHandlesInstanceInfo;
+        RTHandleSystem m_DefaultRTHandles;
+        public CameraData(Camera cam) {
+            this.m_Camera = cam;
+        }
+
+        public void BorrowRTHandles() {
+            m_DefaultRTHandlesInstanceInfo ??= typeof(RTHandles).GetField("s_DefaultInstance", BindingFlags.Static | BindingFlags.NonPublic);
+
+            m_DefaultRTHandles ??= m_DefaultRTHandlesInstanceInfo.GetValue(null) as RTHandleSystem;
+            
+            m_DefaultRTHandlesInstanceInfo?.SetValue(null,this.rtHandleSystem);
+        }
+        public void RestoreRTHandels() {
+            m_DefaultRTHandlesInstanceInfo?.SetValue(null,m_DefaultRTHandles);
+        }
+
+        public void SetReferenceSize() {
+            if (sizeInPixel.x != m_Camera.pixelWidth
+                || sizeInPixel.y != m_Camera.pixelHeight) {
+                sizeInPixel.x = m_Camera.pixelWidth;
+                sizeInPixel.y = m_Camera.pixelHeight;
+                RTHandles.ResetReferenceSize(sizeInPixel.x,sizeInPixel.y);
+                historyRTHandleSystem.ResetReferenceSize(sizeInPixel.x,sizeInPixel.y);
+            }
+        }
+    }
+    
     public void Render(RPGAsset asset, RenderGraph renderGraph, ScriptableRenderContext context, Camera camera) {
         this.context = context;
         this.camera = camera;
@@ -51,6 +93,14 @@ public class RPGRenderer {
         this.renderGraph = renderGraph;
         cmd = CommandBufferPool.Get();
 
+        if(!CameraDataMap.TryGetValue(camera,out var cameraData))
+        {
+            CameraDataMap[camera] = cameraData = new CameraData(camera);
+        }
+        cameraData.BorrowRTHandles();
+        cameraData.SetReferenceSize();
+        // RTHandles.SetReferenceSize(camera.pixelWidth, camera.pixelHeight);
+        
         var renderGraphParameters = new RenderGraphParameters {
             commandBuffer = cmd,
             currentFrameIndex = Time.frameCount,
@@ -58,8 +108,8 @@ public class RPGRenderer {
             rendererListCulling = true,
             scriptableRenderContext = context
         };
-        RTHandles.SetReferenceSize(camera.pixelWidth, camera.pixelHeight);
-        // ExecuteBuffer(); 
+       
+        // ExecuteBuffer();
 
         var testDesc = new TextureDesc(camera.pixelWidth, camera.pixelHeight) {
             colorFormat = GraphicsFormat.B8G8R8A8_SRGB,
@@ -89,6 +139,7 @@ public class RPGRenderer {
 
         SetupGlobalTexture(cmd);
 
+
         foreach (PassSortData passSortData in passSorted) {
             var passNodeData = passSortData.passNodeData;
             var pass = passNodeData.m_Pass;
@@ -98,7 +149,7 @@ public class RPGRenderer {
             using (var baseBuilder = passSortData.addRenderPassMethodInfo.Invoke(renderGraph, parameters) as IBaseRenderGraphBuilder) {
                 baseBuilder.AllowPassCulling(pass.AllowPassCulling);
                 baseBuilder.AllowGlobalStateModification(pass.AllowGlobalStateModification);
-                
+
                 object passData = parameters[1];
                 switch (pass.PassType) {
                     case PassNodeType.Legacy:
@@ -109,8 +160,7 @@ public class RPGRenderer {
                     {
                         var builder = baseBuilder as IRasterRenderGraphBuilder;
                         RenderGraphUtils.SetRenderFunc(builder, pass);
-                        RenderGraphUtils.LoadPassData(passNodeData, passData, builder,renderGraph, this.camera);
-                        // builder.SetGlobalTextureAfterPass();
+                        RenderGraphUtils.LoadPassData(passNodeData, passData, builder, renderGraph, this.camera);
                     }
                         break;
                     case PassNodeType.Compute:
@@ -146,6 +196,7 @@ public class RPGRenderer {
         // Cleanup();
         Submit();
         CommandBufferPool.Release(renderGraphParameters.commandBuffer);
+        cameraData.RestoreRTHandels();
     }
 
     void ReorderPasses() {
@@ -273,7 +324,8 @@ public class RPGRenderer {
                         if (resourceData.type == ResourceType.RendererList && resourceData is RendererListData rendererListData) {
                             // to cull
                             m_RendererListDatas.Add(rendererListData);
-                        }else if (resourceData.type == ResourceType.CullingResult && resourceData is CullingResultData cullingResultData) {
+                        }
+                        else if (resourceData.type == ResourceType.CullingResult && resourceData is CullingResultData cullingResultData) {
                             m_SingleCullingResults.Add(cullingResultData);
                         }
                         break;
@@ -296,6 +348,15 @@ public class RPGRenderer {
     }
 
     void Cull() {
+        if (camera.cameraType == CameraType.Reflection || camera.cameraType == CameraType.Preview) {
+            ScriptableRenderContext.EmitGeometryForCamera(camera);
+        }
+#if UNITY_EDITOR
+        // emit scene view UI
+        else if (camera.cameraType == CameraType.SceneView) {
+            ScriptableRenderContext.EmitWorldGeometryForSceneView(camera);
+        }
+#endif
         m_CullingResultsMap.Clear();
         foreach (RendererListData rendererListData in m_RendererListDatas) {
             RPGCullingDesc cullingDesc = rendererListData.m_CullingDesc;
@@ -442,13 +503,13 @@ public class RPGRenderer {
             int shaderPropertyId = RenderGraphUtils.GetShaderPropertyId(globalResourceData.ShaderPropertyIdStr);
             switch (globalResourceData) {
                 case BufferData bufferData:
-                    cmd.SetGlobalBuffer(shaderPropertyId,bufferData.graphicsBuffer);
+                    cmd.SetGlobalBuffer(shaderPropertyId, bufferData.graphicsBuffer);
                     break;
                 case RTAData rtaData:
-                    cmd.SetGlobalRayTracingAccelerationStructure(shaderPropertyId,rtaData.accelStruct);
+                    cmd.SetGlobalRayTracingAccelerationStructure(shaderPropertyId, rtaData.accelStruct);
                     break;
                 case TextureData textureData:
-                    cmd.SetGlobalTexture(shaderPropertyId,textureData.handle);
+                    cmd.SetGlobalTexture(shaderPropertyId, textureData.handle);
                     break;
             }
         }
@@ -466,4 +527,10 @@ public class RPGRenderer {
         cmd.Clear();
     }
 
+    public void Dispose() {
+        foreach (var keyValuePair in CameraDataMap) {
+            CameraData cameraData = keyValuePair.Value;
+            cameraData.Dispose();
+        }
+    }
 }
