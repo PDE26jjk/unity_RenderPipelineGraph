@@ -15,14 +15,18 @@ namespace RenderPipelineGraph {
         // public abstract T Value();
         public override void OnBeforeSerialize() {
             m_Port.OnBeforeSerialize();
+            m_DefaultResource.OnBeforeSerialize();
         }
-        protected ResourceData m_DefaultResource;
+        public ResourceType resourceType => this.m_Port.value.resourceType;
+        
+        [SerializeField]
+        protected JsonRef<ResourceData> m_DefaultResource;
         public ResourceData DefaultResource =>
             m_DefaultResource;
         public void SetDefaultResource(ResourceData resourceData) {
             m_DefaultResource = resourceData;
         }
-        public virtual object GetValue() {
+        public virtual ResourceData GetValue() {
             if (UseDefault) return m_DefaultResource;
             if (Port.LinkTo.Count > 0) {
                 return (Port.LinkTo[0].Owner as ResourceNodeData)?.Resource;
@@ -47,7 +51,8 @@ namespace RenderPipelineGraph {
             m_Port = new ResourcePortData(this);
         }
         // For Json
-        protected RPGParameterData(){}
+        protected RPGParameterData() {
+        }
 
         // load Attributes
         public virtual void Init() {

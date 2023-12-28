@@ -11,23 +11,22 @@ using UnityEngine.UIElements;
 namespace RenderPipelineGraph {
 
 
-    public class RPGPort : Port, IEdgeConnectorListener {
+    public class RPGPortView : Port, IEdgeConnectorListener {
 
         public enum RPGPortType {
             Attach,
             Dependence
         }
-        public static RPGPort NewPort(RPGPortType rpgPortType,Direction direction, Type portType = null) {
-            RPGPort port = rpgPortType switch {
-                RPGPortType.Attach => new AttachPort(direction,portType),
-                RPGPortType.Dependence => new DependencePort(direction),
+        public static RPGPortView NewPort(RPGPortType rpgPortType,Direction direction, Type portType = null) {
+            RPGPortView portView = rpgPortType switch {
+                RPGPortType.Attach => new AttachPortView(direction,portType),
+                RPGPortType.Dependence => new DependencePortView(direction),
                 _ => throw new ArgumentOutOfRangeException(nameof(rpgPortType), rpgPortType, null)
             };
-            return port;
+            return portView;
         }
 
-
-        protected RPGPort(Orientation portOrientation, Direction portDirection, Capacity portCapacity, Type type) : base(portOrientation, portDirection,
+        protected RPGPortView(Orientation portOrientation, Direction portDirection, Capacity portCapacity, Type type) : base(portOrientation, portDirection,
             portCapacity,
             type) {
             m_EdgeConnector = new RPGNodeEdgeConnector(this);

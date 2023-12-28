@@ -88,15 +88,15 @@ namespace RenderPipelineGraph {
     public class BuildInRenderTextureData : TextureData {
         BuildInRenderTextureData(RPGBuildInRTType textureType) {
             usage = Usage.Imported;
-            isDefault = true;
             this.textureType = textureType;
             // m_desc = null;
         }
         public readonly RPGBuildInRTType textureType;
-        public static Dictionary<RPGBuildInRTType, BuildInRenderTextureData> buildInRenderTextureDatas = new();
+        public static readonly Dictionary<RPGBuildInRTType, BuildInRenderTextureData> buildInRenderTextureDatas = new();
         public static BuildInRenderTextureData GetTexture(RPGBuildInRTType textureType) {
             if (!buildInRenderTextureDatas.TryGetValue(textureType, out var buildInRenderTextureData)) {
                 buildInRenderTextureDatas[textureType] = buildInRenderTextureData = new(textureType);
+                buildInRenderTextureData.name = Enum.GetName(typeof(RPGBuildInRTType), textureType);
             }
             return buildInRenderTextureData;
         }

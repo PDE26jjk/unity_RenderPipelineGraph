@@ -1,0 +1,22 @@
+Label {
+    overflow: hidden;
+    opacity: 1;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255); 
+}
+#title{
+    height: 24px;
+}
+#node-border{
+    border-radius: 16px;
+}
+#selection-border{
+    border-radius: 16px;
+}
+.hide{
+    display: none;
+}
+
+.port #connector{
+    
+}

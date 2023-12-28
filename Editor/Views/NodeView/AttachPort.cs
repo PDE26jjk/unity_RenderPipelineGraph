@@ -11,11 +11,18 @@ using UnityEngine.UIElements;
 namespace RenderPipelineGraph {
 
 
-    public class AttachPort : RPGPort {
+    public class AttachPortView : RPGPortView {
 
-        public AttachPort(Direction portDirection, Type portType) :
+        public AttachPortView(Direction portDirection, Type portType) :
             base(Orientation.Horizontal, portDirection,
-            portDirection == Direction.Input ? Capacity.Multi : Capacity.Single, portType) {
+                portDirection == Direction.Input ? Capacity.Single
+                    : Capacity.Multi, portType) {
+            VisualElement connector = Children().First(t => t.name == "connector");
+            connector.pickingMode = PickingMode.Position;
+        }
+        internal string ConnectorText {
+            get => m_ConnectorText.text;
+            set => m_ConnectorText.text = value;
         }
 
         public override void OnDrop(GraphView graphView, Edge edge) {

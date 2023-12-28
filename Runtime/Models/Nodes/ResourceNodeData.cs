@@ -13,7 +13,7 @@ namespace RenderPipelineGraph {
             set => SetResource(value);
         }
         [SerializeField]
-        public JsonData<ResourcePortData>  m_AttachTo;
+        public JsonData<ResourcePortData> m_AttachTo;
         public ResourcePortData AttachTo {
             get => m_AttachTo.value;
             set => m_AttachTo = value;

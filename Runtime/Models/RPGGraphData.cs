@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using NUnit.Framework;
 using RenderPipelineGraph.Serialization;
 using UnityEditor;
 using UnityEngine;
@@ -11,12 +12,14 @@ using UnityEngine.Serialization;
 namespace RenderPipelineGraph {
     public class RPGGraphData : RPGModel {
         [SerializeField]
-        List<JsonData<ResourceData>> m_ResourceList = new();
+        internal List<JsonData<ResourceData>> m_ResourceList = new();
         public List<ResourceData> ResourceList => m_ResourceList.SelectValue().ToList();
 
         [SerializeField]
-        List<JsonData<NodeData>> m_NodeList = new();
+        internal List<JsonData<NodeData>> m_NodeList = new();
         public List<NodeData> NodeList => m_NodeList.SelectValue().ToList();
+
+        public List<string> categorys = new();
 
         public override void OnBeforeSerialize() {
             // Debug.Log(JsonUtility.ToJson(ResourceList)); 
@@ -111,6 +114,9 @@ namespace RenderPipelineGraph {
         public void TestInit3() {
             m_ResourceList.Clear();
             m_NodeList.Clear();
+            categorys.Clear();
+            categorys.Add("Default");
+            categorys.Add(string.Empty);
 
             var setupGlobalPass = PassNodeData.Instance(typeof(SetupGlobalConstantPass));
             var setupLightPass = PassNodeData.Instance(typeof(SetupLightShadow));
@@ -119,7 +125,7 @@ namespace RenderPipelineGraph {
             var unlitPass = PassNodeData.Instance(typeof(TestPassUnlit));
             var pn2 = PassNodeData.Instance(typeof(TestFinalBlitPass));
             var colorRT = new TextureData {
-                isDefault = true,
+                category = "Default",
                 name = "defaultColor",
                 usage = Usage.Created,
                 m_desc = new RPGTextureDesc {
@@ -135,7 +141,7 @@ namespace RenderPipelineGraph {
                 }
             };
             var depthRT = new TextureData {
-                isDefault = true,
+                category = "Default",
                 name = "defaultDepth",
                 usage = Usage.Created,
                 m_desc = new RPGTextureDesc {
@@ -150,7 +156,7 @@ namespace RenderPipelineGraph {
             };
             
             var dirShadowMapRT = new TextureData {
-                isDefault = true,
+                category = "Default",
                 name = "dirShadowMapRT",
                 usage = Usage.Created,
                 m_desc = new RPGTextureDesc {
@@ -170,7 +176,7 @@ namespace RenderPipelineGraph {
             };
             
             var otherShadowMapRT = new TextureData {
-                isDefault = true,
+                category = "Default",
                 name = "otherShadowMapRT",
                 usage = Usage.Created,
                 m_desc = new RPGTextureDesc {
@@ -193,6 +199,7 @@ namespace RenderPipelineGraph {
 
             var tn1 = new ResourceNodeData();
             var rendererListData = new RendererListData();
+            rendererListData.name = "rendererList1";
             RPGRenderListDesc rpgRenderListDesc = rendererListData.m_RenderListDesc.value;
             rpgRenderListDesc.shaderTagIdStrs.Add("MySRPMode1");
             tn1.SetResource(rendererListData);
@@ -201,7 +208,8 @@ namespace RenderPipelineGraph {
             tn1.pos = new Vector2(100, 100);
             
             
-            var cullingResultData = new CullingResultData();
+            var cullingResultData = new CullingResultData(){name = "cullingResult1"};
+            
             dirLightPass.dependencies.Add(setupLightPass);
             otherLightPass.dependencies.Add(setupLightPass);
             setupGlobalPass.dependencies.Add(dirLightPass);

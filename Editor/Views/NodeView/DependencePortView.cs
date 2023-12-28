@@ -11,10 +11,10 @@ using UnityEngine.UIElements;
 namespace RenderPipelineGraph {
 
 
-    public class DependencePort : RPGPort {
+    public class DependencePortView : RPGPortView {
 
-        public DependencePort(Direction portDirection) : base(Orientation.Vertical, portDirection, Capacity.Multi,
-            typeof(PassNode)) {
+        public DependencePortView(Direction portDirection) : base(Orientation.Vertical, portDirection, Capacity.Multi,
+            typeof(PassNodeView)) {
             // this.Remove(m_ConnectorText);
             this.tooltip = portDirection switch {
                 Direction.Input => "dependence",
@@ -29,20 +29,20 @@ namespace RenderPipelineGraph {
 
         public override void OnDrop(GraphView graphView, Edge edge) {
             base.OnDrop(graphView, edge);
-            GetFirstAncestorOfType<PassNode>()?.NotifyDependenceChange();
+            GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange();
         }
         public override void Connect(Edge edge) {
             base.Connect(edge);
-            GetFirstAncestorOfType<PassNode>()?.NotifyDependenceChange();
+            GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange();
         }
         public override void Disconnect(Edge edge) {
             base.Disconnect(edge);
-            GetFirstAncestorOfType<PassNode>()?.NotifyDependenceChange();
+            GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange();
         }
         public override void DisconnectAll() {
             base.DisconnectAll();
             Debug.Log("-------------------disconnectAll");
-            GetFirstAncestorOfType<PassNode>()?.NotifyDependenceChange();
+            GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange();
         }
 
         internal Rect rect {

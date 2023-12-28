@@ -22,13 +22,17 @@ namespace RenderPipelineGraph {
         InspectorView m_Inspector;
         private Toolbar m_Toolbar;
         readonly RPGBlackboard m_Blackboard;
-        readonly internal NodeViewModel m_NodeViewModel;
+        internal RPGBlackboard Blackboard => m_Blackboard;
+        public override Blackboard GetBlackboard() => m_Blackboard;
+        internal readonly NodeViewModel m_NodeViewModel;
+        internal readonly ResourceViewModel m_ResourceViewModel;
         public RPGAsset Asset => m_NodeViewModel.Asset;
         public RPGView(RPGAsset asset) {
             // asset.Graph.TestInit3();
             asset.m_Graph = asset.Save();
             m_NodeViewModel = new(this, asset);
-            m_Blackboard = new RPGBlackboard(this);
+            m_ResourceViewModel = new ResourceViewModel(this);
+            m_Blackboard = new RPGBlackboard(this,m_ResourceViewModel);
             SetupZoom(0.125f, 8);
 
             // bool blackboardVisible = BoardPreferenceHelper.IsVisible(BoardPreferenceHelper.Board.blackboard, true);
@@ -72,7 +76,7 @@ namespace RenderPipelineGraph {
             RegisterCallback<KeyDownEvent>(OnKeyDownEvent);
             RegisterCallback<MouseMoveEvent>(OnMouseMoveEvent);
 
-            foreach (RPGNode loadNode in m_NodeViewModel.LoadNodeViews(asset)) {
+            foreach (RPGNodeView loadNode in m_NodeViewModel.LoadNodeViews(asset)) {
                 FastAddElement(loadNode);
             }
         }
@@ -90,7 +94,7 @@ namespace RenderPipelineGraph {
         Vector2 m_PasteCenter;
         public void UpdateGlobalSelection() {
             var objectSelected = selection
-                .OfType<RPGNode>().Select(t => t.Model)
+                .OfType<RPGNodeView>().Select(t => t.Model)
                 .Where(t => t != null)
                 .ToArray();
 
@@ -164,12 +168,12 @@ namespace RenderPipelineGraph {
                     DragAndDrop.AcceptDrag();
                     Vector2 mousePosition = contentViewContainer.WorldToLocal(evt.mousePosition);
                     float cpt = 0;
-                    // foreach (var row in rows) {
-                    //     ResourceNode node = new TextureNode();
-                    //     node.SetPos(mousePosition - new Vector2(50, 20) + cpt * new Vector2(0, 40));
-                    //     FastAddElement(node);
-                    //     ++cpt;
-                    // }
+                    foreach (var row in rows) {
+                        ResourceNodeView node = m_NodeViewModel.CreateResourceNode(row);
+                        FastAddElement(node);
+                        node.SetPos(mousePosition - new Vector2(50, 20) + cpt * new Vector2(0, 40));
+                        ++cpt;
+                    }
                 }
             }
             evt.StopPropagation();
@@ -188,8 +192,7 @@ namespace RenderPipelineGraph {
         }
         static FieldInfo s_Member_ContainerLayer = typeof(GraphView).GetField("m_ContainerLayers", BindingFlags.NonPublic | BindingFlags.Instance);
         static MethodInfo s_Method_GetLayer = typeof(GraphView).GetMethod("GetLayer", BindingFlags.NonPublic | BindingFlags.Instance);
-
-
+        
         public void FastAddElement(GraphElement graphElement) {
             if (graphElement.IsResizable()) {
                 graphElement.hierarchy.Add(new Resizer());
@@ -208,12 +211,12 @@ namespace RenderPipelineGraph {
 
         public override List<Port> GetCompatiblePorts(Port startAnchor, NodeAdapter nodeAdapter) {
             List<Port> list = new();
-            if (startAnchor is not RPGPort port) {
+            if (startAnchor is not RPGPortView port) {
                 return list;
             }
-            (port.node as RPGNode)?.NotifyPortDraggingStart(port);
+            (port.node as RPGNodeView)?.NotifyPortDraggingStart(port);
             foreach (var n in this.nodes.ToList()) {
-                if (n is RPGNode node) {
+                if (n is RPGNodeView node) {
                     node.GetCompatiblePorts(list, port);
                 }
             }

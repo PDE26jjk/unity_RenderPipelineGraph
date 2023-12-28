@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -13,23 +14,24 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
         readonly VisualElement m_ContentContainer;
         VisualElement m_DragIndicator;
         bool m_CanEdit;
-        RPGBlackboardCategory m_DefaultCategory;
-        RPGBlackboardCategory m_OutputCategory;
+        RPGBlackboardCategory m_NoCategory;
         Dictionary<string, RPGBlackboardCategory> m_Categories = new();
         static System.Reflection.PropertyInfo s_LayoutManual =
             typeof(VisualElement).GetProperty("isLayoutManual", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
         static readonly Rect defaultRect = new Rect(100, 100, 300, 500);
         internal readonly ResourceViewModel m_ResourceViewModel;
-        public RPGBlackboard(RPGView view) {
+        public RPGBlackboard(RPGView view,ResourceViewModel m_ResourceViewModel) {
             this.m_View = view;
-            this.m_ResourceViewModel = new ResourceViewModel(view);
-            m_DefaultCategory = new RPGBlackboardCategory();
-            Add(m_DefaultCategory);
+            this.m_ResourceViewModel = m_ResourceViewModel;
+            AddCategory("Default");
+            AddCategory(string.Empty);
+            m_NoCategory = m_Categories[string.Empty];
+            styleSheets.Add(UXMLHelpers.LoadStyleSheet("Styles/RPGBlackboard.uss"));
             // m_DefaultCategory.headerVisible = false;
 
             editTextRequested = OnEditName;
             addItemRequested = OnAddItem;
-            
+
             RegisterCallback<MouseDownEvent>(OnMouseClick);
             RegisterCallback<DragUpdatedEvent>(OnDragUpdatedEvent);
             RegisterCallback<DragPerformEvent>(OnDragPerformEvent);
@@ -66,9 +68,18 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                 scrollView.RegisterCallback<GeometryChangedEvent, ScrollView>(OnGeometryChanged, scrollView);
                 scrollView.horizontalScroller.valueChanged += x => OnOutputCategoryScrollChanged(scrollView);
             }
-            
-            foreach (RPGBlackboardRow row in m_ResourceViewModel.LoadResources()) {
-                m_DefaultCategory.Add(row);
+
+            foreach (var kvp in m_ResourceViewModel.LoadResources()) {
+                string cat = kvp.Item1;
+                RPGBlackboardRow row = kvp.Item2;
+                if (!m_Categories.TryGetValue(cat, out var category)) {
+                    if (cat != AddCategory(cat)) {
+                        throw new Exception("Categories load Err");
+                    }
+                    ;
+                    category = m_Categories[cat];
+                }
+                category.Add(row);
             }
 
         }
@@ -86,7 +97,7 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             Vector2 localPos = this.ChangeCoordinatesTo(owner, pos);
 
             if (owner.ContainsPoint(localPos)) {
-                int defaultCatIndex = IndexOf(m_DefaultCategory);
+                int defaultCatIndex = IndexOf(m_NoCategory);
 
                 for (int i = defaultCatIndex + 1; i < childCount; ++i) {
                     var cat = ElementAt(i) as RPGBlackboardCategory;
@@ -157,38 +168,43 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             m_View.SetBoardToFront(this);
         }
         void OnAddItem(Blackboard obj) {
-            // if (!m_CanEdit)
-            // {
-            //     return;
-            // }
-
             GenericMenu menu = new GenericMenu();
             menu.AddItem(EditorGUIUtility.TrTextContent("Category"), false, OnAddCategory);
             menu.AddSeparator(string.Empty);
 
-            menu.AddItem(EditorGUIUtility.TrTextContent("Texture"), false, OnAddParameter, null);
+            for (int i = 0; i < (int)ResourceType.Count; i++) {
+                string resourceTypeName = Enum.GetName(typeof(ResourceType),i);
+                menu.AddItem(EditorGUIUtility.TrTextContent(resourceTypeName), false, OnAddResource, i);
+            }
             menu.ShowAsContext();
         }
         void OnAddCategory() {
-            string initialName = "new category";
-            var newCategoryName = initialName;
-
-            // controller.graph.UIInfos.categories ??= new List<VFXUI.CategoryInfo>();
-            // controller.graph.UIInfos.categories.Add(new VFXUI.CategoryInfo { name = newCategoryName });
-            // controller.graph.Invalidate(VFXModel.InvalidationCause.kUIChanged);
-            //
-            // return newCategoryName;
+            AddCategory("new category");
         }
-        void OnAddParameter(object parameter) {
+        public string AddCategory(string initialName) {
+            var newCategoryName = string.Empty;
+            if (initialName != string.Empty) {
+                newCategoryName = ViewHelpers.MakeNameUnique(initialName, new HashSet<string>(m_Categories.Keys));
+            }
+            var category = new RPGBlackboardCategory() {
+                title = newCategoryName
+            };
+            Add(category);
+            m_Categories.Add(newCategoryName, category);
+
+            category.SetSelectable();
+            return newCategoryName;
+        }
+        void OnAddResource(object parameter) {
             var selectedCategory = m_View.selection.OfType<RPGBlackboardCategory>().FirstOrDefault();
-            selectedCategory ??= m_DefaultCategory;
+            selectedCategory ??= m_NoCategory;
             RPGView graphView = GetFirstAncestorOfType<RPGView>();
             // graphView.m_ViewModel
-
-            var row = new RPGBlackboardRow(new TextureData());
+            ResourceType resourceType =(ResourceType)parameter;
+            var row = m_ResourceViewModel.CreateResource("new " + Enum.GetName(typeof(ResourceType), resourceType), resourceType,selectedCategory);
             row.name = "tete";
             selectedCategory.Add(row);
-            
+
             // VFXParameter newParam = m_Controller.AddVFXParameter(Vector2.zero, (VFXModelDescriptorParameters)parameter);
             // if (selectedCategory != null && newParam != null)
             //     newParam.category = selectedCategory.title;

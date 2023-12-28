@@ -1,0 +1,11 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="node-border" picking-mode="Ignore" >
+        <ui:VisualElement name="port" picking-mode="Ignore">
+
+        </ui:VisualElement>
+        <ui:VisualElement name="contents" picking-mode="Ignore" >
+            
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
+ 

@@ -14,6 +14,7 @@ namespace RenderPipelineGraph {
         RendererList,
         CullingResult,
         TextureList,
+        Count
     }
     public enum Usage {
         Created,
@@ -25,7 +26,8 @@ namespace RenderPipelineGraph {
         [FormerlySerializedAs("useType")]
         public Usage usage;
         public string name;
-        public bool isDefault;
+        public string category = string.Empty;
+        public bool isDefault => category == "Default";
     }
     public class BufferData : CanSetGlobalResourceData {
         public BufferData() {
@@ -36,9 +38,8 @@ namespace RenderPipelineGraph {
         [NonSerialized]
         public BufferHandle handle;
         [NonSerialized]
-        public GraphicsBuffer graphicsBuffer; 
+        public GraphicsBuffer graphicsBuffer;
     }
-
 
     public class RTAData : CanSetGlobalResourceData {
         public RTAData() {

@@ -50,8 +50,9 @@ namespace RenderPipelineGraph {
         [SerializeField] string content;
         public bool Deserialized { get; private set; } = false;
 
-        // public for test
-        public RPGGraphData m_Graph = new();
+        internal RPGGraphData m_Graph = new();
+        
+        internal bool NeedRecompile;
 
         public RPGGraphData Graph => m_Graph;
 
@@ -60,7 +61,7 @@ namespace RenderPipelineGraph {
             printDebug(m_Graph);
             var json = MultiJson.Serialize(m_Graph);
             content = json;
-            // Debug.Log(json);
+            Debug.Log(json);
             var deserializedGraph = new RPGGraphData();
             MultiJson.Deserialize(deserializedGraph, json);
             printDebug(deserializedGraph);

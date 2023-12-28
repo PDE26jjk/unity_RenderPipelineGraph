@@ -1,42 +1,44 @@
 ﻿using System;
 using System.Reflection;
+using RenderPipelineGraph.Editor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.Rendering.RenderGraphModule;
+using UnityEngine.UIElements;
 
 namespace RenderPipelineGraph {
 
-    public class ResourceNode : RPGNode {
+    public class ResourceNodeView : RPGNodeView {
         string m_Name;
-        ResourceType m_RGResourceTypeType;
-        public ResourceType RGResourceTypeType { get; protected set; }
-        public ResourceNode(ResourceNodeData model) : base(model) {
+        protected AttachPortView m_PortView;
+        public new ResourceNodeData Model => (ResourceNodeData)base.Model;
+        public AttachPortView PortView => m_PortView;
+        protected VisualElement m_PortContainer;
+        public ResourceType ResourceType => Model.Resource.type;
+        static string UXML = "UXML/RPGResourceNode.uxml";
+        static string Styles = "Styles/RPGResourceNode.uss"; 
+        public ResourceNodeView(ResourceNodeData model) : base(model,UXMLHelpers.PackageResourcePath + UXML) {
+            this.AddStyleSheetPath(Styles);
+            m_PortContainer = this.Q("port");
+        }
+        public override void Init() {
+            // if(!Contains(m_PortView)) Add(m_PortView);
+            this.m_PortView = new AttachPortView(Direction.Output, Model.Resource.GetType());
+            m_PortView.ConnectorText = Model.Resource.name;
+            this.m_PortContainer.Add(m_PortView);
+            // this.title = Enum.GetName(typeof(ResourceType), ResourceType);
         }
     }
-    public class TextureNode : ResourceNode {
-        public TextureNode(ResourceNodeData model) : base(model) {
-            title = "Texture";
-            // Port port1 = RPGPort.InputPort(typeof(TextureHandle));
-            // port1.portName = "In";
-            // Port port2 = RPGPort.OutputPort(typeof(TextureHandle));
-            // port2.portName = "Out";
-            // RGResourceTypeType = ResourceType.Texture;
-            // inputContainer.Add(port1);
-            // outputContainer.Add(port2);
-            // m_Model = new TextureNodeData() as TextureNodeData;
-            // m_Model.name = string.Empty;
-        }
-    }
-    public class BufferNode : ResourceNode {
-        public BufferNode(ResourceNodeData model) : base(model) {
-            // title = "Buffer";
-            // Port port1 = RPGPort.InputPort(typeof(BufferHandle));
-            // port1.portName = "In";
-            // Port port2 = RPGPort.OutputPort(typeof(BufferHandle));
-            // port2.portName = "Out";
-            // RGResourceTypeType = ResourceType.Buffer;
-            // inputContainer.Add(port1);
-            // outputContainer.Add(port2);
-        }
-    }
-}
 
+    // public class TextureNodeView : ResourceNodeView {
+    //     public TextureNodeView(ResourceNodeData model) : base(model) {
+    //         title = "Texture";
+    //         this.m_PortView = new AttachPortView(Direction.Output, typeof(TextureData));
+    //     }
+    // }
+    // public class BufferNodeView : ResourceNodeView {
+    //     public BufferNodeView(ResourceNodeData model) : base(model) {
+    //         
+    //
+    //     }
+    // }
+}

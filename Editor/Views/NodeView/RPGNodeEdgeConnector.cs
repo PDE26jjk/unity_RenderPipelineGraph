@@ -11,9 +11,9 @@ namespace RenderPipelineGraph {
 
 
     public class RPGNodeEdgeConnector : EdgeConnector<RPGNodeEdge> {
-        RPGPort m_port;
-        public RPGNodeEdgeConnector(RPGPort port) : base(port) {
-            m_port = port;
+        RPGPortView m_PortView;
+        public RPGNodeEdgeConnector(RPGPortView portView) : base(portView) {
+            m_PortView = portView;
         }
 
         protected override void RegisterCallbacksOnTarget() {

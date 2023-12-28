@@ -15,6 +15,10 @@ namespace RenderPipelineGraph {
         public bool randomAccess;
         public int listIndex;
 
+        internal TextureParameterData(FieldInfo fieldInfo) : base(fieldInfo) {
+            m_Port.value.resourceType = ResourceType.Texture;
+        }
+        
         public override void Init() {
             base.Init();
 
@@ -36,9 +40,7 @@ namespace RenderPipelineGraph {
                 read = true;
             }
         }
-        internal TextureParameterData(FieldInfo fieldInfo) : base(fieldInfo) {
-            m_Port.value.resourceType = ResourceType.Texture;
-        }
+
         public override void LoadDataField(object passData, IBaseRenderGraphBuilder builder) {
             if (GetValue() is not TextureData textureData) {
                 Debug.LogError($"texture error: {Name} cannot load.");
