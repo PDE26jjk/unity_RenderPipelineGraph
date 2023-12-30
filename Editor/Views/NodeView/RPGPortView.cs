@@ -40,6 +40,7 @@ namespace RenderPipelineGraph {
         private List<Edge> m_EdgesToCreate = new();
         private List<GraphElement> m_EdgesToDelete = new();
         public virtual void OnDrop(GraphView graphView, Edge edge) {
+            edge.layer = 1;
             // copy from decompiled Port.DefaultEdgeConnectorListener
             this.m_EdgesToCreate.Clear();
             this.m_EdgesToCreate.Add(edge);

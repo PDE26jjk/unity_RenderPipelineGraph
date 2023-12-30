@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using RenderPipelineGraph.Editor;
 using UnityEditor.Experimental.GraphView;
@@ -15,8 +17,8 @@ namespace RenderPipelineGraph {
         protected VisualElement m_PortContainer;
         public ResourceType ResourceType => Model.Resource.type;
         static string UXML = "UXML/RPGResourceNode.uxml";
-        static string Styles = "Styles/RPGResourceNode.uss"; 
-        public ResourceNodeView(ResourceNodeData model) : base(model,UXMLHelpers.PackageResourcePath + UXML) {
+        static string Styles = "Styles/RPGResourceNode.uss";
+        public ResourceNodeView(ResourceNodeData model) : base(model, UXMLHelpers.PackageResourcePath + UXML) {
             this.AddStyleSheetPath(Styles);
             m_PortContainer = this.Q("port");
         }
@@ -27,18 +29,21 @@ namespace RenderPipelineGraph {
             this.m_PortContainer.Add(m_PortView);
             // this.title = Enum.GetName(typeof(ResourceType), ResourceType);
         }
+
+        public override void Delete() {
+            this.m_PortView.DisconnectAll();
+            this.NotifyDeleteVM();
+        }
+        public void NotifyDisconnectAllPort() {
+            if (m_PortView.connections.Any())
+                this.NotifyDisconnectAllPortVM();
+        }
+        public override void GetCompatiblePorts(List<Port> list, RPGPortView portViewToConnect) {
+            if (portViewToConnect.direction == Direction.Output || portViewToConnect is not AttachPortView) return;
+            if (RPGParameterData.CompatibleResources[portViewToConnect.portType].Contains(this.PortView.portType)) {
+                list.Add(this.PortView);
+            }
+        }
     }
 
-    // public class TextureNodeView : ResourceNodeView {
-    //     public TextureNodeView(ResourceNodeData model) : base(model) {
-    //         title = "Texture";
-    //         this.m_PortView = new AttachPortView(Direction.Output, typeof(TextureData));
-    //     }
-    // }
-    // public class BufferNodeView : ResourceNodeView {
-    //     public BufferNodeView(ResourceNodeData model) : base(model) {
-    //         
-    //
-    //     }
-    // }
 }

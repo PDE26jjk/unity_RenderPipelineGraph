@@ -12,6 +12,12 @@ using UnityEngine.Serialization;
 
 namespace RenderPipelineGraph {
     public abstract class RPGParameterData : Slottable {
+        internal static Dictionary<Type, Type[]> CompatibleResources = new (){
+            {typeof(TextureListParameterData),new []{typeof(TextureListData)}},
+            {typeof(TextureParameterData),new []{typeof(TextureData),typeof(TextureListData)}},
+            {typeof(RendererListParameterData),new []{typeof(RendererListData)}},
+            {typeof(CullingResultParameterData),new []{typeof(CullingResultData)}},
+        };
         // public abstract T Value();
         public override void OnBeforeSerialize() {
             m_Port.OnBeforeSerialize();

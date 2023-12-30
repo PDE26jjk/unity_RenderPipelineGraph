@@ -15,14 +15,12 @@ namespace RenderPipelineGraph {
         }
         Dictionary<ResourceData, RPGBlackboardRow> m_Resources = new();
         RPGView m_GraphView;
-        public RPGAsset Asset => m_GraphView.Asset;
         public ResourceViewModel(RPGView graphView) {
             this.m_GraphView = graphView;
         }
         // blackboard use it to load resources.
         public IEnumerable<Tuple<string, RPGBlackboardRow>> LoadResources() {
-            foreach (ResourceData resourceData in Asset.Graph.ResourceList) {
-
+            foreach (ResourceData resourceData in m_GraphView.currentGraph.ResourceList) {
                 var row = new RPGBlackboardRow(resourceData);
                 m_Resources[resourceData] = row;
                 yield return new Tuple<string, RPGBlackboardRow>(resourceData.category, row);
@@ -55,10 +53,10 @@ namespace RenderPipelineGraph {
                 ResourceType.TextureList => new TextureListData(),
                 _ => throw new ArgumentOutOfRangeException(nameof(resourceType), resourceType, null)
             };
-            name = ViewHelpers.MakeNameUnique(name, Asset.Graph.ResourceList.Select(t => t.name).ToHashSet());
+            name = ViewHelpers.MakeNameUnique(name, m_GraphView.currentGraph.ResourceList.Select(t => t.name).ToHashSet());
             resourceData.name = name;
             resourceData.category = blackboardCategory.title;
-            Asset.Graph.m_ResourceList.Add(resourceData);
+            m_GraphView.currentGraph.m_ResourceList.Add(resourceData);
             return new RPGBlackboardRow(resourceData);
         }
     }

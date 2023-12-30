@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 
 namespace RenderPipelineGraph {
     public abstract class RPGParameterView : VisualElement {
-        readonly ParameterViewModel parameterViewModel;
+        internal readonly ParameterViewModel parameterViewModel;
         const string UXML = "UXML/RPGParameter.uxml";
         protected AttachPortView m_PortView;
         protected RPGParameterData m_Model;
@@ -48,7 +48,7 @@ namespace RenderPipelineGraph {
         }
         internal virtual void AfterInitEdge() {
             bool useDefault = m_Model.UseDefault && !m_PortView.connected;
-            SetHidden(defaultValueField,!useDefault);
+            SetHidden(defaultValueField, !useDefault);
             if (useDefault) {
                 this.defaultValueField.choices = ResourceViewModel.GetViewModel(this).GetDefaultResourceNameList(this.m_Model.resourceType);
                 this.defaultValueField.value = m_Model.DefaultResource?.name ?? "----";
@@ -61,5 +61,10 @@ namespace RenderPipelineGraph {
             }
         }
 
+        public void NotifyDisconnectPort() {
+            if (!m_PortView.connected) return;
+            this.NotifyDisconnectPortVM();
+            // this.NotifyDisconnectPort();
+        }
     }
 }

@@ -8,26 +8,22 @@ using UnityEngine.UIElements;
 
 namespace RenderPipelineGraph {
     public class NodeViewModel {
-        public static NodeViewModel GetViewModel(VisualElement visualElement) {
-            RPGView graphView = visualElement.GetFirstAncestorOfType<RPGView>();
-            return graphView?.m_NodeViewModel;
+        public static bool GetValidViewModel(VisualElement visualElement, out NodeViewModel nodeViewModel) {
+            var graphView = visualElement.GetFirstAncestorOfType<RPGView>();
+            nodeViewModel = graphView?.m_NodeViewModel;
+            return !(nodeViewModel is null || nodeViewModel.Loading);
         }
         internal Dictionary<NodeData, RPGNodeView> m_NodeViews = new();
         RPGView m_GraphView;
         public RPGView GraphView => m_GraphView;
-        public NodeViewModel(RPGView graphView, RPGAsset asset) {
+        public RPGGraphData currentGraph => m_GraphView.currentGraph;
+        public NodeViewModel(RPGView graphView) {
             this.m_GraphView = graphView;
-            this.m_Asset = asset;
         }
         public bool GetNodeView(NodeData nodeData, out RPGNodeView nodeViewView) {
             return m_NodeViews.TryGetValue(nodeData, out nodeViewView);
         }
         internal bool Loading = false;
-
-        bool m_AssetDirty = false;
-        readonly RPGAsset m_Asset;
-        public RPGAsset Asset => m_Asset;
-        public bool AssetDirty => m_AssetDirty;
 
         void InitDependenceEdge() {
             foreach (var keyValuePair in m_NodeViews) {
@@ -40,7 +36,8 @@ namespace RenderPipelineGraph {
                         var dependenceNodeView = dependentNodeView as PassNodeView;
                         if (flowInPortView != null && dependenceNodeView != null) {
                             Edge edge = flowInPortView.ConnectTo(dependenceNodeView.FlowOutPortView);
-                            GraphView.Add(edge);
+                            // edge.layer = 1;
+                            GraphView.FastAddElement(edge);
                         }
                     }
                 }
@@ -48,11 +45,11 @@ namespace RenderPipelineGraph {
         }
 
 
-        public IEnumerable<RPGNodeView> LoadNodeViews(RPGAsset asset) {
+        public IEnumerable<RPGNodeView> LoadNodeViews() {
             Loading = true;
             m_NodeViews.Clear();
             // Load Node from asset.
-            foreach (var nodeData in asset.Graph.NodeList) {
+            foreach (var nodeData in currentGraph.NodeList) {
                 RPGNodeView nodeView = nodeData switch {
                     PassNodeData passNodeData => new PassNodeView(passNodeData),
                     ResourceNodeData resourceNodeData => new ResourceNodeView(resourceNodeData),
@@ -69,7 +66,7 @@ namespace RenderPipelineGraph {
             }
 
             // Link Nodes
-            foreach (PassNodeView passNodeView in asset.Graph.NodeList.Select(nodeData => m_NodeViews[nodeData]).OfType<PassNodeView>()) {
+            foreach (PassNodeView passNodeView in currentGraph.NodeList.Select(nodeData => m_NodeViews[nodeData]).OfType<PassNodeView>()) {
                 passNodeView.parameterViewModel.InitAttachEdge();
             }
             InitDependenceEdge();
@@ -79,7 +76,6 @@ namespace RenderPipelineGraph {
 
         public void UpdateNodeDependence(PassNodeView nodeViewView) {
             if (Loading) return;
-            m_AssetDirty = true;
             if (nodeViewView.Model is PassNodeData passNodeData) {
                 var dependenceNodeDatas = nodeViewView.FlowInPortView.connections
                     .Select(t => t.output.node)
@@ -99,7 +95,6 @@ namespace RenderPipelineGraph {
                 if (needRecompile) {
                     passNodeData.dependencies.Clear();
                     passNodeData.dependencies.AddRange(dependenceNodeDatas);
-                    GraphView.Asset.NeedRecompile = true;
                 }
 
             }
@@ -108,8 +103,7 @@ namespace RenderPipelineGraph {
             var resourceNodeData = new ResourceNodeData() {
                 Resource = row.model
             };
-            Asset.Graph.m_NodeList.Add(resourceNodeData);
-            Asset.NeedRecompile = true;
+            currentGraph.m_NodeList.Add(resourceNodeData);
             var resourceNodeView = new ResourceNodeView(resourceNodeData);
             resourceNodeView.Init();
             m_NodeViews[resourceNodeData] = resourceNodeView;
@@ -117,11 +111,30 @@ namespace RenderPipelineGraph {
         }
     }
     public static class NodeViewExtension {
-        public static void NotifyPositionChange(this RPGNodeView nodeView, Vector2 vector2) {
-            var nodeViewModel = NodeViewModel.GetViewModel(nodeView);
-            if (nodeViewModel is null || nodeViewModel.Loading) return;
-            nodeViewModel.Asset.NeedRecompile = true;
+        public static void NotifyPositionChangeVM(this RPGNodeView nodeView, Vector2 vector2) {
+            if (!NodeViewModel.GetValidViewModel(nodeView, out var nodeViewModel))
+                return;
             nodeView.Model.pos = vector2;
+            // nodeViewModel.Asset.NeedRecompile = true;
         }
+        public static void NotifyDeleteVM(this RPGNodeView nodeView) {
+            if (!NodeViewModel.GetValidViewModel(nodeView, out var nodeViewModel))
+                return;
+            nodeViewModel.currentGraph.m_NodeList.Remove(nodeView.Model);
+            // nodeViewModel.Asset.NeedRecompile = true;
+        }
+
+    }
+    public static class ResourceNodeViewExtension {
+        public static void NotifyDisconnectAllPortVM(this ResourceNodeView resourceNodeView) {
+            if (!NodeViewModel.GetValidViewModel(resourceNodeView, out var nodeViewModel))
+                return;
+            ResourcePortData port = resourceNodeView.Model.m_AttachTo;
+            foreach (PortData linkTo in port.LinkTo) {
+                PortData.Disconnect(port, linkTo);
+            }
+            // nodeViewModel.Asset.NeedRecompile = true;
+        }
+
     }
 }

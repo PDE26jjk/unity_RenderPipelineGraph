@@ -20,12 +20,10 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             typeof(VisualElement).GetProperty("isLayoutManual", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
         static readonly Rect defaultRect = new Rect(100, 100, 300, 500);
         internal readonly ResourceViewModel m_ResourceViewModel;
-        public RPGBlackboard(RPGView view,ResourceViewModel m_ResourceViewModel) {
+        public RPGBlackboard(RPGView view, ResourceViewModel resourceViewModel) {
             this.m_View = view;
-            this.m_ResourceViewModel = m_ResourceViewModel;
-            AddCategory("Default");
-            AddCategory(string.Empty);
-            m_NoCategory = m_Categories[string.Empty];
+            this.m_ResourceViewModel = resourceViewModel;
+
             styleSheets.Add(UXMLHelpers.LoadStyleSheet("Styles/RPGBlackboard.uss"));
             // m_DefaultCategory.headerVisible = false;
 
@@ -68,7 +66,16 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                 scrollView.RegisterCallback<GeometryChangedEvent, ScrollView>(OnGeometryChanged, scrollView);
                 scrollView.horizontalScroller.valueChanged += x => OnOutputCategoryScrollChanged(scrollView);
             }
-
+            // ReloadModel(); call at view
+        }
+        internal void ReloadModel() {
+            foreach (RPGBlackboardCategory category in m_Categories.Values) {
+                Remove(category);
+            }
+            this.m_Categories.Clear();
+            AddCategory("Default");
+            AddCategory(string.Empty);
+            m_NoCategory = m_Categories[string.Empty];
             foreach (var kvp in m_ResourceViewModel.LoadResources()) {
                 string cat = kvp.Item1;
                 RPGBlackboardRow row = kvp.Item2;
@@ -81,7 +88,6 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                 }
                 category.Add(row);
             }
-
         }
         void OnKeyDown(KeyDownEvent evt) {
             // throw new System.NotImplementedException();
@@ -173,7 +179,7 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             menu.AddSeparator(string.Empty);
 
             for (int i = 0; i < (int)ResourceType.Count; i++) {
-                string resourceTypeName = Enum.GetName(typeof(ResourceType),i);
+                string resourceTypeName = Enum.GetName(typeof(ResourceType), i);
                 menu.AddItem(EditorGUIUtility.TrTextContent(resourceTypeName), false, OnAddResource, i);
             }
             menu.ShowAsContext();
@@ -200,8 +206,8 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             selectedCategory ??= m_NoCategory;
             RPGView graphView = GetFirstAncestorOfType<RPGView>();
             // graphView.m_ViewModel
-            ResourceType resourceType =(ResourceType)parameter;
-            var row = m_ResourceViewModel.CreateResource("new " + Enum.GetName(typeof(ResourceType), resourceType), resourceType,selectedCategory);
+            ResourceType resourceType = (ResourceType)parameter;
+            var row = m_ResourceViewModel.CreateResource("new " + Enum.GetName(typeof(ResourceType), resourceType), resourceType, selectedCategory);
             row.name = "tete";
             selectedCategory.Add(row);
 

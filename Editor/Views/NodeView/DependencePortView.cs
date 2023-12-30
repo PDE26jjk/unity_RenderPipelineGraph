@@ -40,8 +40,12 @@ namespace RenderPipelineGraph {
             GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange();
         }
         public override void DisconnectAll() {
+            foreach (Edge connection in connections) {
+                var otherPort = connection.input == this ? connection.output : connection.input;
+                otherPort.Disconnect(connection);
+                connection.RemoveFromHierarchy();
+            }
             base.DisconnectAll();
-            Debug.Log("-------------------disconnectAll");
             GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange();
         }
 

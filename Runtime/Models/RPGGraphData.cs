@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using RenderPipelineGraph.Serialization;
@@ -18,8 +19,8 @@ namespace RenderPipelineGraph {
         [SerializeField]
         internal List<JsonData<NodeData>> m_NodeList = new();
         public List<NodeData> NodeList => m_NodeList.SelectValue().ToList();
-
-        public List<string> categorys = new();
+        [SerializeField]
+        internal List<string> categorys = new();
 
         public override void OnBeforeSerialize() {
             // Debug.Log(JsonUtility.ToJson(ResourceList)); 

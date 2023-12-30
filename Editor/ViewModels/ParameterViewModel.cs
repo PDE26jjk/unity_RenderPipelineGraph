@@ -8,7 +8,7 @@ using UnityEngine.UIElements;
 
 namespace RenderPipelineGraph {
     public class ParameterViewModel {
-        NodeViewModel GetNodeViewModel() {
+        internal NodeViewModel GetNodeViewModel() {
             RPGView graphView = m_NodeView.GetFirstAncestorOfType<RPGView>();
             NodeViewModel nodeViewModel = graphView.m_NodeViewModel;
             return nodeViewModel;
@@ -37,6 +37,7 @@ namespace RenderPipelineGraph {
 
         public void InitAttachEdge() {
             NodeViewModel nodeViewModel = GetNodeViewModel();
+            if (!nodeViewModel.Loading) return;
             foreach ((RPGParameterData parameterData, RPGParameterView parameterView) in m_ParamViews) {
                 if (parameterData.Port.LinkTo.Count != 0) {
                     var portLinkTo = parameterData.Port.LinkTo.First() as ResourcePortData;
@@ -44,8 +45,8 @@ namespace RenderPipelineGraph {
                         nodeViewModel.GetNodeView(portLinkTo.Owner as NodeData, out RPGNodeView linkToNodeView);
                         if (linkToNodeView is not ResourceNodeView resourceNodeView)
                             throw new Exception();
-                        Edge edge = resourceNodeView.PortView.ConnectTo(parameterView.PortView);
-                        nodeViewModel.GraphView.Add(edge);
+                        var edge = resourceNodeView.PortView.ConnectTo(parameterView.PortView);
+                        nodeViewModel.GraphView.FastAddElement(edge);
                     }
                 }
                 parameterView.AfterInitEdge();
@@ -67,6 +68,16 @@ namespace RenderPipelineGraph {
                 m_ParamViews[parameterData] = parameterView;
                 yield return parameterView;
             }
+        }
+    }
+    public static class ParameterViewExtension {
+        public static void NotifyDisconnectPortVM(this RPGParameterView parameterView) {
+            if (!NodeViewModel.GetValidViewModel(parameterView, out var nodeViewModel))
+                return;
+            ResourcePortData resourcePortData = parameterView.Model.Port;
+            if (resourcePortData.LinkTo.Count > 0)
+                PortData.Disconnect(resourcePortData, resourcePortData.LinkTo[0]);
+            // nodeViewModel.Asset.NeedRecompile = true;
         }
     }
 }

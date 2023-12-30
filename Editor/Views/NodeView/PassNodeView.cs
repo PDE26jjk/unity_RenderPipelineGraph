@@ -48,8 +48,8 @@ namespace RenderPipelineGraph {
             title = Model.exposedName;
         }
         public override void GetCompatiblePorts(List<Port> list, RPGPortView portViewToConnect) {
-            base.GetCompatiblePorts(list, portViewToConnect);
-            if (portViewToConnect is DependencePortView && portViewToConnect.node != this) {
+            if (portViewToConnect.node == this) return;
+            if (portViewToConnect is DependencePortView) {
                 if (portViewToConnect.node is PassNodeView node) {
                     var portToAdd = portViewToConnect.direction == Direction.Input ? FlowOutPortView : FlowInPortView;
                     switch (portViewToConnect.direction) {
@@ -58,7 +58,13 @@ namespace RenderPipelineGraph {
                             list.Add(portToAdd);
                             break;
                     }
-
+                }
+            }
+            else if (portViewToConnect.direction == Direction.Output) {
+                foreach (RPGParameterView parameterView in m_ParameterContainer.Children().OfType<RPGParameterView>()) {
+                    if (RPGParameterData.CompatibleResources[parameterView.PortView.portType].Contains(portViewToConnect.portType)) {
+                        list.Add(parameterView.PortView);
+                    }
                 }
             }
         }
@@ -66,9 +72,9 @@ namespace RenderPipelineGraph {
         HashSet<PassNodeView> flowInFlatten = new();
         HashSet<PassNodeView> flowOutFlatten = new();
         public void NotifyDependenceChange() {
-            Debug.Log("NotifyDependenceChange");
+            // Debug.Log("NotifyDependenceChange");
             m_NeedUpdateDependenciesFlatten = true;
-            GetFirstAncestorOfType<RPGView>().m_NodeViewModel.UpdateNodeDependence(this);
+            GetFirstAncestorOfType<RPGView>()?.m_NodeViewModel.UpdateNodeDependence(this);
         }
         public override void NotifyPortDraggingStart(Port port) {
             if (m_NeedUpdateDependenciesFlatten) {
@@ -100,6 +106,14 @@ namespace RenderPipelineGraph {
                 Debug.LogError("Too many nodes!");
             }
             // Debug.Log("UpdateDependenciesFlatten " + flowInFlatten.Count);
+        }
+        public override void Delete() {
+            foreach (RPGParameterView parameterView in this.m_ParameterContainer.Children().OfType<RPGParameterView>()) {
+                parameterView.PortView.DisconnectAll();
+            }
+            FlowInPortView.DisconnectAll();
+            FlowOutPortView.DisconnectAll();
+            this.NotifyDeleteVM();
         }
         private void UpdateFlowOutFlatten() {
             m_NeedUpdateDependenciesFlatten = false;

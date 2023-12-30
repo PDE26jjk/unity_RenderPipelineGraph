@@ -45,13 +45,14 @@ namespace RenderPipelineGraph {
     }
 
     [CreateAssetMenu(menuName = "Rendering/PRGAsset")]
-    public class RPGAsset : ScriptableObject {
+    public class RPGAsset : ScriptableObject, ISerializationCallbackReceiver {
 
         [SerializeField] string content;
+        public string Content => content;
         public bool Deserialized { get; private set; } = false;
 
         internal RPGGraphData m_Graph = new();
-        
+
         internal bool NeedRecompile;
 
         public RPGGraphData Graph => m_Graph;
@@ -73,7 +74,7 @@ namespace RenderPipelineGraph {
         public void printDebug(RPGGraphData graphData) {
             var str = new StringBuilder();
             foreach (NodeData nodeData in graphData.NodeList) {
-                str.Append( nodeData.exposedName + ":" + nodeData.objectId + "\n");
+                str.Append(nodeData.exposedName + ":" + nodeData.objectId + "\n");
                 str.Append("param:\n");
                 switch (nodeData) {
                     case PassNodeData passNodeData:
@@ -83,7 +84,7 @@ namespace RenderPipelineGraph {
                                     // str.Append(cullingResultParameterData)
                                     break;
                                 case RendererListParameterData rendererListParameterData:
-                                    str.Append(rendererListParameterData.cullingWhenEmpty); 
+                                    str.Append(rendererListParameterData.cullingWhenEmpty);
                                     break;
                                 case TextureListParameterData textureListParameter:
                                     str.Append(textureListParameter);
@@ -108,7 +109,7 @@ namespace RenderPipelineGraph {
                         break;
                     case TextureNodeData textureNodeData:
                         var at = textureNodeData.AttachTo;
-                        str.Append(at.name + ":" + at.objectId + "\n"); 
+                        str.Append(at.name + ":" + at.objectId + "\n");
                         str.Append("linkTo:\n");
                         foreach (PortData data in at.LinkTo) {
                             str.Append(data.name + ":" + data.objectId + "\n");
@@ -119,6 +120,13 @@ namespace RenderPipelineGraph {
             }
 
             Debug.Log(str.ToString());
+        }
+
+        public void OnBeforeSerialize() {
+            // Debug.Log("Asset Serialize");
+        }
+        public void OnAfterDeserialize() {
+            // Debug.Log("Asset Deserialize");
         }
     }
 }
