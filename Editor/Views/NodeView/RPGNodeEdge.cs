@@ -1,18 +1,18 @@
+using RenderPipelineGraph.Interface;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace RenderPipelineGraph {
 
-    public class RPGNodeEdge : Edge {
+    public class RPGNodeEdge : Edge, IRPGDeletable {
 
         public RPGNodeEdge() {
-            RegisterCallback<DetachFromPanelEvent>(OnLeavePanel);
+            // RegisterCallback<DetachFromPanelEvent>(OnLeavePanel);
         }
-        void OnLeavePanel(DetachFromPanelEvent evt) {
-            if (this.input is not null && this.output is not null) {
-                // Debug.Log("edge delete");
-            }
+        public void OnDelete() {
+            // if (!isGhostEdge)
+                // Debug.Log("delete edge");
         }
     }
 }

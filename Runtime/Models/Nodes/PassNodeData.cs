@@ -11,19 +11,19 @@ using UnityEngine.Serialization;
 
 namespace RenderPipelineGraph {
     public class PassNodeData : NodeData {
-        class PassNodeDataBinding : RPGModelBinding {
-            PassNodeData m_Data;
-            public int b;
-            internal PassNodeDataBinding(PassNodeData data) {
-                m_Data = data;
-            }
-        }
+        // class PassNodeDataBinding : RPGModelBinding {
+        //     PassNodeData m_Data;
+        //     public int b;
+        //     internal PassNodeDataBinding(PassNodeData data) {
+        //         m_Data = data;
+        //     }
+        // }
         internal PassNodeData() {
-            m_ObjBinding = new PassNodeDataBinding(this);
+            // m_ObjBinding = new PassNodeDataBinding(this);
         }
-        public override RPGModelBinding getInspectorBinding() {
-            return m_ObjBinding;
-        }
+        // public override RPGModelBinding getInspectorBinding() {
+        //     return m_ObjBinding;
+        // }
 
         [SerializeField]
         List<JsonData<RPGParameterData>> m_Parameters = new();

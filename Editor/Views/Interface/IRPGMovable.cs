@@ -1,5 +1,8 @@
-﻿namespace RenderPipelineGraph.Interface {
+﻿
+using UnityEngine;
+
+namespace RenderPipelineGraph.Interface {
     interface IRPGMovable {
-        void OnMoved(){}
+        void OnMoved(Vector2 moveDelta);
     }
 }

@@ -36,22 +36,22 @@ namespace RenderPipelineGraph {
         
         [NonReorderable]
         public RendererListHandle rendererList;
-        public class RendererListBinding : RPGModel.RPGModelBinding {
-            readonly RendererListData m_Data;
-
-            public RendererListBinding(RendererListData data) {
-                m_Data = data;
-            }
-        }
+        // public class RendererListBinding : RPGModel.RPGModelBinding {
+        //     readonly RendererListData m_Data;
+        //
+        //     public RendererListBinding(RendererListData data) {
+        //         m_Data = data;
+        //     }
+        // }
         public RendererListData() {
-            m_ObjBinding = new RendererListBinding(this);
+            // m_ObjBinding = new RendererListBinding(this);
             m_RenderListDesc = new RPGRenderListDesc();
             m_CullingDesc = new RPGCullingDesc();
             this.type = ResourceType.RendererList;
         }
         //[SerializeField] uint m_RenderingLayerMask = 4294967295;
-        public override RPGModelBinding getInspectorBinding() {
-            return m_ObjBinding;
-        }
+        // public override RPGModelBinding getInspectorBinding() {
+        //     return m_ObjBinding;
+        // }
     }
 }

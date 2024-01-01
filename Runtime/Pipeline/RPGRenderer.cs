@@ -5,13 +5,14 @@ using System.Reflection;
 using System.Text;
 using RenderPipelineGraph;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Rendering;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using Object = UnityEngine.Object;
 
 
-public class RPGRenderer :IDisposable{
+public class RPGRenderer : IDisposable {
     ScriptableRenderContext context;
 
     internal Camera camera;
@@ -22,10 +23,10 @@ public class RPGRenderer :IDisposable{
 
     // TextureHandle sharedTex;
 
-    bool hasCrateSharedResource;
+    bool needCrateSharedResource =>asset.NeedRecompile;
     HashSet<ResourceData> m_ResourceCreateEveryFrame = new();
     HashSet<ResourceData> m_ResourceImportEveryFrame = new();
-    bool needReorderPass = true;
+    bool needReorderPass =>asset.NeedRecompile;
 
     static Comparer<PassSortData> PassNodeComparer = Comparer<PassSortData>.Create((x, y) => {
         int compareTo = x.pos.x.CompareTo(y.pos.x);
@@ -48,7 +49,7 @@ public class RPGRenderer :IDisposable{
     RenderGraph renderGraph;
 
     Dictionary<Camera, CameraData> CameraDataMap = new();
-    class CameraData :IDisposable {
+    class CameraData : IDisposable {
         internal readonly RTHandleSystem rtHandleSystem = new();
         internal readonly BufferedRTHandleSystem historyRTHandleSystem = new();
         internal Camera m_Camera;
@@ -68,11 +69,11 @@ public class RPGRenderer :IDisposable{
             m_DefaultRTHandlesInstanceInfo ??= typeof(RTHandles).GetField("s_DefaultInstance", BindingFlags.Static | BindingFlags.NonPublic);
 
             m_DefaultRTHandles ??= m_DefaultRTHandlesInstanceInfo.GetValue(null) as RTHandleSystem;
-            
-            m_DefaultRTHandlesInstanceInfo?.SetValue(null,this.rtHandleSystem);
+
+            m_DefaultRTHandlesInstanceInfo?.SetValue(null, this.rtHandleSystem);
         }
         public void RestoreRTHandels() {
-            m_DefaultRTHandlesInstanceInfo?.SetValue(null,m_DefaultRTHandles);
+            m_DefaultRTHandlesInstanceInfo?.SetValue(null, m_DefaultRTHandles);
         }
 
         public void SetReferenceSize() {
@@ -80,12 +81,12 @@ public class RPGRenderer :IDisposable{
                 || sizeInPixel.y != m_Camera.pixelHeight) {
                 sizeInPixel.x = m_Camera.pixelWidth;
                 sizeInPixel.y = m_Camera.pixelHeight;
-                RTHandles.ResetReferenceSize(sizeInPixel.x,sizeInPixel.y);
-                historyRTHandleSystem.ResetReferenceSize(sizeInPixel.x,sizeInPixel.y);
+                RTHandles.ResetReferenceSize(sizeInPixel.x, sizeInPixel.y);
+                historyRTHandleSystem.ResetReferenceSize(sizeInPixel.x, sizeInPixel.y);
             }
         }
     }
-    
+
     public void Render(RPGAsset asset, RenderGraph renderGraph, ScriptableRenderContext context, Camera camera) {
         this.context = context;
         this.camera = camera;
@@ -93,14 +94,13 @@ public class RPGRenderer :IDisposable{
         this.renderGraph = renderGraph;
         cmd = CommandBufferPool.Get();
 
-        if(!CameraDataMap.TryGetValue(camera,out var cameraData))
-        {
+        if (!CameraDataMap.TryGetValue(camera, out var cameraData)) {
             CameraDataMap[camera] = cameraData = new CameraData(camera);
         }
         cameraData.BorrowRTHandles();
         cameraData.SetReferenceSize();
         // RTHandles.SetReferenceSize(camera.pixelWidth, camera.pixelHeight);
-        
+
         var renderGraphParameters = new RenderGraphParameters {
             commandBuffer = cmd,
             currentFrameIndex = Time.frameCount,
@@ -108,7 +108,7 @@ public class RPGRenderer :IDisposable{
             rendererListCulling = true,
             scriptableRenderContext = context
         };
-       
+
         // ExecuteBuffer();
 
         var testDesc = new TextureDesc(camera.pixelWidth, camera.pixelHeight) {
@@ -202,7 +202,7 @@ public class RPGRenderer :IDisposable{
     void ReorderPasses() {
 
         if (needReorderPass) {
-            needReorderPass = false;
+            // needReorderPass = false;
             List<PassSortData> l1 = new();
             passSorted.Clear();
             Dictionary<PassNodeData, PassSortData> node2sort = new();
@@ -278,7 +278,7 @@ public class RPGRenderer :IDisposable{
     List<CanSetGlobalResourceData> m_GlobalResources = new();
     void PrepareResources() {
 
-        if (!hasCrateSharedResource) {
+        if (needCrateSharedResource) {
             // hasCrateSharedResource = true;
             m_ResourceCreateEveryFrame.Clear();
             m_ResourceImportEveryFrame.Clear();
@@ -306,7 +306,7 @@ public class RPGRenderer :IDisposable{
                 if (!used) continue;
                 if (resourceData is CanSetGlobalResourceData canSetGlobalResourceData && canSetGlobalResourceData.ShaderPropertyIdStr != string.Empty) {
                     if (resourceData.usage is Usage.Imported or Usage.Shared) {
-                        m_GlobalResources.Add(canSetGlobalResourceData);
+                        m_GlobalResources.Add(canSetGlobalResourceData); 
                     }
                 }
                 switch (resourceData.usage) {
@@ -410,10 +410,13 @@ public class RPGRenderer :IDisposable{
             switch (buildInRenderTextureData.textureType) {
                 case RPGBuildInRTType.CameraTarget:
                     var targetId = camera.targetTexture != null ? new RenderTargetIdentifier(camera.targetTexture) : BuiltinRenderTextureType.CameraTarget;
-                    // only need once?
-                    buildInRenderTextureData.rtHandle ??= RTHandles.Alloc(targetId, "Backbuffer color");
-                    RTHandleStaticHelpers.SetRTHandleUserManagedWrapper(ref buildInRenderTextureData.rtHandle, targetId);
-                    buildInRenderTextureData.handle = renderGraph.ImportTexture(buildInRenderTextureData.rtHandle, importInfo, importBackbufferColorParams);
+                    if (!buildInRenderTextureData.handle.IsValid()) {
+                        // only need once?
+                        buildInRenderTextureData.rtHandle ??= RTHandles.Alloc(targetId, "Backbuffer color");
+                        RTHandleStaticHelpers.SetRTHandleUserManagedWrapper(ref buildInRenderTextureData.rtHandle, targetId);
+                        buildInRenderTextureData.handle = renderGraph.ImportTexture(buildInRenderTextureData.rtHandle, importInfo, importBackbufferColorParams);
+                        Assert.IsTrue(buildInRenderTextureData.handle.IsValid());
+                    }
                     break;
                 case RPGBuildInRTType.CameraDepth:
                     break;

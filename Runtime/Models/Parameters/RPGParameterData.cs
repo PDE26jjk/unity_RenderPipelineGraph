@@ -14,7 +14,7 @@ namespace RenderPipelineGraph {
     public abstract class RPGParameterData : Slottable {
         internal static Dictionary<Type, Type[]> CompatibleResources = new (){
             {typeof(TextureListParameterData),new []{typeof(TextureListData)}},
-            {typeof(TextureParameterData),new []{typeof(TextureData),typeof(TextureListData)}},
+            {typeof(TextureParameterData),new []{typeof(TextureData),typeof(TextureListData),typeof(BuildInRenderTextureData)}},
             {typeof(RendererListParameterData),new []{typeof(RendererListData)}},
             {typeof(CullingResultParameterData),new []{typeof(CullingResultData)}},
         };
@@ -40,7 +40,7 @@ namespace RenderPipelineGraph {
             return null;
         }
         [SerializeField]
-        string m_Name;
+        protected string m_Name;
         public string Name {
             get => m_Name;
             set => m_Name = value;
@@ -49,7 +49,9 @@ namespace RenderPipelineGraph {
         protected JsonData<ResourcePortData> m_Port;
         public ResourcePortData Port =>
             m_Port;
-        public bool UseDefault = false;
+        [SerializeField]
+        public bool UseDefault = true;
+        internal bool UseDefaultAttribute = false;
 
 
         protected RPGParameterData(FieldInfo fieldInfo) {
@@ -65,7 +67,7 @@ namespace RenderPipelineGraph {
             m_Name = passTypeFieldInfo.Name;
             customAttributes ??= passTypeFieldInfo.GetCustomAttributes().Select(t => t.GetType()).ToArray();
             if (customAttributes.Contains(typeof(DefaultAttribute))) {
-                UseDefault = true;
+                UseDefaultAttribute = true;
             }
         }
 

@@ -11,8 +11,10 @@ using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Serialization;
 using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
 
 namespace RenderPipelineGraph {
     public class RPGView : GraphView, IDisposable {
@@ -32,59 +34,64 @@ namespace RenderPipelineGraph {
         RPGAsset m_Asset;
         public RPGAsset Asset => m_Asset;
         class GraphUndoable : ScriptableObject, ISerializationCallbackReceiver {
-            [NonReorderable]
+            [NonSerialized]
             public RPGGraphData graph;
 
-            [NonReorderable]
+            [NonSerialized]
             public RPGView view;
-            [NonReorderable]
+            [NonSerialized]
             public List<string> graphContent = new(kMax);
+            [SerializeField]
             internal int version = 0;
             internal int lastVersion = 0;
             const int kMax = 100;
             int index = 0;
-            int maxUndoIndex = 0;
+            int maxVersion = 0;
             internal void Init() {
                 graphContent.Add(MultiJson.Serialize(graph));
                 for (int i = 1; i < kMax; i++) {
                     graphContent.Add(String.Empty);
                 }
+                maxVersion = version = 1;
             }
             public void RecordUndo(string undoname) {
-                version++;
                 Debug.Log("RecordUndo " + undoname + version);
-                // if (Selection.objects.Length > 0) {
-                //     Undo.RecordObjects(Selection.objects, undoname);
-                //     OnBeforeSerialize();
-                // }
-                // else {
                 Undo.RecordObject(this, undoname);
-                // }
+                version++;
+                maxVersion = version;
             }
             public void OnBeforeSerialize() {
+                // if (Undo.isProcessing) return;
                 if (lastVersion != version) {
                     lastVersion = version;
-                    if (index == kMax - 1) {
-                        graphContent.RemoveAt(0);
+                    string json = MultiJson.Serialize(graph);
+                    // Debug.Log(json);
+                    if (lastVersion >= graphContent.Count) {
+                        graphContent.Add(string.Empty);
                     }
-                    index++;
-                    graphContent[index] = MultiJson.Serialize(graph);
-                    maxUndoIndex = index;
+                    graphContent[lastVersion] = json;
+                    Debug.Log("OnBeforeSerialize " + lastVersion);
                 }
             }
             public void OnAfterDeserialize() {
+                // if (Undo.isProcessing)
+                if (graph is not null) {
+                    Debug.Log("OnAfterDeserialize " + version);
+                    MultiJson.Deserialize(graph, graphContent[version]);
+                }
             }
             public bool UndoGraphChange() {
-                if (index >= 1) {
-                    MultiJson.Deserialize(graph, graphContent[--index]);
+
+                if (lastVersion != version) {
+                    lastVersion = version;
                     return true;
                 }
                 return false;
             }
             public bool RedoGraphChange() {
-                if (index < maxUndoIndex) {
-                    index++;
-                    MultiJson.Deserialize(graph, graphContent[index]);
+
+                if (lastVersion != version) {
+                    lastVersion = version;
                     return true;
                 }
                 return false;
@@ -93,11 +100,14 @@ namespace RenderPipelineGraph {
         void OnEnterPanel(AttachToPanelEvent e) {
             Undo.undoRedoEvent += OnUndoEvent;
             Undo.undoRedoPerformed += undoRedoPerformed;
+            Undo.postprocessModifications += postprocessModifications;
         }
+
 
         void OnLeavePanel(DetachFromPanelEvent e) {
             Undo.undoRedoEvent -= OnUndoEvent;
             Undo.undoRedoPerformed -= undoRedoPerformed;
+            Undo.postprocessModifications -= postprocessModifications;
         }
         List<ISelectable> tempSelectables;
         void undoRedoPerformed() {
@@ -117,12 +127,20 @@ namespace RenderPipelineGraph {
             AddRangeToSelection(tempSelectables);
         }
 
+        UndoPropertyModification[] postprocessModifications(UndoPropertyModification[] modifications) {
+            return modifications;
+        }
+
         internal RPGGraphData currentGraph;
         GraphUndoable m_GraphUndoable;
+        internal void RecordUndo(string undoname) {
+            m_GraphUndoable.RecordUndo(undoname);
+        }
         public RPGView(RPGAsset asset) {
             this.m_Asset = asset;
             // asset.Graph.TestInit3();
             // asset.m_Graph = asset.Save();
+            // if (!asset.Deserialized) asset.Deserialize();
             currentGraph = new RPGGraphData();
             MultiJson.Deserialize(currentGraph, asset.Content);
             m_GraphUndoable = ScriptableObject.CreateInstance<GraphUndoable>();
@@ -157,16 +175,39 @@ namespace RenderPipelineGraph {
             focusable = true;
 
             m_Toolbar = new UnityEditor.UIElements.Toolbar();
-            var b1 = new Button {
+            var b0 = new Button {
                 text = "debug"
+            };
+            b0.clicked += () => {
+                Debug.Log(Asset.Content);
+                string serialize = MultiJson.Serialize(Asset.m_Graph);
+                Debug.Log(serialize);
+                Assert.IsTrue(Asset.Content == serialize);
+            };
+            m_Toolbar.Add(b0);
+            var b1 = new Button {
+                text = "init"
             };
             b1.clicked += () => {
                 // Asset.debug1();
-                ClearLayer(0);
-                DeleteElements(edges);
-                ClearLayer(1);
+                // ClearLayer(0);
+                // DeleteElements(edges);
+                // ClearLayer(1);
+                RecordUndo("init");
+                currentGraph.TestInit3();
+                asset.Save(currentGraph);
+                ReloadModel();
             };
             m_Toolbar.Add(b1);
+            var b2 = new Button {
+                text = "save"
+            };
+            b2.clicked += () => {
+                // Asset.debug1();
+                // Asset.m_Graph = currentGraph;
+                Asset.Save(currentGraph);
+            };
+            m_Toolbar.Add(b2);
             var objectField = new ObjectField {
                 objectType = typeof(RPGAsset)
             };
@@ -182,31 +223,53 @@ namespace RenderPipelineGraph {
             RegisterCallback<DetachFromPanelEvent>(OnLeavePanel);
             RegisterCallback<KeyDownEvent>(OnKeyDownEvent);
             RegisterCallback<MouseMoveEvent>(OnMouseMoveEvent);
-
+            graphViewChanged += OnGraphView;
             ReloadModel();
+        }
+        // handle user move nodes, delete things, change edges.
+        GraphViewChange OnGraphView(GraphViewChange changeData) {
+            if (Undo.isProcessing || m_NodeViewModel.Loading)
+                return changeData;
+            List<GraphElement> elementsToRemove = changeData.elementsToRemove;
+            List<GraphElement> changeDataMovedElements = changeData.movedElements;
+            if (changeDataMovedElements is not null && changeDataMovedElements.Count > 0) {
+                RecordUndo("change position");
+                foreach (IRPGMovable movable in changeDataMovedElements.OfType<IRPGMovable>()) {
+                    movable.OnMoved(changeData.moveDelta);
+                }
+            }
+            if (elementsToRemove is not null && elementsToRemove.Count > 0) {
+                RecordUndo("delete");
+                var deletables = selection.OfType<IRPGDeletable>().ToList();
+                foreach (var deletable in deletables) {
+                    deletable.OnDelete();
+                }
+            }
+            return changeData;
         }
         void ReloadModel() {
             currentGraph = m_GraphUndoable.graph;
             m_NodeViewModel.Loading = true;
             m_Blackboard.ReloadModel();
             ClearLayer(0);
-            DeleteElements(edges);
             ClearLayer(1);
+            DeleteElements(edges);
             foreach (RPGNodeView loadNode in m_NodeViewModel.LoadNodeViews()) {
                 FastAddElement(loadNode);
             }
             m_NodeViewModel.Loading = false;
         }
         void Delete(string cmd, AskUser askuser) {
-            var currentSelection = selection.ToList();
-            Debug.Log(cmd + currentSelection);
-            // selection.RemoveRange();
-            var nodeViews = selection.OfType<RPGNodeView>().ToList();
-            foreach (RPGNodeView rpgNodeView in nodeViews) {
-                rpgNodeView.Delete();
-            }
+            // var currentSelection = selection.ToList();
+            // Debug.Log(cmd + currentSelection);
+            // // selection.RemoveRange();
+            // var deletables = selection.OfType<IRPGDeletable>().ToList();
+            // foreach (var deletable in deletables) {
+            //     deletable.OnDelete();
+            // }
+
             DeleteSelection();
-            m_GraphUndoable.RecordUndo("delete");
+            // m_GraphUndoable.RecordUndo("delete");
         }
         public void Dispose() {
             UnregisterCallback<DragUpdatedEvent>(OnDragUpdated);
@@ -217,27 +280,28 @@ namespace RenderPipelineGraph {
             UnregisterCallback<DetachFromPanelEvent>(OnLeavePanel);
             UnregisterCallback<KeyDownEvent>(OnKeyDownEvent);
             UnregisterCallback<MouseMoveEvent>(OnMouseMoveEvent);
+            m_GraphUndoable.graph = null;
+            graphViewChanged -= OnGraphView;
             // EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
         }
 
         Vector2 m_PasteCenter;
         public void UpdateGlobalSelection() {
-            var objectSelected = selection
-                .OfType<RPGNodeView>().Select(t => t.Model)
-                .Where(t => t != null)
+            var bindables = selection
+                .OfType<IRPGBindable>().Select(t => t.BindingObject()).Cast<Object>()
                 .ToArray();
 
-            if (objectSelected.Length > 0) {
-                Selection.objects = objectSelected.toInspectorBinding();
+            if (bindables.Length > 0) {
+                Selection.objects = bindables;
                 return;
             }
-
-            var blackBoardSelected = selection.OfType<RPGBlackboardField>().Select(t => t.GetFirstAncestorOfType<RPGBlackboardRow>()?.model).ToArray();
-
-            if (blackBoardSelected.Length > 0) {
-                Selection.objects = blackBoardSelected.toInspectorBinding();
-                return;
-            }
+            //
+            // var blackBoardSelected = selection.OfType<RPGBlackboardField>().Select(t => t.GetFirstAncestorOfType<RPGBlackboardRow>()?.Model).ToArray();
+            //
+            // if (blackBoardSelected.Length > 0) {
+            //     // Selection.objects = blackBoardSelected.toInspectorBinding();
+            //     return;
+            // }
         }
         public void OnFocus() {
             // Debug.Log("OnFocus");
@@ -294,19 +358,30 @@ namespace RenderPipelineGraph {
                     DragAndDrop.AcceptDrag();
                     Vector2 mousePosition = contentViewContainer.WorldToLocal(evt.mousePosition);
                     float cpt = 0;
+                    RecordUndo("Create Resource Node");
                     foreach (var row in rows) {
                         ResourceNodeView node = m_NodeViewModel.CreateResourceNode(row);
-                        FastAddElement(node);
-                        node.SetPos(mousePosition - new Vector2(50, 20) + cpt * new Vector2(0, 40));
+                        node.SetPos(mousePosition - new Vector2(50, 20) + cpt * new Vector2(0, 30));
                         ++cpt;
                     }
+                }
+            }
+            else if (getSelectingPassScripts(out var types)) {
+                DragAndDrop.AcceptDrag();
+                Vector2 mousePosition = contentViewContainer.WorldToLocal(evt.mousePosition);
+                var offset = new Vector2(-50, -20);
+                RecordUndo("Create Pass Node");
+                foreach (Type type in types) {
+                    PassNodeView node = m_NodeViewModel.CreatePassNode(type);
+                    node.SetPos(mousePosition + offset);
+                    offset.y += node.ParameterViews.Count * 80 + 50;
                 }
             }
             evt.StopPropagation();
         }
         void OnDragUpdated(DragUpdatedEvent evt) {
-            Debug.Log("OnDragUpdated...");
-            if (getSelectingBlackboardField(out var rows)) {
+            // Debug.Log("OnDragUpdated...");
+            if (getSelectingBlackboardField(out var _) || getSelectingPassScripts(out var _)) {
                 DragAndDrop.visualMode = DragAndDropVisualMode.Link;
                 evt.StopPropagation();
             }
@@ -315,6 +390,18 @@ namespace RenderPipelineGraph {
             rows = selection.OfType<RPGBlackboardField>().Select(t => t.GetFirstAncestorOfType<RPGBlackboardRow>()).Where(t => t != null).ToArray();
             return DragAndDrop.GetGenericData("DragSelection") != null &&
                    selection.Any(t => t is RPGBlackboardField && (t as RPGBlackboardField).GetFirstAncestorOfType<RPGBlackboardRow>() != null);
+        }
+        bool getSelectingPassScripts(out Type[] types) {
+            Object[] objectReferences = DragAndDrop.objectReferences;
+            types = null;
+            if (objectReferences.All(t => t is MonoScript)) {
+                MonoScript[] scripts = objectReferences.Cast<MonoScript>().ToArray();
+                if (scripts.All(t => t.GetClass().IsSubclassOf(typeof(RPGPass)))) {
+                    types = scripts.Select(t => t.GetClass()).ToArray();
+                    return true;
+                }
+            }
+            return false;
         }
         static FieldInfo s_Member_ContainerLayer = typeof(GraphView).GetField("m_ContainerLayers", BindingFlags.NonPublic | BindingFlags.Instance);
         static MethodInfo s_Method_GetLayer = typeof(GraphView).GetMethod("GetLayer", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -355,11 +442,11 @@ namespace RenderPipelineGraph {
             }
             return list;
         }
-        public void NotifySelectionPositionChange() {
-            foreach (IRPGMovable movable in selection.OfType<IRPGMovable>()) {
-                movable.OnMoved();
-            }
-            m_GraphUndoable.RecordUndo("change position");
-        }
+        // public void NotifySelectionPositionChange() {
+        //     foreach (IRPGMovable movable in selection.OfType<IRPGMovable>()) {
+        //         movable.OnMoved();
+        //     }
+        //     m_GraphUndoable.RecordUndo("change position");
+        // }
     }
 }

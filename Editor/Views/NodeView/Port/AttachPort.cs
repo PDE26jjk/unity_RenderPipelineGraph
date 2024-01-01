@@ -24,7 +24,22 @@ namespace RenderPipelineGraph {
             get => m_ConnectorText.text;
             set => m_ConnectorText.text = value;
         }
-        public new RPGNodeEdge ConnectTo(RPGPortView other) => this.ConnectTo<RPGNodeEdge>(other);
+        public override void Disconnect(Edge edge) {
+            // resource --> parameter
+            if (this.direction == Direction.Input) {
+                GetFirstAncestorOfType<RPGParameterView>().NotifyDisconnectPort();
+            }
+            else {
+                GetFirstAncestorOfType<ResourceNodeView>().NotifyDisconnectPort(edge);
+            }
+            base.Disconnect(edge);
+        }
+
+        public override void Connect(Edge edge) {
+            Debug.Log("connect");
+            
+            base.Connect(edge);
+        }
         public override void DisconnectAll() {
             // resource --> parameter
             if (this.direction == Direction.Input) {
@@ -39,10 +54,6 @@ namespace RenderPipelineGraph {
                 connection.RemoveFromHierarchy();
             }
             base.DisconnectAll();
-        }
-        public override void OnDrop(GraphView graphView, Edge edge) {
-            base.OnDrop(graphView, edge);
-            // GetFirstAncestorOfType<PassNode>()?.NotifyDependenceChange();
         }
     }
 }

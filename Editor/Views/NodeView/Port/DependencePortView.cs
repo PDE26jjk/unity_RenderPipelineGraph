@@ -27,17 +27,23 @@ namespace RenderPipelineGraph {
             // evt.StopPropagation();
         }
 
-        public override void OnDrop(GraphView graphView, Edge edge) {
-            base.OnDrop(graphView, edge);
-            GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange();
+        public override void OnDrop(Edge edge) {
+            if (!edge.isGhostEdge) {
+                GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange(this);
+                base.OnDrop(edge);
+            }
         }
         public override void Connect(Edge edge) {
-            base.Connect(edge);
-            GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange();
+            if (!edge.isGhostEdge) {
+                GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange(this);
+                base.Connect(edge);
+            }
         }
         public override void Disconnect(Edge edge) {
-            base.Disconnect(edge);
-            GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange();
+            if (!edge.isGhostEdge) {
+                base.Disconnect(edge);
+                GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange(this);
+            }
         }
         public override void DisconnectAll() {
             foreach (Edge connection in connections) {
@@ -45,8 +51,8 @@ namespace RenderPipelineGraph {
                 otherPort.Disconnect(connection);
                 connection.RemoveFromHierarchy();
             }
+            GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange(this);
             base.DisconnectAll();
-            GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange();
         }
 
         internal Rect rect {
@@ -55,7 +61,7 @@ namespace RenderPipelineGraph {
                 return new Rect(0.0f, 0.0f, layout.width, layout.height);
             }
         }
-        
+
         // fix hover position check
         public override bool ContainsPoint(Vector2 localPoint) {
             Rect layout = this.m_ConnectorBox.layout;

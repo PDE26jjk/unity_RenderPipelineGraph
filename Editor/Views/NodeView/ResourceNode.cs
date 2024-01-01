@@ -23,14 +23,14 @@ namespace RenderPipelineGraph {
             m_PortContainer = this.Q("port");
         }
         public override void Init() {
-            // if(!Contains(m_PortView)) Add(m_PortView);
-            this.m_PortView = new AttachPortView(Direction.Output, Model.Resource.GetType());
+            this.m_PortView ??= new AttachPortView(Direction.Output, Model.Resource.GetType());
             m_PortView.ConnectorText = Model.Resource.name;
+            m_PortContainer.Clear();
             this.m_PortContainer.Add(m_PortView);
             // this.title = Enum.GetName(typeof(ResourceType), ResourceType);
         }
 
-        public override void Delete() {
+        public override void OnDelete() {
             this.m_PortView.DisconnectAll();
             this.NotifyDeleteVM();
         }
@@ -43,6 +43,9 @@ namespace RenderPipelineGraph {
             if (RPGParameterData.CompatibleResources[portViewToConnect.portType].Contains(this.PortView.portType)) {
                 list.Add(this.PortView);
             }
+        }
+        public void NotifyDisconnectPort(Edge edge) {
+            this.NotifyDisconnectPortVM(edge.input as AttachPortView);
         }
     }
 

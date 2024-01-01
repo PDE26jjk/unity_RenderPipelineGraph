@@ -10,7 +10,7 @@ namespace RenderPipelineGraph.Serialization
         public static void Deserialize<T>(T objectToOverwrite, string json, JsonObject referenceRoot = null, bool rewriteIds = false) where T : JsonObject
         {
             var entries = MultiJsonInternal.Parse(json);
-            if (referenceRoot != null)
+            if (referenceRoot != null) 
             {
                 MultiJsonInternal.PopulateValueMap(referenceRoot);
             }

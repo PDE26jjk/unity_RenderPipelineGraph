@@ -20,7 +20,7 @@ namespace RenderPipelineGraph {
             m_Port.value.resourceType = ResourceType.TextureList;
         }
         public override void Init() {
-            // base.Init();
+            base.Init();
             var listSizeAttribute = passTypeFieldInfo.GetCustomAttribute<ListSizeAttribute>();
             if (listSizeAttribute is null || listSizeAttribute.size <= 0 || listSizeAttribute.size > kMaxListSize) {
                 throw new ArgumentNullException($"Texture List {passTypeFieldInfo.Name} need a LiseSize Attribute with 0 < size <= {kMaxListSize}");

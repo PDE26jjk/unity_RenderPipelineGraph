@@ -11,7 +11,7 @@ public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
 
     RPGAsset Asset;
 
-    readonly RenderGraph renderGraph = new("Some Render Graph");
+    RenderGraph renderGraph;
     public RPGRenderPipeline(ref RPGAsset asset) {
         this.Asset = asset;
         GraphicsSettings.useScriptableRenderPipelineBatching = true;
@@ -32,30 +32,40 @@ public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
     RPGRenderer m_RpgRenderer = new();
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras) {
-        Render(context,new List<Camera>(cameras));
+        Render(context, new List<Camera>(cameras));
     }
     protected override void Render(ScriptableRenderContext context, List<Camera> cameras) {
         SortCamaras(cameras);
-        
+
         BeginContextRendering(context, cameras);
-        
+
+        if (!Asset.Deserialized) Asset.Deserialize();
+
+        if (Asset.NeedRecompile || renderGraph is null) {
+            renderGraph?.Cleanup();
+            renderGraph = new("Some Render Graph");
+        }
+
         // Iterate over all Cameras
         foreach (Camera camera in cameras) {
             // renderer.Render(renderGraph, context, camera, shadowSettings, postFXSettings);
-            m_RpgRenderer.Render(Asset,renderGraph,context,camera);
+            m_RpgRenderer.Render(Asset, renderGraph, context, camera);
         }
-        
-        foreach (RPGPass pass in Asset.m_Graph.NodeList.OfType<PassNodeData>().Select(t=>t.Pass)) {
+
+        foreach (RPGPass pass in Asset.m_Graph.NodeList.OfType<PassNodeData>().Select(t => t.Pass)) {
             pass.EndFrame();
         }
-        
+
         renderGraph.EndFrame();
-        
+        if (Asset.NeedRecompile) {
+            Asset.NeedRecompile = false;
+        }
+
         EndContextRendering(context, cameras);
         // context.Submit();
     }
 
     protected virtual void SortCamaras(List<Camera> cameras) {
-        
+
     }
 }

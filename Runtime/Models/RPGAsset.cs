@@ -10,6 +10,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.UIElements;
+using Assert = UnityEngine.Assertions.Assert;
 using Debug = UnityEngine.Debug;
 
 // entry
@@ -19,24 +20,24 @@ namespace RenderPipelineGraph {
         internal RPGModel() {
 
         }
-        public class RPGModelBinding : ScriptableObject {
-            public int aaa = 1;
-        }
-        protected RPGModelBinding m_ObjBinding;
-        public virtual RPGModelBinding getInspectorBinding() {
-            m_ObjBinding ??= new();
-            return m_ObjBinding;
-        }
-
+        // public class RPGModelBinding : ScriptableObject {
+        //     public int aaa = 1;
+        // }
+        // protected RPGModelBinding m_ObjBinding;
+        // public virtual RPGModelBinding getInspectorBinding() {
+        //     m_ObjBinding ??= new();
+        //     return m_ObjBinding;
+        // }
+        //
     }
-    public static class RPGModelExtensions {
-        public static List<RPGModel.RPGModelBinding> toInspectorBinding<T>(this List<T> models) where T : RPGModel {
-            return models.Select(t => t.getInspectorBinding()).ToList();
-        }
-        public static RPGModel.RPGModelBinding[] toInspectorBinding<T>(this T[] models) where T : RPGModel {
-            return models.Select(t => t.getInspectorBinding()).ToArray();
-        }
-    }
+    // public static class RPGModelExtensions {
+    //     public static List<RPGModel.RPGModelBinding> toInspectorBinding<T>(this List<T> models) where T : RPGModel {
+    //         return models.Select(t => t.getInspectorBinding()).ToList();
+    //     }
+    //     public static RPGModel.RPGModelBinding[] toInspectorBinding<T>(this T[] models) where T : RPGModel {
+    //         return models.Select(t => t.getInspectorBinding()).ToArray();
+    //     }
+    // }
 
     public class NodeData : Slottable {
         public string exposedName;
@@ -49,7 +50,7 @@ namespace RenderPipelineGraph {
 
         [SerializeField] string content;
         public string Content => content;
-        public bool Deserialized { get; private set; } = false;
+        public bool Deserialized { get; internal set; } = false;
 
         internal RPGGraphData m_Graph = new();
 
@@ -57,16 +58,26 @@ namespace RenderPipelineGraph {
 
         public RPGGraphData Graph => m_Graph;
 
-        public RPGGraphData Save() {
-            m_Graph.TestInit3();
-            printDebug(m_Graph);
-            var json = MultiJson.Serialize(m_Graph);
-            content = json;
-            Debug.Log(json);
+        public void Deserialize() {
+            MultiJson.Deserialize(this.m_Graph, Content);
+            Deserialized = true;
+        }
+
+        public RPGGraphData Save(RPGGraphData graphData = null) {
+            // m_Graph.TestInit3();
+            graphData ??= m_Graph;
+            printDebug(graphData);
+            var json = MultiJson.Serialize(graphData);
             var deserializedGraph = new RPGGraphData();
             MultiJson.Deserialize(deserializedGraph, json);
-            printDebug(deserializedGraph);
-            return deserializedGraph;
+            var json2 = MultiJson.Serialize(deserializedGraph);
+            Assert.IsTrue(json == json2);
+            content = json;
+            Debug.Log(json);
+            Deserialized = false;
+            NeedRecompile = true;
+            // printDebug(deserializedGraph);
+            return m_Graph;
         }
         public void debug1() {
             Debug.Log(m_Graph);

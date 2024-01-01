@@ -14,7 +14,7 @@ namespace RenderPipelineGraph {
             return nodeViewModel;
         }
 
-        readonly Dictionary<RPGParameterData, RPGParameterView> m_ParamViews = new();
+        Dictionary<RPGParameterData, RPGParameterView> m_ParamViews = new();
         internal bool TryGetParamView(RPGParameterData parameterData, out RPGParameterView parameterView) {
             return m_ParamViews.TryGetValue(parameterData, out parameterView);
         }
@@ -55,19 +55,23 @@ namespace RenderPipelineGraph {
 
 
         public IEnumerable<RPGParameterView> LoadParameterViews() {
-
+            Dictionary<RPGParameterData, RPGParameterView> newParamViews = new();
             foreach (RPGParameterData parameterData in this.m_NodeView.Model.Parameters.Values) {
-                RPGParameterView parameterView = parameterData switch {
-                    CullingResultParameterData cullingResultParameterData => new cullingResultParamView(this, cullingResultParameterData),
-                    RendererListParameterData rendererListParameterData => new RendererListParamView(this, rendererListParameterData),
-                    TextureListParameterData textureListParameterData => new TextureListParamView(this, textureListParameterData),
-                    TextureParameterData textureParameterData => new TextureParamView(this, textureParameterData),
-                    _ => throw new ArgumentOutOfRangeException(nameof(parameterData))
-                };
+                if (!TryGetParamView(parameterData, out var parameterView)) {
+                    parameterView = parameterData switch {
+                        CullingResultParameterData cullingResultParameterData => new cullingResultParamView(this, cullingResultParameterData),
+                        RendererListParameterData rendererListParameterData => new RendererListParamView(this, rendererListParameterData),
+                        TextureListParameterData textureListParameterData => new TextureListParamView(this, textureListParameterData),
+                        TextureParameterData textureParameterData => new TextureParamView(this, textureParameterData),
+                        _ => throw new ArgumentOutOfRangeException(nameof(parameterData))
+                    };
+                }
                 parameterView.Init();
-                m_ParamViews[parameterData] = parameterView;
+                newParamViews[parameterData] = parameterView;
                 yield return parameterView;
             }
+            m_ParamViews.Clear();
+            m_ParamViews = newParamViews;
         }
     }
     public static class ParameterViewExtension {

@@ -21,8 +21,11 @@ namespace RenderPipelineGraph {
             }
         }
         public override void LoadDataField(object passData, IBaseRenderGraphBuilder builder) {
-            var rendererListData = GetValue() as RendererListData;
-            builder.UseRendererList(rendererListData.rendererList);
+            if (GetValue() is not RendererListData rendererListData) {
+                Debug.LogError($"RendererList error: {Name} cannot load.");
+                return; 
+            }
+            builder.UseRendererList(rendererListData.rendererList); 
             passTypeFieldInfo.SetValue(passData, rendererListData.rendererList);
         }
         

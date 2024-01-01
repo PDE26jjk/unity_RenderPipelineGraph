@@ -91,7 +91,8 @@ namespace RenderPipelineGraph {
             this.textureType = textureType;
             // m_desc = null;
         }
-        public readonly RPGBuildInRTType textureType;
+        [SerializeField]
+        public RPGBuildInRTType textureType;
         public static readonly Dictionary<RPGBuildInRTType, BuildInRenderTextureData> buildInRenderTextureDatas = new();
         public static BuildInRenderTextureData GetTexture(RPGBuildInRTType textureType) {
             if (!buildInRenderTextureDatas.TryGetValue(textureType, out var buildInRenderTextureData)) {

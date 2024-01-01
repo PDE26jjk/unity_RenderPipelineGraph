@@ -17,14 +17,15 @@ namespace RenderPipelineGraph {
             Attach,
             Dependence
         }
-        public static RPGPortView NewPort(RPGPortType rpgPortType,Direction direction, Type portType = null) {
+        public static RPGPortView NewPort(RPGPortType rpgPortType, Direction direction, Type portType = null) {
             RPGPortView portView = rpgPortType switch {
-                RPGPortType.Attach => new AttachPortView(direction,portType),
+                RPGPortType.Attach => new AttachPortView(direction, portType),
                 RPGPortType.Dependence => new DependencePortView(direction),
                 _ => throw new ArgumentOutOfRangeException(nameof(rpgPortType), rpgPortType, null)
             };
             return portView;
         }
+
 
         protected RPGPortView(Orientation portOrientation, Direction portDirection, Capacity portCapacity, Type type) : base(portOrientation, portDirection,
             portCapacity,
@@ -33,13 +34,40 @@ namespace RenderPipelineGraph {
             this.AddManipulator(m_EdgeConnector);
             this.m_GraphViewChange.edgesToCreate = this.m_EdgesToCreate;
         }
+        public virtual void OnDrop(Edge edge) {
+            if (!edge.isGhostEdge) {
+                Debug.Log("onDrop");
+            }
+        }
+        public override void Connect(Edge edge) {
+            if (!edge.isGhostEdge) {
+                base.Connect(edge);
+            }
+        }
+        public override void Disconnect(Edge edge) {
+            if (!edge.isGhostEdge) {
+                // Debug.Log("disconnect");
+                base.Disconnect(edge);
+            }
+        }
+        public override void DisconnectAll() {
+            foreach (Edge connection in connections) {
+                var otherPort = connection.input == this ? connection.output : connection.input;
+                otherPort.Disconnect(connection);
+                connection.RemoveFromHierarchy();
+            }
+            base.DisconnectAll();
+        }
+        public new Edge ConnectTo(Port other) {
+            return base.ConnectTo<RPGNodeEdge>(other);
+        }
         public virtual void OnDropOutsidePort(Edge edge, Vector2 position) {
             // Debug.Log("OnDropOutsidePort");
         }
         private GraphViewChange m_GraphViewChange;
         private List<Edge> m_EdgesToCreate = new();
         private List<GraphElement> m_EdgesToDelete = new();
-        public virtual void OnDrop(GraphView graphView, Edge edge) {
+        public void OnDrop(GraphView graphView, Edge edge) {
             edge.layer = 1;
             // copy from decompiled Port.DefaultEdgeConnectorListener
             this.m_EdgesToCreate.Clear();
@@ -71,7 +99,7 @@ namespace RenderPipelineGraph {
 
             // Debug.Log("OnDrop " + edge.input + edge.output);
             // Debug.Log(this.connections.Count());
-
+            OnDrop(edge);
         }
     }
 }

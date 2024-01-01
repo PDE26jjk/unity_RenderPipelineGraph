@@ -18,6 +18,7 @@ namespace RenderPipelineGraph {
             get => (PassNodeData)m_Model;
             set => m_Model = value;
         }
+        internal List<RPGParameterView> ParameterViews => m_ParameterContainer.Children().OfType<RPGParameterView>().ToList();
         public PassNodeType RGPassType {
             get => ((PassNodeData)m_Model).Pass.PassType;
         }
@@ -42,6 +43,7 @@ namespace RenderPipelineGraph {
         public DependencePortView FlowOutPortView => (DependencePortView)m_FlowOutputConnectorContainer.Children().First();
 
         public override void Init() {
+            m_ParameterContainer.Clear();
             foreach (RPGParameterView parameterView in parameterViewModel.LoadParameterViews()) {
                 this.m_ParameterContainer.Add(parameterView);
             }
@@ -61,7 +63,7 @@ namespace RenderPipelineGraph {
                 }
             }
             else if (portViewToConnect.direction == Direction.Output) {
-                foreach (RPGParameterView parameterView in m_ParameterContainer.Children().OfType<RPGParameterView>()) {
+                foreach (RPGParameterView parameterView in ParameterViews) {
                     if (RPGParameterData.CompatibleResources[parameterView.PortView.portType].Contains(portViewToConnect.portType)) {
                         list.Add(parameterView.PortView);
                     }
@@ -71,10 +73,19 @@ namespace RenderPipelineGraph {
         bool m_NeedUpdateDependenciesFlatten = true;
         HashSet<PassNodeView> flowInFlatten = new();
         HashSet<PassNodeView> flowOutFlatten = new();
-        public void NotifyDependenceChange() {
-            // Debug.Log("NotifyDependenceChange");
+        public void NotifyDependenceChange(DependencePortView dependencePortView) {
+            if (dependencePortView == this.FlowInPortView)
+                NotifyFlowInChange();
+            else
+                NotifyFlowOutChange();
+
+        }
+        public void NotifyFlowInChange() {
             m_NeedUpdateDependenciesFlatten = true;
-            GetFirstAncestorOfType<RPGView>()?.m_NodeViewModel.UpdateNodeDependence(this);
+            this.NotifyDependenceChangeVM();
+        }
+        public void NotifyFlowOutChange() {
+            m_NeedUpdateDependenciesFlatten = true;
         }
         public override void NotifyPortDraggingStart(Port port) {
             if (m_NeedUpdateDependenciesFlatten) {
@@ -88,6 +99,7 @@ namespace RenderPipelineGraph {
                 }
             }
         }
+
         private void UpdateFlowInFlatten() {
             m_NeedUpdateDependenciesFlatten = false;
             flowInFlatten.Clear();
@@ -107,7 +119,7 @@ namespace RenderPipelineGraph {
             }
             // Debug.Log("UpdateDependenciesFlatten " + flowInFlatten.Count);
         }
-        public override void Delete() {
+        public override void OnDelete() {
             foreach (RPGParameterView parameterView in this.m_ParameterContainer.Children().OfType<RPGParameterView>()) {
                 parameterView.PortView.DisconnectAll();
             }

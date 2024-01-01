@@ -73,8 +73,12 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                 Remove(category);
             }
             this.m_Categories.Clear();
-            AddCategory("Default");
-            AddCategory(string.Empty);
+            foreach (string category in m_View.currentGraph.categorys) {
+                AddCategory(category);
+            }
+            if (!m_Categories.Keys.Contains(string.Empty)) {
+                AddCategory(string.Empty);
+            }
             m_NoCategory = m_Categories[string.Empty];
             foreach (var kvp in m_ResourceViewModel.LoadResources()) {
                 string cat = kvp.Item1;
@@ -202,15 +206,15 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             return newCategoryName;
         }
         void OnAddResource(object parameter) {
+            RPGView graphView = GetFirstAncestorOfType<RPGView>();
+            graphView.RecordUndo("Create Resource");
             var selectedCategory = m_View.selection.OfType<RPGBlackboardCategory>().FirstOrDefault();
             selectedCategory ??= m_NoCategory;
-            RPGView graphView = GetFirstAncestorOfType<RPGView>();
             // graphView.m_ViewModel
             ResourceType resourceType = (ResourceType)parameter;
             var row = m_ResourceViewModel.CreateResource("new " + Enum.GetName(typeof(ResourceType), resourceType), resourceType, selectedCategory);
             row.name = "tete";
             selectedCategory.Add(row);
-
             // VFXParameter newParam = m_Controller.AddVFXParameter(Vector2.zero, (VFXModelDescriptorParameters)parameter);
             // if (selectedCategory != null && newParam != null)
             //     newParam.category = selectedCategory.title;

@@ -11,7 +11,9 @@ public class RPGRenderPipelineAsset : RenderPipelineAsset<RPGRenderPipeline> {
 
     protected override UnityEngine.Rendering.RenderPipeline CreatePipeline() {
         Debug.Log("createPipeline");
-        RpgAsset.Graph.TestInit3();
+        // RpgAsset.Graph.TestInit3();
+        RpgAsset.NeedRecompile = true;
+        RpgAsset.Deserialized = false;
         try {
             Blitter.Initialize(Shader.Find("MySRP/FinalBlit"), Shader.Find("MySRP/FinalBlit"));
         }
