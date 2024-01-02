@@ -8,7 +8,7 @@ using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
     public class RendererListParameterData : RPGParameterData {
-        // TODO find some way to use it.
+        // TODO find a way to use it.
         public bool cullingWhenEmpty;
 
         internal RendererListParameterData(FieldInfo fieldInfo) : base(fieldInfo) {

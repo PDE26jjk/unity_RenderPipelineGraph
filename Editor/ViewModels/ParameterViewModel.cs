@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RenderPipelineGraph.Serialization;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
@@ -75,13 +76,30 @@ namespace RenderPipelineGraph {
         }
     }
     public static class ParameterViewExtension {
-        public static void NotifyDisconnectPortVM(this RPGParameterView parameterView) {
+        public static void NotifyDisconnectPortVM(this RPGParameterView parameterView, Edge edge) {
             if (!NodeViewModel.GetValidViewModel(parameterView, out var nodeViewModel))
                 return;
             ResourcePortData resourcePortData = parameterView.Model.Port;
-            if (resourcePortData.LinkTo.Count > 0)
+            if (resourcePortData.LinkTo.Count > 0) {
                 PortData.Disconnect(resourcePortData, resourcePortData.LinkTo[0]);
-            // nodeViewModel.Asset.NeedRecompile = true;
+            }
+        }
+        public static void NotifyConnectPortVM(this RPGParameterView parameterView, Edge edge) {
+            if (!NodeViewModel.GetValidViewModel(parameterView, out var nodeViewModel))
+                return;
+            ResourcePortData port1 = edge.output.GetFirstAncestorOfType<ResourceNodeView>().Model.m_AttachTo;
+            ResourcePortData port2 = parameterView.Model.Port;
+            PortData.Connect(port1, port2);
+            parameterView.Model.UseDefault = false;
+        }
+        public static void NotifyDefaultValueChangeVM(this RPGParameterView parameterView, string defaultValueName) {
+            if (!ResourceViewModel.GetValidViewModel(parameterView, out var resourceViewModel))
+                return;
+            RPGParameterData parameterData = parameterView.Model;
+            if (resourceViewModel.TryGetDefaultValue(parameterData.resourceType,defaultValueName,out var resourceData)) {
+                parameterData.SetDefaultResource(resourceData);
+                parameterData.UseDefault = true;
+            }
         }
     }
 }

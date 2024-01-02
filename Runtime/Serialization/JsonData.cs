@@ -44,7 +44,6 @@ namespace RenderPipelineGraph.Serialization
                 }
                 catch (Exception e)
                 {
-                    // TODO: Allow custom logging function
                     Debug.LogException(e);
                 }
             }

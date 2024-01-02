@@ -7,7 +7,6 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.UIElements;
-using Edge = UnityEditor.Graphs.Edge;
 
 
 namespace RenderPipelineGraph {
@@ -73,18 +72,12 @@ namespace RenderPipelineGraph {
         bool m_NeedUpdateDependenciesFlatten = true;
         HashSet<PassNodeView> flowInFlatten = new();
         HashSet<PassNodeView> flowOutFlatten = new();
-        public void NotifyDependenceChange(DependencePortView dependencePortView) {
-            if (dependencePortView == this.FlowInPortView)
-                NotifyFlowInChange();
-            else
-                NotifyFlowOutChange();
 
-        }
-        public void NotifyFlowInChange() {
+        public void NotifyFlowInChange(Edge edge, bool add) {
             m_NeedUpdateDependenciesFlatten = true;
-            this.NotifyDependenceChangeVM();
+            this.NotifyDependenceChangeVM(edge.output as DependencePortView, add);
         }
-        public void NotifyFlowOutChange() {
+        public void NotifyFlowOutChange(Edge edge, bool add) {
             m_NeedUpdateDependenciesFlatten = true;
         }
         public override void NotifyPortDraggingStart(Port port) {

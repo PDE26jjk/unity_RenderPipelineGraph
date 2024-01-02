@@ -11,8 +11,7 @@ namespace RenderPipelineGraph {
             // RegisterCallback<DetachFromPanelEvent>(OnLeavePanel);
         }
         public void OnDelete() {
-            // if (!isGhostEdge)
-                // Debug.Log("delete edge");
+            
         }
     }
 }

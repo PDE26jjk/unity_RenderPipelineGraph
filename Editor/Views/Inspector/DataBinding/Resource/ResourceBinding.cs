@@ -29,6 +29,7 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
         public ScriptableObject BindingObject() {
 
             m_BindingObject ??= Model.type switch {
+                ResourceType.Texture when Model is BuildInRenderTextureData => ScriptableObject.CreateInstance<BuildInTextureBinding>(),
                 ResourceType.Texture => ScriptableObject.CreateInstance<TextureBinding>(),
                 // ResourceType.Buffer => expr,
                 // ResourceType.AccelerationStructure => expr,

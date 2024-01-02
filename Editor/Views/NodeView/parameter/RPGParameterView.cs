@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RenderPipelineGraph.Editor;
 using UnityEditor;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
 
 namespace RenderPipelineGraph {
@@ -40,31 +41,45 @@ namespace RenderPipelineGraph {
             defaultValueField.label = GetDefaultValueTitle();
         }
         internal virtual string GetDefaultValueTitle() => "options";
-        protected static void SetHidden(VisualElement visualElement, bool hidden = true) {
-            visualElement.EnableInClassList("hide", hidden);
+
+        internal virtual bool IsSomethingWrong() {
+            return !m_Model.UseDefault && !m_PortView.connected;
         }
-        protected static bool IsHidden(VisualElement visualElement) {
-            return visualElement.ClassListContains("hide");
-        }
+
         internal virtual void AfterInitEdge() {
             bool useDefault = m_Model.UseDefault && !m_PortView.connected;
-            SetHidden(defaultValueField, !useDefault);
-            if (useDefault) {
-                this.defaultValueField.choices = ResourceViewModel.GetViewModel(this).GetDefaultResourceNameList(this.m_Model.resourceType);
-                this.defaultValueField.value = m_Model.DefaultResource?.name ?? "----";
+            ShowDropdownField(useDefault);
+        }
+        void ShowDropdownField(bool show) {
+            defaultValueField.SetDisplay(show);
+            if (show) {
+                SetupDefaultValue();
             }
             UpdateContentsHidden();
         }
+        void SetupDefaultValue() {
+            this.defaultValueField.choices = ResourceViewModel.GetViewModel(this).GetDefaultResourceNameList(this.m_Model.resourceType);
+            this.defaultValueField.value = m_Model.DefaultResource?.name ?? "----";
+        }
+        public void OnDefaultValueChange(string defaultValueName) {
+            this.NotifyDefaultValueChangeVM(defaultValueName);
+        }
         protected void UpdateContentsHidden() {
-            if (m_Contents.Children().All(IsHidden)) {
-                SetHidden(m_Contents);
+            if (m_Contents.Children().All(t=>!t.IsDisplay())) {
+                m_Contents.SetDisplay(false);
+            }
+            else {
+                m_Contents.SetDisplay(true);
             }
         }
 
-        public void NotifyDisconnectPort() {
-            if (!m_PortView.connected) return;
-            this.NotifyDisconnectPortVM();
-            // this.NotifyDisconnectPort();
+        public void NotifyDisconnectPort(Edge edge) {
+            this.NotifyDisconnectPortVM(edge);
+            ShowDropdownField(true);
+        }
+        public void NotifyConnectPort(Edge edge) {
+            this.NotifyConnectPortVM(edge);
+            ShowDropdownField(false);
         }
     }
 }

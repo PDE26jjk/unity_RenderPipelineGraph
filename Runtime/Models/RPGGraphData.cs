@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using NUnit.Framework;
 using RenderPipelineGraph.Serialization;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
-using UnityEngine.Serialization;
 
 namespace RenderPipelineGraph {
     public class RPGGraphData : RPGModel {
@@ -36,7 +35,9 @@ namespace RenderPipelineGraph {
 
         #region Test
 
+        [Conditional("UNITY_EDITOR")] // why this Conditional does not work when building?
         public void TestInit1() {
+#if UNITY_EDITOR
             m_ResourceList.Clear();
             m_NodeList.Clear();
 
@@ -74,6 +75,7 @@ namespace RenderPipelineGraph {
             PortData.Connect(pn1.Parameters["read1"].Port, tn1.AttachTo);
             PortData.Connect(pn1.Parameters["write1"].Port, tn2.AttachTo);
 
+#endif
         }
         public void TestInit2() {
             m_ResourceList.Clear();

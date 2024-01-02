@@ -8,6 +8,7 @@ using UnityEngine.Rendering;
 public class RPGRenderPipelineAsset : RenderPipelineAsset<RPGRenderPipeline> {
     [SerializeField]
     RPGAsset RpgAsset = default;
+    public VolumeProfile defaultVolumeProfile;
 
     protected override UnityEngine.Rendering.RenderPipeline CreatePipeline() {
         Debug.Log("createPipeline");

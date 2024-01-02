@@ -39,7 +39,9 @@ namespace RenderPipelineGraph {
         internal bool needUpdateDefaultResourceList = true;
         List<RPGBlackboardRow>[] DefaultResourceLists = new List<RPGBlackboardRow>[(int)ResourceType.Count];
         List<string>[] DefaultResourceStrLists = new List<string>[(int)ResourceType.Count];
-        public List<string> GetDefaultResourceNameList(ResourceType resourceType) {
+
+
+        void CheckAndUpdateDefaultResourceList() {
             if (needUpdateDefaultResourceList) {
                 needUpdateDefaultResourceList = false;
                 var defaultResourceDatas = m_Resources.Keys.Where(t => t.isDefault);
@@ -50,6 +52,18 @@ namespace RenderPipelineGraph {
                     DefaultResourceStrLists[i] = DefaultResourceLists[i].Select(t => t.ResourceName).ToList();
                 }
             }
+        }
+        public bool TryGetDefaultValue(ResourceType resourceType, string name, out ResourceData resourceData) {
+            CheckAndUpdateDefaultResourceList();
+            resourceData = null;
+            if (DefaultResourceStrLists[(int)resourceType].Contains(name)) {
+                resourceData = DefaultResourceLists[(int)resourceType].First(t => t.Model.name == name).Model;
+                return true;
+            }
+            return false;
+        }
+        public List<string> GetDefaultResourceNameList(ResourceType resourceType) {
+            CheckAndUpdateDefaultResourceList();
             return DefaultResourceStrLists[(int)resourceType];
         }
         public RPGBlackboardRow CreateResource(string name, ResourceType resourceType, RPGBlackboardCategory blackboardCategory) {

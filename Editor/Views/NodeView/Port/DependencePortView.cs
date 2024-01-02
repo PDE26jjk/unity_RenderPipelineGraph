@@ -21,37 +21,49 @@ namespace RenderPipelineGraph {
                 Direction.Output => "dependBy",
                 _ => null
             };
-            RegisterCallback<PointerEnterEvent>(OnPointerEnter);
+            // RegisterCallback<PointerEnterEvent>(OnPointerEnter);
         }
-        void OnPointerEnter(PointerEnterEvent evt) {
-            // evt.StopPropagation();
+        public override void OnConnect(Edge edge) {
+            if (this.direction == Direction.Input)
+                GetFirstAncestorOfType<PassNodeView>()?.NotifyFlowInChange(edge,true);
+            else
+                GetFirstAncestorOfType<PassNodeView>()?.NotifyFlowOutChange(edge,true);
         }
+        public override void OnDisconnect(Edge edge) {
+            if (this.direction == Direction.Input)
+                GetFirstAncestorOfType<PassNodeView>()?.NotifyFlowInChange(edge,false);
+            else
+                GetFirstAncestorOfType<PassNodeView>()?.NotifyFlowOutChange(edge,false);
+        }
+        // void OnPointerEnter(PointerEnterEvent evt) {
+        //     // evt.StopPropagation();
+        // }
 
-        public override void OnDrop(Edge edge) {
-            if (!edge.isGhostEdge) {
-                GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange(this);
-                base.OnDrop(edge);
-            }
-        }
-        public override void Connect(Edge edge) {
-            if (!edge.isGhostEdge) {
-                GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange(this);
-                base.Connect(edge);
-            }
-        }
-        public override void Disconnect(Edge edge) {
-            if (!edge.isGhostEdge) {
-                base.Disconnect(edge);
-                GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange(this);
-            }
-        }
+        // public override void OnDrop(Edge edge) {
+        //     if (!edge.isGhostEdge) {
+        //         GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange(this);
+        //         base.OnDrop(edge);
+        //     }
+        // }
+        // public override void Connect(Edge edge) {
+        //     if (!edge.isGhostEdge) {
+        //         GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange(this);
+        //         base.Connect(edge);
+        //     }
+        // }
+        // public override void Disconnect(Edge edge) {
+        //     if (!edge.isGhostEdge) {
+        //         base.Disconnect(edge);
+        //         GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange(this);
+        //     }
+        // }
         public override void DisconnectAll() {
             foreach (Edge connection in connections) {
                 var otherPort = connection.input == this ? connection.output : connection.input;
                 otherPort.Disconnect(connection);
                 connection.RemoveFromHierarchy();
             }
-            GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange(this);
+            // GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange(this);
             base.DisconnectAll();
         }
 

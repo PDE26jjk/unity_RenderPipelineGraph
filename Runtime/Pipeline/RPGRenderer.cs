@@ -23,10 +23,10 @@ public class RPGRenderer : IDisposable {
 
     // TextureHandle sharedTex;
 
-    bool needCrateSharedResource =>asset.NeedRecompile;
+    bool needCrateSharedResource => asset.NeedRecompile;
     HashSet<ResourceData> m_ResourceCreateEveryFrame = new();
     HashSet<ResourceData> m_ResourceImportEveryFrame = new();
-    bool needReorderPass =>asset.NeedRecompile;
+    bool needReorderPass => asset.NeedRecompile;
 
     static Comparer<PassSortData> PassNodeComparer = Comparer<PassSortData>.Create((x, y) => {
         int compareTo = x.pos.x.CompareTo(y.pos.x);
@@ -306,7 +306,7 @@ public class RPGRenderer : IDisposable {
                 if (!used) continue;
                 if (resourceData is CanSetGlobalResourceData canSetGlobalResourceData && canSetGlobalResourceData.ShaderPropertyIdStr != string.Empty) {
                     if (resourceData.usage is Usage.Imported or Usage.Shared) {
-                        m_GlobalResources.Add(canSetGlobalResourceData); 
+                        m_GlobalResources.Add(canSetGlobalResourceData);
                     }
                 }
                 switch (resourceData.usage) {
@@ -459,9 +459,9 @@ public class RPGRenderer : IDisposable {
         var sortingSettings = new SortingSettings(camera) {
             criteria = desc.sortingCriteria
         };
-
+#if UNITY_EDITOR
         errorMaterial ??= new(Shader.Find("Hidden/Core/FallbackError"));
-
+#endif
         var drawingSettings = new DrawingSettings(
             RenderGraphUtils.GetShaderTagId(desc.shaderTagIdStrs[0]), sortingSettings
         ) {

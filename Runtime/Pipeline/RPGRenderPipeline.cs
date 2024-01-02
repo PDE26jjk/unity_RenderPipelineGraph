@@ -12,11 +12,11 @@ public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
     RPGAsset Asset;
 
     RenderGraph renderGraph;
+    VolumeProfile defaultProfile;
     public RPGRenderPipeline(ref RPGAsset asset) {
         this.Asset = asset;
         GraphicsSettings.useScriptableRenderPipelineBatching = true;
         GraphicsSettings.lightsUseLinearIntensity = true;
-
         VolumeManager.instance.Initialize(VolumeProfileSetting.GetOrCreateDefaultVolumeProfile());
         DebugManager.instance.RefreshEditor();
         InitializeForEditor();

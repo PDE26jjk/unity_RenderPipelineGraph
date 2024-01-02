@@ -24,30 +24,39 @@ namespace RenderPipelineGraph {
             get => m_ConnectorText.text;
             set => m_ConnectorText.text = value;
         }
-        public override void Disconnect(Edge edge) {
-            // resource --> parameter
+        public override void OnConnect(Edge edge) {
             if (this.direction == Direction.Input) {
-                GetFirstAncestorOfType<RPGParameterView>().NotifyDisconnectPort();
+                GetFirstAncestorOfType<RPGParameterView>().NotifyConnectPort(edge);
             }
-            else {
-                GetFirstAncestorOfType<ResourceNodeView>().NotifyDisconnectPort(edge);
-            }
-            base.Disconnect(edge);
         }
+        public override void OnDisconnect(Edge edge) {
+            if (this.direction == Direction.Input) {
+                GetFirstAncestorOfType<RPGParameterView>().NotifyDisconnectPort(edge);
+            }
+        }
+        // public override void Disconnect(Edge edge) {
+        //     // resource --> parameter
+        //     if (this.direction == Direction.Input) {
+        //         GetFirstAncestorOfType<RPGParameterView>().NotifyDisconnectPort();
+        //     }
+        //     else {
+        //         GetFirstAncestorOfType<ResourceNodeView>().NotifyDisconnectPort(edge);
+        //     }
+        //     base.Disconnect(edge);
+        // }
 
-        public override void Connect(Edge edge) {
-            Debug.Log("connect");
-            
-            base.Connect(edge);
-        }
+        // public override void Connect(Edge edge) {
+        //     Debug.Log("connect");
+        //     base.Connect(edge);
+        // }
         public override void DisconnectAll() {
             // resource --> parameter
-            if (this.direction == Direction.Input) {
-                GetFirstAncestorOfType<RPGParameterView>().NotifyDisconnectPort();
-            }
-            else {
-                GetFirstAncestorOfType<ResourceNodeView>().NotifyDisconnectAllPort();
-            }
+            // if (this.direction == Direction.Input) {
+            //     GetFirstAncestorOfType<RPGParameterView>().NotifyDisconnectPort(connections);
+            // }
+            // else {
+            //     GetFirstAncestorOfType<ResourceNodeView>().NotifyDisconnectAllPort();
+            // }
             foreach (Edge connection in connections) {
                 var otherPort = connection.input == this ? connection.output : connection.input;
                 otherPort.Disconnect(connection);

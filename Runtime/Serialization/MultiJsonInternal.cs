@@ -1,60 +1,47 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEditor;
-using UnityEditor.Rendering;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 
-namespace RenderPipelineGraph.Serialization
-{
-    static class MultiJsonInternal
-    {
-        public class UnknownJsonObject : JsonObject
-        {
+namespace RenderPipelineGraph.Serialization {
+    static class MultiJsonInternal {
+        public class UnknownJsonObject : JsonObject {
             public string typeInfo;
             public string jsonData;
             public JsonData<JsonObject> castedObject;
 
-            public UnknownJsonObject(string typeInfo)
-            {
+            public UnknownJsonObject(string typeInfo) {
                 this.typeInfo = typeInfo;
             }
 
-            public override void Deserailize(string typeInfo, string jsonData)
-            {
+            public override void Deserailize(string typeInfo, string jsonData) {
                 this.jsonData = jsonData;
             }
 
-            public override string Serialize()
-            {
+            public override string Serialize() {
                 return jsonData;
             }
 
-            public override void OnAfterDeserialize(string json)
-            {
-                if (castedObject.value != null)
-                {
+            public override void OnAfterDeserialize(string json) {
+                if (castedObject.value != null) {
                     Enqueue(castedObject, json.Trim());
                 }
             }
 
-            public override void OnAfterMultiDeserialize(string json)
-            {
-                if (castedObject.value == null)
-                {
+            public override void OnAfterMultiDeserialize(string json) {
+                if (castedObject.value == null) {
                     // Never got casted so nothing ever reffed this object
                     // likely that some other unknown json object had a ref
                     // to this thing. Need to include it in the serialization
                     // step of the object still.
-                    if (jsonBlobs.TryGetValue(currentRoot.objectId, out var blobs))
-                    {
+                    if (jsonBlobs.TryGetValue(currentRoot.objectId, out var blobs)) {
                         blobs[objectId] = jsonData.Trim();
                     }
-                    else
-                    {
+                    else {
                         var lookup = new Dictionary<string, string>();
                         lookup[objectId] = jsonData.Trim();
                         jsonBlobs.Add(currentRoot.objectId, lookup);
@@ -62,13 +49,12 @@ namespace RenderPipelineGraph.Serialization
                 }
             }
 
-            public override T CastTo<T>()
-            {
+            public override T CastTo<T>() {
                 if (castedObject.value != null)
                     return castedObject.value.CastTo<T>();
 
                 Type t = typeof(T);
-  
+
                 {
                     Debug.LogError($"Unable to evaluate type {typeInfo} : {jsonData}");
                 }
@@ -88,19 +74,24 @@ namespace RenderPipelineGraph.Serialization
 
         internal static readonly List<JsonObject> serializationQueue = new();
 
-        internal static readonly HashSet<string> serializedSet = new ();
+        internal static readonly HashSet<string> serializedSet = new();
 
         static JsonObject currentRoot;
 
         static Dictionary<string, Dictionary<string, string>> jsonBlobs = new();
 
-        static Dictionary<string, Type> CreateTypeMap()
-        {
+        static Dictionary<string, Type> CreateTypeMap() {
             var map = new Dictionary<string, Type>();
-            foreach (var type in TypeCache.GetTypesDerivedFrom<JsonObject>())
+#if UNITY_EDITOR
+            foreach (var type in TypeCache.GetTypesDerivedFrom<JsonObject>()) 
+#else
+            // https://discussions.unity.com/t/how-to-find-all-classes-deriving-from-a-base-class/240655
+            foreach (var type in AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(assembly => assembly.GetTypes())
+                .Where(type => type.IsSubclassOf(typeof(JsonObject)))) 
+#endif
             {
-                if (type.FullName != null)
-                {
+                if (type.FullName != null) {
                     map[type.FullName] = type;
                 }
             }
@@ -122,33 +113,27 @@ namespace RenderPipelineGraph.Serialization
             return map;
         }
 
-        public static Type ParseType(string typeString)
-        {
+        public static Type ParseType(string typeString) {
             k_TypeMap.TryGetValue(typeString, out var type);
             return type;
         }
 
-        public static List<MultiJsonEntry> Parse(string str)
-        {
+        public static List<MultiJsonEntry> Parse(string str) {
             var result = new List<MultiJsonEntry>();
             const string separatorStr = "\n\n";
             var startIndex = 0;
             var raw = new FakeJsonObject();
 
-            while (startIndex < str.Length)
-            {
+            while (startIndex < str.Length) {
                 var jsonBegin = str.IndexOf("{", startIndex, StringComparison.Ordinal);
-                if (jsonBegin == -1)
-                {
+                if (jsonBegin == -1) {
                     break;
                 }
 
                 var jsonEnd = str.IndexOf(separatorStr, jsonBegin, StringComparison.Ordinal);
-                if (jsonEnd == -1)
-                {
+                if (jsonEnd == -1) {
                     jsonEnd = str.IndexOf("\n\r\n", jsonBegin, StringComparison.Ordinal);
-                    if (jsonEnd == -1)
-                    {
+                    if (jsonEnd == -1) {
                         jsonEnd = str.LastIndexOf("}", StringComparison.Ordinal) + 1;
                     }
                 }
@@ -156,8 +141,7 @@ namespace RenderPipelineGraph.Serialization
                 var json = str.Substring(jsonBegin, jsonEnd - jsonBegin);
 
                 JsonUtility.FromJsonOverwrite(json, raw);
-                if (startIndex != 0 && string.IsNullOrWhiteSpace(raw.type))
-                {
+                if (startIndex != 0 && string.IsNullOrWhiteSpace(raw.type)) {
                     throw new InvalidOperationException($"Type is null or whitespace in JSON:\n{json}");
                 }
 
@@ -170,10 +154,8 @@ namespace RenderPipelineGraph.Serialization
             return result;
         }
 
-        public static void Enqueue(JsonObject jsonObject, string json)
-        {
-            if (s_Entries == null)
-            {
+        public static void Enqueue(JsonObject jsonObject, string json) {
+            if (s_Entries == null) {
                 throw new InvalidOperationException("Can only Enqueue during JsonObject.OnAfterDeserialize.");
             }
 
@@ -181,10 +163,8 @@ namespace RenderPipelineGraph.Serialization
             s_Entries.Add(new MultiJsonEntry(jsonObject.GetType().FullName, jsonObject.objectId, json));
         }
 
-        public static JsonObject CreateInstanceForDeserialization(string typeString)
-        {
-            if (!k_TypeMap.TryGetValue(typeString, out var type))
-            {
+        public static JsonObject CreateInstanceForDeserialization(string typeString) {
+            if (!k_TypeMap.TryGetValue(typeString, out var type)) {
                 return new UnknownJsonObject(typeString);
             }
             var output = (JsonObject)Activator.CreateInstance(type, true);
@@ -203,44 +183,35 @@ namespace RenderPipelineGraph.Serialization
         private static FieldInfo s_ObjectIdField =
             typeof(JsonObject).GetField("m_ObjectId", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        public static void Deserialize(JsonObject root, List<MultiJsonEntry> entries, bool rewriteIds)
-        {
-            if (isDeserializing)
-            {
+        public static void Deserialize(JsonObject root, List<MultiJsonEntry> entries, bool rewriteIds) {
+            if (isDeserializing) {
                 throw new InvalidOperationException("Nested MultiJson deserialization is not supported.");
             }
 
-            try
-            {
+            try {
                 isDeserializing = true;
                 currentRoot = root;
                 // root.ChangeVersion(0); //Same issue as described in CreateInstance
-                for (var index = 0; index < entries.Count; index++)
-                {
+                for (var index = 0; index < entries.Count; index++) {
                     var entry = entries[index];
-                    try
-                    {
+                    try {
                         JsonObject value = null;
-                        if (index == 0)
-                        {
+                        if (index == 0) {
                             value = root;
                         }
-                        else
-                        {
+                        else {
                             value = CreateInstanceForDeserialization(entry.type);
                         }
 
                         var id = entry.id;
 
-                        if (id != null)
-                        {
+                        if (id != null) {
                             // Need to make sure that references looking for the old ID will find it in spite of
                             // ID rewriting.
                             valueMap[id] = value;
                         }
 
-                        if (rewriteIds || entry.id == null)
-                        {
+                        if (rewriteIds || entry.id == null) {
                             id = value.objectId;
                             entries[index] = new MultiJsonEntry(entry.type, id, entry.json);
                             valueMap[id] = value;
@@ -248,8 +219,7 @@ namespace RenderPipelineGraph.Serialization
 
                         s_ObjectIdField.SetValue(value, id);
                     }
-                    catch (Exception e)
-                    {
+                    catch (Exception e) {
                         // External code could throw exceptions, but we don't want that to fail the whole thing.
                         // Potentially, the fallback type should also be used here.
                         Debug.LogException(e);
@@ -259,24 +229,19 @@ namespace RenderPipelineGraph.Serialization
                 s_Entries = entries;
 
                 // Not a foreach because `entries` can be populated by calls to `Enqueue` as we go.
-                for (var i = 0; i < entries.Count; i++)
-                {
+                for (var i = 0; i < entries.Count; i++) {
                     var entry = entries[i];
-                    try
-                    {
+                    try {
                         var value = valueMap[entry.id];
                         value.Deserailize(entry.type, entry.json);
                         // Set ID again as it could be overwritten from JSON.
                         s_ObjectIdField.SetValue(value, entry.id);
                         value.OnAfterDeserialize(entry.json);
                     }
-                    catch (Exception e)
-                    {
-                        if (!String.IsNullOrEmpty(entry.id))
-                        {
+                    catch (Exception e) {
+                        if (!String.IsNullOrEmpty(entry.id)) {
                             var value = valueMap[entry.id];
-                            if (value != null)
-                            {
+                            if (value != null) {
                                 Debug.LogError($"Exception thrown while deserialize object of type {entry.type}: {e.Message}");
                             }
                         }
@@ -286,36 +251,29 @@ namespace RenderPipelineGraph.Serialization
 
                 s_Entries = null;
 
-                foreach (var entry in entries)
-                {
-                    try
-                    {
+                foreach (var entry in entries) {
+                    try {
                         var value = valueMap[entry.id];
                         value.OnAfterMultiDeserialize(entry.json);
                     }
-                    catch (Exception e)
-                    {
+                    catch (Exception e) {
                         Debug.LogException(e);
                     }
                 }
             }
-            finally
-            {
+            finally {
                 valueMap.Clear();
                 currentRoot = null;
                 isDeserializing = false;
             }
         }
 
-        public static string Serialize(JsonObject mainObject)
-        {
-            if (isSerializing)
-            {
+        public static string Serialize(JsonObject mainObject) {
+            if (isSerializing) {
                 throw new InvalidOperationException("Nested MultiJson serialization is not supported.");
             }
 
-            try
-            {
+            try {
                 isSerializing = true;
 
                 serializedSet.Add(mainObject.objectId);
@@ -324,17 +282,14 @@ namespace RenderPipelineGraph.Serialization
                 var idJsonList = new List<(string, string)>();
 
                 // Not a foreach because the queue is populated by `JsonData<T>`s as we go.
-                for (var i = 0; i < serializationQueue.Count; i++)
-                {
+                for (var i = 0; i < serializationQueue.Count; i++) {
                     var value = serializationQueue[i];
                     var json = value.Serialize();
                     idJsonList.Add((value.objectId, json));
                 }
 
-                if (jsonBlobs.TryGetValue(mainObject.objectId, out var blobs))
-                {
-                    foreach (var blob in blobs)
-                    {
+                if (jsonBlobs.TryGetValue(mainObject.objectId, out var blobs)) {
+                    foreach (var blob in blobs) {
                         if (!idJsonList.Contains((blob.Key, blob.Value)))
                             idJsonList.Add((blob.Key, blob.Value));
                     }
@@ -351,8 +306,7 @@ namespace RenderPipelineGraph.Serialization
 
                 const string k_NewLineString = "\n";
                 var sb = new StringBuilder();
-                foreach (var (id, json) in idJsonList)
-                {
+                foreach (var (id, json) in idJsonList) {
                     sb.Append(json);
                     sb.Append(k_NewLineString);
                     sb.Append(k_NewLineString);
@@ -360,38 +314,32 @@ namespace RenderPipelineGraph.Serialization
 
                 return sb.ToString();
             }
-            finally
-            {
+            finally {
                 serializationQueue.Clear();
                 serializedSet.Clear();
                 isSerializing = false;
             }
         }
 
-        public static void PopulateValueMap(JsonObject mainObject)
-        {
-            if (isSerializing)
-            {
+        public static void PopulateValueMap(JsonObject mainObject) {
+            if (isSerializing) {
                 throw new InvalidOperationException("Nested MultiJson serialization is not supported.");
             }
 
-            try
-            {
+            try {
                 isSerializing = true;
 
                 serializedSet.Add(mainObject.objectId);
                 serializationQueue.Add(mainObject);
 
                 // Not a foreach because the queue is populated by `JsonRef<T>`s as we go.
-                for (var i = 0; i < serializationQueue.Count; i++)
-                {
+                for (var i = 0; i < serializationQueue.Count; i++) {
                     var value = serializationQueue[i];
                     value.Serialize();
                     valueMap[value.objectId] = value;
                 }
             }
-            finally
-            {
+            finally {
                 serializationQueue.Clear();
                 serializedSet.Clear();
                 isSerializing = false;

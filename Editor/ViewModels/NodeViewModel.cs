@@ -139,29 +139,36 @@ namespace RenderPipelineGraph {
         }
     }
     public static class PassNodeViewExtension {
-        // should call after edge deleted.
-        public static void NotifyDependenceChangeVM(this PassNodeView nodeViewView) {
-            if (!NodeViewModel.GetValidViewModel(nodeViewView, out var nodeViewModel)) return;
-            if (nodeViewView.Model is PassNodeData passNodeData) {
-                var dependenceNodeDatas = nodeViewView.FlowInPortView.connections
-                    .Select(t => t.output.node)
-                    .Cast<PassNodeView>().Select(t => t.Model)
-                    .Cast<PassNodeData>().ToList();
-                bool needRecompile = false;
-                if (dependenceNodeDatas.Count != passNodeData.dependencies.Count) {
-                    needRecompile = true;
+        public static void NotifyDependenceChangeVM(this PassNodeView nodeView, DependencePortView portView, bool add) {
+            if (!NodeViewModel.GetValidViewModel(nodeView, out var nodeViewModel)) return;
+            if (nodeView.Model is PassNodeData passNodeData && portView.GetFirstAncestorOfType<PassNodeView>() is PassNodeView dependenceView) {
+                PassNodeData dependenceNodeData = dependenceView.Model;
+                // var dependenceNodeDatas = nodeViewView.FlowInPortView.connections
+                //     .Select(t => t.output.node)
+                //     .Cast<PassNodeView>().Select(t => t.Model)
+                //     .Cast<PassNodeData>().ToList();
+                // bool needRecompile = false;
+                // if (dependenceNodeDatas.Count != passNodeData.dependencies.Count) {
+                //     needRecompile = true;
+                // }
+                // else {
+                //     for (int i = 0; i < dependenceNodeDatas.Count; ++i) {
+                //         if (dependenceNodeDatas[i] != passNodeData.dependencies[i]) {
+                //             needRecompile = true;
+                //         }
+                //     }
+                // }
+                // if (needRecompile) {
+                //     passNodeData.dependencies.Clear();
+                //     passNodeData.dependencies.AddRange(dependenceNodeDatas);
+                // }
+
+                if (add) {
+                    if (!passNodeData.dependencies.Contains(dependenceNodeData))
+                        passNodeData.dependencies.Add(dependenceNodeData);
                 }
-                else {
-                    for (int i = 0; i < dependenceNodeDatas.Count; ++i) {
-                        if (dependenceNodeDatas[i] != passNodeData.dependencies[i]) {
-                            needRecompile = true;
-                        }
-                    }
-                }
-                if (needRecompile) {
-                    passNodeData.dependencies.Clear();
-                    passNodeData.dependencies.AddRange(dependenceNodeDatas);
-                }
+                else
+                    passNodeData.dependencies.Remove(dependenceNodeData);
             }
         }
     }

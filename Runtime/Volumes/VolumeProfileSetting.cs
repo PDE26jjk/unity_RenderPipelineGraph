@@ -4,30 +4,32 @@ using UnityEngine.Rendering;
 
 namespace PDE {
     public class VolumeProfileSetting {
-        static VolumeProfile defaultProfile;
         internal static VolumeProfile GetOrCreateDefaultVolumeProfile() {
-
-            const string k_DefaultVolumeProfileName = "DefaultVolumeProfile";
-            const string k_DefaultVolumeProfilePath = "Assets/" + k_DefaultVolumeProfileName + ".asset";
-            defaultProfile ??=  AssetDatabase.LoadAssetAtPath<VolumeProfile>(k_DefaultVolumeProfilePath);
+            if (GraphicsSettings.defaultRenderPipeline is RPGRenderPipelineAsset renderPipelineAsset) {
+                ref VolumeProfile defaultVolumeProfile = ref renderPipelineAsset.defaultVolumeProfile;
 #if UNITY_EDITOR
-            if (defaultProfile == null || defaultProfile.Equals(null)) {
+                if (defaultVolumeProfile is null) {
+                    const string k_DefaultVolumeProfileName = "DefaultVolumeProfile";
+                    const string k_DefaultVolumeProfilePath = "Assets/" + k_DefaultVolumeProfileName + ".asset";
+                    defaultVolumeProfile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(k_DefaultVolumeProfilePath);
+                    if (defaultVolumeProfile == null || defaultVolumeProfile.Equals(null)) {
 
-                VolumeProfile assetCreated = ScriptableObject.CreateInstance<VolumeProfile>();
-                Debug.Assert(assetCreated);
+                        VolumeProfile assetCreated = ScriptableObject.CreateInstance<VolumeProfile>();
+                        Debug.Assert(assetCreated);
 
-                assetCreated.name = k_DefaultVolumeProfileName;
-                AssetDatabase.CreateAsset(assetCreated, k_DefaultVolumeProfilePath);
+                        assetCreated.name = k_DefaultVolumeProfileName;
+                        AssetDatabase.CreateAsset(assetCreated, k_DefaultVolumeProfilePath);
 
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
+                        AssetDatabase.SaveAssets();
+                        AssetDatabase.Refresh();
 
-                defaultProfile = assetCreated;
-
-            }
+                        defaultVolumeProfile = assetCreated;
+                    }
+                }
 #endif
-            return defaultProfile;
+                return defaultVolumeProfile;
+            }
+            return null;
         }
-        
     }
 }

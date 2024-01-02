@@ -18,10 +18,9 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             public string textureName;
             ///<summary>Texture sizing mode.</summary>
             public TextureSizeMode sizeMode;
-            public int width;
-            public int height;
             public int slices;
             public Vector2 scale;
+            public Vector2Int size;
             public GraphicsFormat colorFormat;
             public DepthBits depthBufferBits;
             public FilterMode filterMode;
@@ -30,14 +29,15 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             public Color clearColor;
             public bool enableRandomWrite;
             public bool isShadowMap;
+            public bool isDepth;
             public MSAASamples msaaSamples;
 
             public override void Init(ResourceData model) {
                 base.Init(model);
                 var textureData = Model as TextureData;
                 var desc = textureData.m_desc.value;
-                width = desc.width;
-                height = desc.height;
+                size = new Vector2Int(desc.width, desc.height);
+                sizeMode = desc.sizeMode;
                 slices = desc.slices;
                 scale = desc.scale;
                 colorFormat = desc.colorFormat;
@@ -46,53 +46,22 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                 dimension = desc.dimension;
                 clearBuffer = desc.clearBuffer;
                 clearColor = desc.clearColor;
+                isDepth = desc.depthBufferBits != DepthBits.None;
                 enableRandomWrite = desc.enableRandomWrite;
                 isShadowMap = desc.isShadowMap;
                 msaaSamples = desc.msaaSamples;
             }
         }
-
-        [CustomEditor(typeof(TextureBinding)), CanEditMultipleObjects]
-        public class TextureBindingBindingEditor : UnityEditor.Editor {
-            static Dictionary<Tuple<Type, string>, FieldInfo> FieldCache = new();
-            static FieldInfo GetField(Type type, string name) {
-                var tuple = new Tuple<Type, string>(type, name);
-                if (!FieldCache.TryGetValue(tuple, out var fieldInfo)) {
-                    FieldInfo[] fieldInfos = type.GetFields();
-                    FieldCache[tuple] = fieldInfo = fieldInfos.First(t => t.Name == name);
-                }
-                if (fieldInfo is null) {
-                    throw new Exception($"{type.FullName} has not public field named {name}");
-                }
-                return fieldInfo;
+        class BuildInTextureBinding : TextureBinding {
+            public RPGBuildInRTType buildInTextureType;
+            public override void Init(ResourceData model) {
+                base.Init(model);
+                var textureData = Model as BuildInRenderTextureData;
+                buildInTextureType = textureData.textureType;
             }
-            public VisualElement CreatePropertyField<T>(string path, object bindingData, string bindingPath = null) {
-                bindingPath ??= path;
-                SerializedProperty property = serializedObject.FindProperty(path);
-                FieldInfo fieldInfo = GetField(bindingData.GetType(), bindingPath);
-                VisualElement field = null;
-                if (!typeof(T).IsEnum) {
-                    field = new PropertyField(property);
-                    field.RegisterCallback<ChangeEvent<T>>(env => {
-                        if (env.newValue is null) return;
-                        fieldInfo.SetValue(bindingData, env.newValue);
-                        //
-                    });
-                }
-                else {
-                    var enumField = new EnumField(ObjectNames.NicifyVariableName(path));
-                    field = enumField;
-                    enumField.AddToClassList("unity-base-field__aligned");
-                    enumField.BindProperty(property);
-                    enumField.RegisterValueChangedCallback(env => {
-                        if (env.newValue is null)
-                            return;
-                        fieldInfo.SetValue(bindingData, env.newValue);
-                        //
-                    });
-                }
-                return field;
-            }
+        }
+        [CustomEditor(typeof(BuildInTextureBinding)), CanEditMultipleObjects]
+        public class BuildInTextureBindingEditor : RPGEditorBase {
             public override VisualElement CreateInspectorGUI() {
                 var root = new VisualElement();
                 var textureBindings = serializedObject.targetObjects.Cast<TextureBinding>().ToList();
@@ -106,13 +75,59 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                         value = "---",
                         enabledSelf = false
                     });
-                var height = CreatePropertyField<int>("height", textureData.m_desc.value);
-                root.Add(height);
-                var colorFormat = CreatePropertyField<GraphicsFormat>("colorFormat", textureData.m_desc.value);
-                root.Add(colorFormat);
+                root.Add(CreatePropertyField<RPGBuildInRTType>("buildInTextureType", textureData,"textureType"));
                 return root;
             }
+        }
 
+        [CustomEditor(typeof(TextureBinding)), CanEditMultipleObjects]
+        public class TextureBindingEditor : RPGEditorBase {
+            public override VisualElement CreateInspectorGUI() {
+                var root = new VisualElement();
+                var textureBindings = serializedObject.targetObjects.Cast<TextureBinding>().ToList();
+                var textureDatas = textureBindings.Select(t => t.Model).Cast<TextureData>().ToList();
+                var textureData = textureDatas[0];
+                var textureBinding = textureBindings[0];
+                if (textureData is null) return null;
+                var nameField = CreatePropertyField<string>("name", textureData);
+                if (textureBindings.Count == 1) root.Add(nameField);
+                else
+                    root.Add(new TextField("name") {
+                        value = "---",
+                        enabledSelf = false
+                    });
+                var descData = textureData.m_desc.value;
+                var size = CreatePropertyField<Vector2Int>("size", null,null,false, () => {
+                    descData.width = textureBinding.size.x;
+                    descData.height = textureBinding.size.y;
+                });
+                var scale = CreatePropertyField<Vector2>("scale", descData);
+                var colorFormat = CreatePropertyField<GraphicsFormat>("colorFormat", descData);
+                root.Add(colorFormat);
+                Action sizeModeChange = () => {
+                    size.SetDisplay(descData.sizeMode == TextureSizeMode.Explicit);
+                    scale.SetDisplay(descData.sizeMode == TextureSizeMode.Scale);
+                };
+                sizeModeChange.Invoke();
+                // TODO complete texture data binding
+                var sizeMode = CreatePropertyField<TextureSizeMode>("sizeMode", descData, null, true, sizeModeChange);
+                root.Add(sizeMode);
+                root.Add(scale);
+                root.Add(size);
+                var depthBit = CreatePropertyField<DepthBits>("depthBufferBits", descData);
+                var isDepth = CreatePropertyField<bool>("isDepth", null,callBack: () => {
+                    depthBit.SetDisplay(textureBinding.isDepth);
+                });
+                // var foldout = new Foldout();
+                // foldout.text = "xxxx";
+                // foldout.Add(new TextField("haha"));
+                // root.Add(foldout);
+                depthBit.SetDisplay(textureBinding.isDepth);
+                root.Add(isDepth);
+                root.Add(depthBit);
+
+                return root;
+            }
 
         }
     }

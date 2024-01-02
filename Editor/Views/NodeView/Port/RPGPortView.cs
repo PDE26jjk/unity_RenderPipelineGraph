@@ -39,17 +39,22 @@ namespace RenderPipelineGraph {
                 Debug.Log("onDrop");
             }
         }
-        public override void Connect(Edge edge) {
-            if (!edge.isGhostEdge) {
-                base.Connect(edge);
-            }
+        // these two call by graphview when graph change
+        public virtual void OnConnect(Edge edge) {
         }
-        public override void Disconnect(Edge edge) {
-            if (!edge.isGhostEdge) {
-                // Debug.Log("disconnect");
-                base.Disconnect(edge);
-            }
+        public virtual void OnDisconnect(Edge edge) {
         }
+        // public override void Connect(Edge edge) {
+        //     if (!edge.isGhostEdge) {
+        //         base.Connect(edge);
+        //     }
+        // }
+        // public override void Disconnect(Edge edge) {
+        //     if (!edge.isGhostEdge) {
+        //         // Debug.Log("disconnect");
+        //         base.Disconnect(edge);
+        //     }
+        // }
         public override void DisconnectAll() {
             foreach (Edge connection in connections) {
                 var otherPort = connection.input == this ? connection.output : connection.input;

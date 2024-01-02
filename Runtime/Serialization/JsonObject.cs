@@ -24,8 +24,14 @@ namespace RenderPipelineGraph.Serialization {
             OnBeforeSerialize();
         }
         
-        public virtual string Serialize() { return EditorJsonUtility.ToJson(this, true); }
-        public virtual void Deserailize(string typeInfo, string jsonData) { EditorJsonUtility.FromJsonOverwrite(jsonData, this); }
+        public virtual string Serialize() {
+            // return EditorJsonUtility.ToJson(this, true); // This can handle Unity Object but cannot be build and it is useless in this project.
+            return JsonUtility.ToJson(this, true);
+        }
+        public virtual void Deserailize(string typeInfo, string jsonData) {
+            // EditorJsonUtility.FromJsonOverwrite(jsonData, this);// see comment above.
+            JsonUtility.FromJsonOverwrite(jsonData, this);
+        }
         public virtual T CastTo<T>() where T : JsonObject { return (T)this; }
         
         public virtual void OnBeforeSerialize() { }

@@ -24,7 +24,7 @@ namespace RenderPipelineGraph {
         // internal ICollection<testGraphPort> getPorts() {
         //     return Ports.AsReadOnlyCollection();
         // }
-        InspectorView m_Inspector;
+        // InspectorView m_Inspector;
         private Toolbar m_Toolbar;
         readonly RPGBlackboard m_Blackboard;
         internal RPGBlackboard Blackboard => m_Blackboard;
@@ -232,6 +232,7 @@ namespace RenderPipelineGraph {
                 return changeData;
             List<GraphElement> elementsToRemove = changeData.elementsToRemove;
             List<GraphElement> changeDataMovedElements = changeData.movedElements;
+            List<Edge> edgesToCreate = changeData.edgesToCreate;
             if (changeDataMovedElements is not null && changeDataMovedElements.Count > 0) {
                 RecordUndo("change position");
                 foreach (IRPGMovable movable in changeDataMovedElements.OfType<IRPGMovable>()) {
@@ -243,6 +244,18 @@ namespace RenderPipelineGraph {
                 var deletables = selection.OfType<IRPGDeletable>().ToList();
                 foreach (var deletable in deletables) {
                     deletable.OnDelete();
+                }
+                var edgesToRemove = selection.OfType<Edge>().ToList();
+                foreach (Edge edge in edgesToRemove) {
+                    if (edge.input is RPGPortView input) input.OnDisconnect(edge);
+                    if (edge.output is RPGPortView output) output.OnDisconnect(edge);
+                }
+            }
+            if (edgesToCreate is not null && edgesToCreate.Count > 0) {
+                RecordUndo("connect port");
+                foreach (Edge edge in edgesToCreate) {
+                    if (edge.input is RPGPortView input) input.OnConnect(edge);
+                    if (edge.output is RPGPortView output) output.OnConnect(edge);
                 }
             }
             return changeData;
