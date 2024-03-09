@@ -16,6 +16,9 @@ namespace RenderPipelineGraph {
                 return Equals((RPGCullingDesc)obj);
             return  false;
         }
+        public override int GetHashCode() {
+            return (cullingFunctionTypeName != null ? cullingFunctionTypeName.GetHashCode() : 0);
+        }
         protected bool Equals(RPGCullingDesc obj) {
             return obj.cullingFunctionTypeName == cullingFunctionTypeName;
         }

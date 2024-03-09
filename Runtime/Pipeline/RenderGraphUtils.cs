@@ -10,6 +10,7 @@ using UnityEngine.Rendering.RenderGraphModule;
 using Object = System.Object;
 
 public static class RenderGraphUtils {
+    static readonly string RenderFunName = "Record";
     static readonly Dictionary<Type, MethodInfo> AddRasterRenderPasses = new();
     static MethodInfo _addComputeRenderPass;
     static MethodInfo rgAddRasterRenderPassMethodInfo;
@@ -33,7 +34,7 @@ public static class RenderGraphUtils {
 
     // get PassData Class from pass:
     public static Type GetPassDataType(RPGPass pass) {
-        string passInputTypeName = "PassData";
+        const string passInputTypeName = "PassData";
         Type passType = pass.GetType();
         if (passDataTypes.TryGetValue(passType, out var value)) return value;
         Type passInputType = passType.GetNestedType(passInputTypeName, BindingFlags.Public | BindingFlags.NonPublic);
@@ -62,24 +63,25 @@ public static class RenderGraphUtils {
     }
 
     static MethodInfo GetDefaultProfilingSampler;
-    public static Object[] MakeAddRenderPassParm(RenderGraph renderGraph, RPGPass pass) {
+    static readonly string rpgMakeaddrenderpassparam = "RPG MakeAddRenderPassParam";
+    public static object[] MakeAddRenderPassParam(RenderGraph renderGraph, RPGPass pass, ProfilingSampler profilingSampler = null) {
         GetDefaultProfilingSampler ??= typeof(RenderGraph).GetMethod(nameof(GetDefaultProfilingSampler), BindingFlags.NonPublic | BindingFlags.Instance);
-        return new Object[] {
-            pass.Name,
-            null,
-            GetDefaultProfilingSampler.Invoke(renderGraph, new object[] {
+        return new object[] {
+            pass.Name, // string passName
+            null, // out PassData passDat
+            profilingSampler ?? GetDefaultProfilingSampler.Invoke(renderGraph, new object[] {
                 pass.Name
-            })
+            }) // ProfilingSampler sampler
 #if !CORE_PACKAGE_DOCTOOLS
             ,
-            "RPG MakeAddRenderPassParm",
+            rpgMakeaddrenderpassparam,
             0,
 #endif
         };
     }
 
     static readonly Dictionary<Type, MethodInfo> renderFunWithPassDatas = new();
-    static readonly Dictionary<Type, Delegate> RenderFuns = new();
+    static readonly Dictionary<Type, object[]> RenderFuns = new();
     static readonly Dictionary<PassNodeType, MethodInfo> rgSetRenderFuncMethodInfos = new();
 
     // replace builder.SetRenderFunc
@@ -87,9 +89,9 @@ public static class RenderGraphUtils {
         Type passType = pass.GetType();
         Type passDataType = GetPassDataType(pass);
         Type rgContextType = pass.PassType switch {
+            PassNodeType.Raster => typeof(RasterGraphContext),
             PassNodeType.Legacy => typeof(RenderGraphContext),
             PassNodeType.Unsafe => typeof(UnsafeGraphContext),
-            PassNodeType.Raster => typeof(RasterGraphContext),
             PassNodeType.Compute => typeof(ComputeGraphContext),
             _ => throw new ArgumentOutOfRangeException()
         };
@@ -116,20 +118,19 @@ public static class RenderGraphUtils {
 
         // get method in pass:
         // public static Record(PassData data, ContextType renderGraphContext)
-        if (!RenderFuns.TryGetValue(passType, out Delegate renderFun)) {
-            var renderFunName = "Record";
-            var renderFunType = passType.GetMethods().First(m => m.Name == renderFunName);
+        if (!RenderFuns.TryGetValue(passType, out object[] renderFun)) {
+            var renderFunType = passType.GetMethods().First(m => m.Name == RenderFunName);
             Type[] typeArguments = renderFunType.GetParameters().Select(t => t.ParameterType).ToArray();
             Type baseRenderFuncWithPassDataType = typeof(BaseRenderFunc<,>).MakeGenericType(typeArguments);
 
-            renderFun = Delegate.CreateDelegate(baseRenderFuncWithPassDataType, null, renderFunType);
-            RenderFuns[passType] = renderFun;
+            RenderFuns[passType] = renderFun = new object[] {
+                Delegate.CreateDelegate(baseRenderFuncWithPassDataType, null, renderFunType)
+            };
         }
-
-        // like builder.SetRenderFunc(renderFun)
-        renderFunWithPassData.Invoke(builder, new object[] {
-            renderFun
-        });
+        using (new ProfilingScope(ProfilingSampler.Get(RPGProfileId.FindGC))) {
+            // like builder.SetRenderFunc(renderFun)
+            renderFunWithPassData.Invoke(builder,renderFun);
+        }
     }
     public static void LoadPassData(PassNodeData passNodeData, object passData, IBaseRenderGraphBuilder builder, RenderGraph renderGraph, Camera camera) {
         RPGPass pass = passNodeData.Pass;
@@ -142,7 +143,7 @@ public static class RenderGraphUtils {
             // if (parameterData.passTypeFieldInfo == null) {
             //     Debug.LogError($"{passNodeData.exposedName}.{parameterData.Name} Loading Error.");
             // }
-            parameterData.LoadDataField(passData,builder);
+            parameterData.LoadDataField(passData, builder);
         }
 
         pass.Setup(passData, camera, renderGraph, builder);

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using RenderPipelineGraph.Editor.Views.blackborad;
-using RenderPipelineGraph.Editor.Views.Inspector;
 using RenderPipelineGraph.Interface;
 using RenderPipelineGraph.Serialization;
 using UnityEditor;

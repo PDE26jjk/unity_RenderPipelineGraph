@@ -34,7 +34,7 @@ namespace RenderPipelineGraph {
         public static void Record(PassData passData, RasterGraphContext context) {
             var cmd = context.cmd;
             if (_material == null) {
-                _material = new Material(_shader);
+                _material = new Material(_shader); 
             }
             Vector2 viewportScale = Vector2.one;
             Vector4 scaleBias = !passData.yFlip ?

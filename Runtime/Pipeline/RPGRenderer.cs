@@ -37,12 +37,15 @@ public class RPGRenderer : IDisposable {
         return compareTo;
     });
     internal class PassSortData {
-        public Vector2 pos;
+        public Vector2 pos; // for sort
         public SortedSet<PassSortData> followings = new(PassNodeComparer);
         public PassNodeData passNodeData;
-        public bool read = false;
         public MethodInfo addRenderPassMethodInfo;
         public int refCount;
+        public object[] parameters;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        public ProfilingSampler profilingSampler;
+#endif
     }
     List<PassSortData> passSorted = new();
     RPGAsset asset;
@@ -139,42 +142,12 @@ public class RPGRenderer : IDisposable {
 
         SetupGlobalTexture(cmd);
 
+        RecordPasses(renderGraph);
 
-        foreach (PassSortData passSortData in passSorted) {
-            var passNodeData = passSortData.passNodeData;
-            var pass = passNodeData.m_Pass;
-            if (!pass.Valid()) continue;
+        // BaseRenderFunc<Object, RasterGraphContext> voidRenderFunc = (Object _, RasterGraphContext __) => { };
 
-            object[] parameters = RenderGraphUtils.MakeAddRenderPassParm(renderGraph, pass);
-            using (var baseBuilder = passSortData.addRenderPassMethodInfo.Invoke(renderGraph, parameters) as IBaseRenderGraphBuilder) {
-                baseBuilder.AllowPassCulling(pass.AllowPassCulling);
-                baseBuilder.AllowGlobalStateModification(pass.AllowGlobalStateModification);
-
-                object passData = parameters[1];
-                switch (pass.PassType) {
-                    case PassNodeType.Legacy:
-                        break;
-                    case PassNodeType.Unsafe:
-                        break;
-                    case PassNodeType.Raster:
-                    {
-                        var builder = baseBuilder as IRasterRenderGraphBuilder;
-                        RenderGraphUtils.SetRenderFunc(builder, pass);
-                        RenderGraphUtils.LoadPassData(passNodeData, passData, builder, renderGraph, this.camera);
-                    }
-                        break;
-                    case PassNodeType.Compute:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-        }
-
-        BaseRenderFunc<Object, RasterGraphContext> voidRenderFunc = (Object _, RasterGraphContext __) => { };
-
-        TextureHandle defaultTex = renderGraph.CreateTexture(testDesc);
-        TextureHandle defaultDepth = renderGraph.CreateTexture(testDepthDesc);
+        // TextureHandle defaultTex = renderGraph.CreateTexture(testDesc);
+        // TextureHandle defaultDepth = renderGraph.CreateTexture(testDepthDesc);
         // using (var builder = renderGraph.AddRasterRenderPass("r1", out Object _)) {
         //     builder.AllowPassCulling(false);
         //     // builder.UseTexture(defaultTex,AccessFlags.Write);
@@ -183,12 +156,12 @@ public class RPGRenderer : IDisposable {
         //     builder.SetRenderAttachmentDepth(defaultDepth);
         //     builder.SetRenderFunc(voidRenderFunc);
         // }
-        using (var builder = renderGraph.AddRasterRenderPass("r2", out Object _)) {
-            // builder.AllowPassCulling(false);
-            builder.SetRenderAttachment(defaultTex, 0);
-            // builder.SetRenderAttachmentDepth(defaultDepth);
-            builder.SetRenderFunc(voidRenderFunc);
-        }
+        // using (var builder = renderGraph.AddRasterRenderPass("r2", out Object _)) {
+        //     // builder.AllowPassCulling(false);
+        //     builder.SetRenderAttachment(defaultTex, 0);
+        //     // builder.SetRenderAttachmentDepth(defaultDepth);
+        //     builder.SetRenderFunc(voidRenderFunc);
+        // }
 
         renderGraph.EndRecordingAndExecute();
         renderGraph.nativeRenderPassesEnabled = false;
@@ -198,9 +171,43 @@ public class RPGRenderer : IDisposable {
         CommandBufferPool.Release(renderGraphParameters.commandBuffer);
         cameraData.RestoreRTHandels();
     }
+    void RecordPasses(RenderGraph renderGraph) {
+        using var profilingScope = new ProfilingScope(ProfilingSampler.Get(RPGProfileId.RecordPasses));
+        foreach (PassSortData passSortData in passSorted) {
+            using var recordPassProfilingScope = new ProfilingScope(passSortData.profilingSampler);
+            var passNodeData = passSortData.passNodeData;
+            var pass = passNodeData.m_Pass;
+            if (!pass.Valid()) continue;
+            ref object[] parameters = ref passSortData.parameters;
+            parameters ??= RenderGraphUtils.MakeAddRenderPassParam(renderGraph, pass, passSortData.profilingSampler);
+            using (var baseBuilder = passSortData.addRenderPassMethodInfo.Invoke(renderGraph, parameters) as IBaseRenderGraphBuilder) {
+                baseBuilder.AllowPassCulling(pass.AllowPassCulling);
+                baseBuilder.AllowGlobalStateModification(pass.AllowGlobalStateModification);
+
+                ref object passData = ref parameters[1];
+                switch (pass.PassType) {
+                    case PassNodeType.Legacy:// TODO Legacy pass
+                        break;
+                    case PassNodeType.Unsafe:// TODO Unsafe pass
+                        break;
+                    case PassNodeType.Raster:
+                    {
+                        var builder = baseBuilder as IRasterRenderGraphBuilder;
+                        RenderGraphUtils.SetRenderFunc(builder, pass);
+                        RenderGraphUtils.LoadPassData(passNodeData, passData, builder, renderGraph, this.camera);
+                    }
+                        break;
+                    case PassNodeType.Compute:// TODO Compute pass
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
+    }
 
     void ReorderPasses() {
-
+        using var profilingScope = new ProfilingScope(ProfilingSampler.Get(RPGProfileId.ReorderPasses));
         if (needReorderPass) {
             // needReorderPass = false;
             List<PassSortData> l1 = new();
@@ -258,15 +265,16 @@ public class RPGRenderer : IDisposable {
                     passSortData = next;
                 }
             }
-#if UNITY_EDITOR
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             var str = new StringBuilder("Pass order: ");
             str.AppendJoin(", ", passSorted.Select(t => t.passNodeData.exposedName));
             Debug.Log(str.ToString());
 #endif
             foreach (PassSortData passSortData in passSorted) {
                 passSortData.addRenderPassMethodInfo = RenderGraphUtils.GetAddRasterRenderPassMethodInfo(renderGraph, passSortData.passNodeData.m_Pass);
-
-                // addRenderPassMethodInfo?.Invoke(renderGraph,new object[]{});
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                passSortData.profilingSampler = new ProfilingSampler(passSortData.passNodeData.exposedName);
+#endif
             }
         }
     }
@@ -277,7 +285,7 @@ public class RPGRenderer : IDisposable {
     HashSet<BuildInRenderTextureData> m_BuildInRenderTextureDatas = new();
     List<CanSetGlobalResourceData> m_GlobalResources = new();
     void PrepareResources() {
-
+        using var profilingScope = new ProfilingScope(ProfilingSampler.Get(RPGProfileId.PrepareResources));
         if (needCrateSharedResource) {
             // hasCrateSharedResource = true;
             m_ResourceCreateEveryFrame.Clear();
@@ -342,12 +350,16 @@ public class RPGRenderer : IDisposable {
     }
 
     protected virtual void UpdateVolumeFramework() {
+        using var profilingScope = new ProfilingScope(ProfilingSampler.Get(RPGProfileId.UpdateVolumeFramework));
         // VolumeManager.instance.ResetMainStack();
         // "Default" LayerMask
         VolumeManager.instance.Update(camera.transform, layerMask: 1);
     }
 
+
     void Cull() {
+        using var profilingScope = new ProfilingScope(ProfilingSampler.Get(RPGProfileId.CullingCPU));
+        // testProfilingSampler
         if (camera.cameraType == CameraType.Reflection || camera.cameraType == CameraType.Preview) {
             ScriptableRenderContext.EmitGeometryForCamera(camera);
         }
@@ -442,7 +454,7 @@ public class RPGRenderer : IDisposable {
                     break;
                 default:
                     throw new Exception(
-                        $"{Enum.GetName(typeof(Usage), resourceData.usage)} {Enum.GetName(typeof(ResourceType), resourceData.type)} is not supported.");
+                        $"{Enum.GetName(typeof(Usage), resourceData.usage)} {Enum.GetName(typeof(ResourceType), resourceData.type)} is not supported yet.");
             }
         }
     }
@@ -520,7 +532,7 @@ public class RPGRenderer : IDisposable {
 
     void Submit() {
         ExecuteBuffer();
-        using (new ProfilingScope(new ProfilingSampler(camera.name + "context.submit"))) {
+        using (new ProfilingScope(new ProfilingSampler(camera.name + ":context.submit"))) {
             context.Submit();
         }
     }

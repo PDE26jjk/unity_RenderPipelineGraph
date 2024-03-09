@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using RenderPipelineGraph.Interface;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.UIElements;
-using Object = UnityEngine.Object;
 
 namespace RenderPipelineGraph.Editor.Views.blackborad {
     public partial class RPGBlackboardRow : IRPGBindable {
@@ -109,7 +105,6 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                     scale.SetDisplay(descData.sizeMode == TextureSizeMode.Scale);
                 };
                 sizeModeChange.Invoke();
-                // TODO complete texture data binding
                 var sizeMode = CreatePropertyField<TextureSizeMode>("sizeMode", descData, null, true, sizeModeChange);
                 root.Add(sizeMode);
                 root.Add(scale);
@@ -126,6 +121,8 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                 root.Add(isDepth);
                 root.Add(depthBit);
 
+                // TODO complete texture data binding
+                
                 return root;
             }
 
