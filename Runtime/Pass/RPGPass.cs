@@ -16,7 +16,7 @@ namespace RenderPipelineGraph {
         public bool AllowPassCulling => m_AllowPassCulling;
         protected bool m_AllowGlobalStateModification = false;
         public bool AllowGlobalStateModification => m_AllowGlobalStateModification;
-        public virtual bool Valid() {
+        public virtual bool Valid(Camera camera) {
             return true;
         }
         public virtual void Setup(object passData, Camera camera, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {

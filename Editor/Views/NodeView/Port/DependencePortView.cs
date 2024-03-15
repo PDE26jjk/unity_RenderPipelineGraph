@@ -59,8 +59,9 @@ namespace RenderPipelineGraph {
         // }
         public override void DisconnectAll() {
             foreach (Edge connection in connections) {
-                var otherPort = connection.input == this ? connection.output : connection.input;
-                otherPort.Disconnect(connection);
+                var otherPort = (connection.input == this ? connection.output : connection.input )as DependencePortView;
+                otherPort?.Disconnect(connection);
+                otherPort?.OnDisconnect(connection);
                 connection.RemoveFromHierarchy();
             }
             // GetFirstAncestorOfType<PassNodeView>()?.NotifyDependenceChange(this);

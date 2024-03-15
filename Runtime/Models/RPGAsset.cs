@@ -71,9 +71,23 @@ namespace RenderPipelineGraph {
             var deserializedGraph = new RPGGraphData();
             MultiJson.Deserialize(deserializedGraph, json);
             var json2 = MultiJson.Serialize(deserializedGraph);
-            Assert.IsTrue(json == json2);
+            if (json != json2) {
+                int diffIndex = 0;
+                for (int i = 0; i < Math.Min(json.Length, json2.Length); i++)
+                {
+                    if (json[i] != json2[i])
+                    {
+                        diffIndex = i;
+                        break;
+                    }
+                }
+                int start = Math.Max(0, diffIndex - 20);
+                int length = Math.Min(40, json.Length - start);
+            Debug.LogError($"序列化失败：\n{json.Substring(start, length)}  !=  {json2.Substring(start, length)}");
+            }
             content = json;
             Debug.Log(json);
+            EditorUtility.SetDirty(this);
             Deserialized = false;
             NeedRecompile = true;
             // printDebug(deserializedGraph);

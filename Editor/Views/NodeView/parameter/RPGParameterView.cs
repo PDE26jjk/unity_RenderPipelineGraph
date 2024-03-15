@@ -17,6 +17,8 @@ namespace RenderPipelineGraph {
         protected VisualElement m_PortContainer;
         protected VisualElement m_Contents;
         internal DropdownField defaultValueField;
+
+        internal bool inited = false;
         internal RPGParameterView(ParameterViewModel parameterViewModel, RPGParameterData model) {
             m_Model = model;
             (EditorGUIUtility.Load(UXMLHelpers.PackageResourcePath + UXML) as VisualTreeAsset)?.CloneTree((VisualElement)this);
@@ -31,6 +33,11 @@ namespace RenderPipelineGraph {
         }
         void changeDefaultValue(ChangeEvent<string> evt) {
             defaultValueField.value = evt.newValue;
+            if (inited) {
+                GetFirstAncestorOfType<RPGView>().RecordUndo($"Change default Value of {parameterViewModel.NodeView.title}.{Model.Name}");
+                OnDefaultValueChange(defaultValueField.value);
+            }
+            inited = true;
         }
 
         internal virtual void Init() {
@@ -49,6 +56,8 @@ namespace RenderPipelineGraph {
         internal virtual void AfterInitEdge() {
             bool useDefault = m_Model.UseDefault && !m_PortView.connected;
             ShowDropdownField(useDefault);
+            if (parameterViewModel.GetNodeViewModel().Loading) 
+                inited = true;
         }
         void ShowDropdownField(bool show) {
             defaultValueField.SetDisplay(show);

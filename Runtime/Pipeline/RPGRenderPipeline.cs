@@ -9,12 +9,16 @@ using UnityEngine.Rendering.RenderGraphModule;
 using LightType = UnityEngine.LightType;
 public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
 
-    RPGAsset Asset;
+    Dictionary<string, RPGAsset> graphs = new();
 
-    RenderGraph renderGraph;
+    // RenderGraph renderGraph = new RenderGraph("RPG");
     VolumeProfile defaultProfile;
-    public RPGRenderPipeline(ref RPGAsset asset) {
-        this.Asset = asset;
+    Dictionary<Camera, CameraData> CameraDataMap = new();
+
+    public RPGRenderPipeline(List<SerializableTagGraphPair> graphPairs) {
+        foreach (var pair in graphPairs) {
+            graphs[pair.tag] = pair.graph;
+        }
         GraphicsSettings.useScriptableRenderPipelineBatching = true;
         GraphicsSettings.lightsUseLinearIntensity = true;
         VolumeManager.instance.Initialize(VolumeProfileSetting.GetOrCreateDefaultVolumeProfile());
@@ -24,12 +28,13 @@ public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
     protected override void Dispose(bool disposing) {
         base.Dispose(disposing);
         Lightmapping.ResetDelegate();
-        renderGraph.Cleanup();
+        // renderGraph.Cleanup();
         VolumeManager.instance.Deinitialize();
         Blitter.Cleanup();
-        m_RpgRenderer.Dispose();
+        foreach (CameraData cameraData in CameraDataMap.Values) {
+            cameraData.Dispose();
+        }
     }
-    RPGRenderer m_RpgRenderer = new();
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras) {
         Render(context, new List<Camera>(cameras));
@@ -39,27 +44,39 @@ public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
 
         BeginContextRendering(context, cameras);
 
-        if (!Asset.Deserialized) Asset.Deserialize();
-
-        if (Asset.NeedRecompile || renderGraph is null) {
-            renderGraph?.Cleanup();
-            renderGraph = new("Some Render Graph");
-        }
+        // if (!Asset.Deserialized) Asset.Deserialize();
+        //
+        // if (Asset.NeedRecompile || renderGraph is null) {
+        //     renderGraph?.Cleanup();
+        //     renderGraph = new("Some Render Graph");
+        // }
 
         // Iterate over all Cameras
         foreach (Camera camera in cameras) {
+            if (!graphs.TryGetValue(camera.tag, out var graph)) {
+                if (camera.CompareTag("Untagged")) graph = graphs.Values.First();
+                else
+                    continue;
+            }
             // renderer.Render(renderGraph, context, camera, shadowSettings, postFXSettings);
-            m_RpgRenderer.Render(Asset, renderGraph, context, camera);
+
+            if (!CameraDataMap.TryGetValue(camera, out var cameraData)) {
+                CameraDataMap[camera] = cameraData = new CameraData(camera);
+            }
+            if (graph.NeedRecompile) cameraData.needReloadGraph = true;
+            if (!graph.Deserialized) graph.Deserialize();
+            cameraData.Render(graph, context);
+        }
+        foreach (RPGAsset graph in graphs.Values) {
+            foreach (RPGPass pass in graph.m_Graph.NodeList.OfType<PassNodeData>().Select(t => t.Pass)) {
+                pass.EndFrame();
+            }
+            if (graph.NeedRecompile) {
+                graph.NeedRecompile = false;
+            }
         }
 
-        foreach (RPGPass pass in Asset.m_Graph.NodeList.OfType<PassNodeData>().Select(t => t.Pass)) {
-            pass.EndFrame();
-        }
-
-        renderGraph.EndFrame();
-        if (Asset.NeedRecompile) {
-            Asset.NeedRecompile = false;
-        }
+        // renderGraph.EndFrame();
 
         EndContextRendering(context, cameras);
         // context.Submit();

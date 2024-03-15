@@ -4,7 +4,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
-    public class DrawSkybox : RPGPass {
+    public class DrawGizmos : RPGPass {
         public class PassData {
             [Fragment, Depth]
             public TextureHandle depthAttachment;
@@ -12,26 +12,26 @@ namespace RenderPipelineGraph {
             [Fragment]
             public TextureHandle colorAttachment;
 
-            internal RendererListHandle SkyboxListHandle;
+            internal RendererListHandle GizmosListHandle;
         }
 
-        public DrawSkybox() {
+        public DrawGizmos() {
             PassType = PassNodeType.Raster;
         }
 
         public override bool Valid(Camera camera) {
-            return camera.clearFlags == CameraClearFlags.Skybox && RenderSettings.skybox != null;
+            return camera.cameraType == CameraType.SceneView;
         }
 
         public override void Setup(object passData, Camera camera, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
             var pd = passData as PassData;
-            pd.SkyboxListHandle = renderGraph.CreateSkyboxRendererList(camera); // ??? where is it? // fixed in 2023.3.0b10 by unity
-            builder.UseRendererList(pd.SkyboxListHandle);
+            pd.GizmosListHandle = renderGraph.CreateGizmoRendererList(camera, GizmoSubset.PostImageEffects);
+            builder.UseRendererList(pd.GizmosListHandle);
+            builder.AllowPassCulling(false);
         }
 
         public static void Record(PassData passData, RasterGraphContext context) {
-            var cmd = context.cmd;
-            cmd.DrawRendererList(passData.SkyboxListHandle);
+            context.cmd.DrawRendererList(passData.GizmosListHandle);
         }
     }
 }

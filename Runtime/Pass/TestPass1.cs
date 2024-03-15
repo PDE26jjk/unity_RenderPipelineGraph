@@ -12,10 +12,6 @@ namespace RenderPipelineGraph {
             public TextureHandle write1;
         }
 
-        public override bool Valid() {
-            return true;
-        }
-
         public TestPass1() {
             PassType = PassNodeType.Raster;
         }

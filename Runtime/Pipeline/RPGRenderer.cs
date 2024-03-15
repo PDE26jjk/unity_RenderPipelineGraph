@@ -15,18 +15,17 @@ using Object = UnityEngine.Object;
 public class RPGRenderer : IDisposable {
     ScriptableRenderContext context;
 
-    internal Camera camera;
+    Camera camera;
+    CameraData cameraData;
 
-    internal CommandBuffer cmd;
+    CommandBuffer cmd;
 
     BufferedRTHandleSystem bufferedRTHandleSystem;
 
-    // TextureHandle sharedTex;
-
-    bool needCrateSharedResource => asset.NeedRecompile;
+    bool needCrateSharedResource => cameraData.needReloadGraph;
     HashSet<ResourceData> m_ResourceCreateEveryFrame = new();
     HashSet<ResourceData> m_ResourceImportEveryFrame = new();
-    bool needReorderPass => asset.NeedRecompile;
+    bool needReorderPass => cameraData.needReloadGraph;
 
     static Comparer<PassSortData> PassNodeComparer = Comparer<PassSortData>.Create((x, y) => {
         int compareTo = x.pos.x.CompareTo(y.pos.x);
@@ -37,7 +36,7 @@ public class RPGRenderer : IDisposable {
         return compareTo;
     });
     internal class PassSortData {
-        public Vector2 pos; // for sort
+        public Vector2 pos; // for sorting
         public SortedSet<PassSortData> followings = new(PassNodeComparer);
         public PassNodeData passNodeData;
         public MethodInfo addRenderPassMethodInfo;
@@ -51,63 +50,23 @@ public class RPGRenderer : IDisposable {
     RPGAsset asset;
     RenderGraph renderGraph;
 
-    Dictionary<Camera, CameraData> CameraDataMap = new();
-    class CameraData : IDisposable {
-        internal readonly RTHandleSystem rtHandleSystem = new();
-        internal readonly BufferedRTHandleSystem historyRTHandleSystem = new();
-        internal Camera m_Camera;
-        public void Dispose() {
-            RestoreRTHandels();
-            rtHandleSystem.Dispose();
-            historyRTHandleSystem.Dispose();
-        }
-        internal Vector2Int sizeInPixel = Vector2Int.zero;
-        FieldInfo m_DefaultRTHandlesInstanceInfo;
-        RTHandleSystem m_DefaultRTHandles;
-        public CameraData(Camera cam) {
-            this.m_Camera = cam;
-        }
 
-        public void BorrowRTHandles() {
-            m_DefaultRTHandlesInstanceInfo ??= typeof(RTHandles).GetField("s_DefaultInstance", BindingFlags.Static | BindingFlags.NonPublic);
+    // Data stored by the camera
 
-            m_DefaultRTHandles ??= m_DefaultRTHandlesInstanceInfo.GetValue(null) as RTHandleSystem;
-
-            m_DefaultRTHandlesInstanceInfo?.SetValue(null, this.rtHandleSystem);
-        }
-        public void RestoreRTHandels() {
-            m_DefaultRTHandlesInstanceInfo?.SetValue(null, m_DefaultRTHandles);
-        }
-
-        public void SetReferenceSize() {
-            if (sizeInPixel.x != m_Camera.pixelWidth
-                || sizeInPixel.y != m_Camera.pixelHeight) {
-                sizeInPixel.x = m_Camera.pixelWidth;
-                sizeInPixel.y = m_Camera.pixelHeight;
-                RTHandles.ResetReferenceSize(sizeInPixel.x, sizeInPixel.y);
-                historyRTHandleSystem.ResetReferenceSize(sizeInPixel.x, sizeInPixel.y);
-            }
-        }
-    }
-
-    public void Render(RPGAsset asset, RenderGraph renderGraph, ScriptableRenderContext context, Camera camera) {
+    public void Render(RPGAsset asset, RenderGraph renderGraph, ScriptableRenderContext context, CameraData cameraData) {
         this.context = context;
-        this.camera = camera;
+        this.camera = cameraData.m_Camera;
+        this.cameraData = cameraData;
         this.asset = asset;
         this.renderGraph = renderGraph;
         cmd = CommandBufferPool.Get();
 
-        if (!CameraDataMap.TryGetValue(camera, out var cameraData)) {
-            CameraDataMap[camera] = cameraData = new CameraData(camera);
-        }
         cameraData.BorrowRTHandles();
-        cameraData.SetReferenceSize();
-        // RTHandles.SetReferenceSize(camera.pixelWidth, camera.pixelHeight);
 
         var renderGraphParameters = new RenderGraphParameters {
             commandBuffer = cmd,
             currentFrameIndex = Time.frameCount,
-            executionName = "Render RPG",
+            // executionName = "Render RPG",
             rendererListCulling = true,
             scriptableRenderContext = context
         };
@@ -124,6 +83,9 @@ public class RPGRenderer : IDisposable {
         };
         // sharedTex = renderGraph.CreateSharedTexture(testDesc);
         PrepareResources();
+
+        cameraData.SwapAndSetReferenceSize();
+        // RTHandles.SetReferenceSize(camera.pixelWidth, camera.pixelHeight);
 
         ReorderPasses();
 
@@ -144,29 +106,10 @@ public class RPGRenderer : IDisposable {
 
         RecordPasses(renderGraph);
 
-        // BaseRenderFunc<Object, RasterGraphContext> voidRenderFunc = (Object _, RasterGraphContext __) => { };
-
-        // TextureHandle defaultTex = renderGraph.CreateTexture(testDesc);
-        // TextureHandle defaultDepth = renderGraph.CreateTexture(testDepthDesc);
-        // using (var builder = renderGraph.AddRasterRenderPass("r1", out Object _)) {
-        //     builder.AllowPassCulling(false);
-        //     // builder.UseTexture(defaultTex,AccessFlags.Write);
-        //     builder.SetInputAttachment(defaultTex, 0);
-        //     builder.SetRandomAccessAttachment(sharedTex, 1);
-        //     builder.SetRenderAttachmentDepth(defaultDepth);
-        //     builder.SetRenderFunc(voidRenderFunc);
-        // }
-        // using (var builder = renderGraph.AddRasterRenderPass("r2", out Object _)) {
-        //     // builder.AllowPassCulling(false);
-        //     builder.SetRenderAttachment(defaultTex, 0);
-        //     // builder.SetRenderAttachmentDepth(defaultDepth);
-        //     builder.SetRenderFunc(voidRenderFunc);
-        // }
-
         renderGraph.EndRecordingAndExecute();
         renderGraph.nativeRenderPassesEnabled = false;
 
-        // Cleanup();
+        // Cleanup(); 
         Submit();
         CommandBufferPool.Release(renderGraphParameters.commandBuffer);
         cameraData.RestoreRTHandels();
@@ -177,7 +120,7 @@ public class RPGRenderer : IDisposable {
             using var recordPassProfilingScope = new ProfilingScope(passSortData.profilingSampler);
             var passNodeData = passSortData.passNodeData;
             var pass = passNodeData.m_Pass;
-            if (!pass.Valid()) continue;
+            if (!pass.Valid(this.camera)) continue;
             ref object[] parameters = ref passSortData.parameters;
             parameters ??= RenderGraphUtils.MakeAddRenderPassParam(renderGraph, pass, passSortData.profilingSampler);
             using (var baseBuilder = passSortData.addRenderPassMethodInfo.Invoke(renderGraph, parameters) as IBaseRenderGraphBuilder) {
@@ -186,9 +129,9 @@ public class RPGRenderer : IDisposable {
 
                 ref object passData = ref parameters[1];
                 switch (pass.PassType) {
-                    case PassNodeType.Legacy:// TODO Legacy pass
+                    case PassNodeType.Legacy: // TODO Legacy pass
                         break;
-                    case PassNodeType.Unsafe:// TODO Unsafe pass
+                    case PassNodeType.Unsafe: // TODO Unsafe pass
                         break;
                     case PassNodeType.Raster:
                     {
@@ -197,7 +140,7 @@ public class RPGRenderer : IDisposable {
                         RenderGraphUtils.LoadPassData(passNodeData, passData, builder, renderGraph, this.camera);
                     }
                         break;
-                    case PassNodeType.Compute:// TODO Compute pass
+                    case PassNodeType.Compute: // TODO Compute pass
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -210,7 +153,7 @@ public class RPGRenderer : IDisposable {
         using var profilingScope = new ProfilingScope(ProfilingSampler.Get(RPGProfileId.ReorderPasses));
         if (needReorderPass) {
             // needReorderPass = false;
-            List<PassSortData> l1 = new();
+            List<PassSortData> passSortDatas = new();
             passSorted.Clear();
             Dictionary<PassNodeData, PassSortData> node2sort = new();
 
@@ -220,14 +163,14 @@ public class RPGRenderer : IDisposable {
                         pos = passNodeData.pos,
                         passNodeData = passNodeData
                     };
-                    l1.Add(passSortData);
+                    passSortDatas.Add(passSortData);
                     node2sort[passNodeData] = passSortData;
                 }
             }
 
             PassSortData root = new();
             // Add dependence info.
-            foreach (PassSortData passSortData in l1) {
+            foreach (PassSortData passSortData in passSortDatas) {
                 passSortData.refCount = passSortData.passNodeData.dependencies.Count;
                 if (passSortData.refCount == 0) {
                     passSortData.refCount = 1;
@@ -284,15 +227,17 @@ public class RPGRenderer : IDisposable {
 
     HashSet<BuildInRenderTextureData> m_BuildInRenderTextureDatas = new();
     List<CanSetGlobalResourceData> m_GlobalResources = new();
+    List<TextureListData> m_TextureList = new();
     void PrepareResources() {
         using var profilingScope = new ProfilingScope(ProfilingSampler.Get(RPGProfileId.PrepareResources));
         if (needCrateSharedResource) {
-            // hasCrateSharedResource = true;
             m_ResourceCreateEveryFrame.Clear();
             m_ResourceImportEveryFrame.Clear();
             m_RendererListDatas.Clear();
             m_BuildInRenderTextureDatas.Clear();
             m_GlobalResources.Clear();
+            m_TextureList.Clear();
+            cameraData.historyRTHandleSystem.ReleaseAll();
             foreach (ResourceData resourceData in asset.Graph.ResourceList) {
                 bool used = false;
                 foreach (NodeData nodeData in asset.Graph.NodeList) {
@@ -321,6 +266,34 @@ public class RPGRenderer : IDisposable {
                     case Usage.Imported:
                         if (resourceData is BuildInRenderTextureData buildInRenderTextureData) {
                             m_BuildInRenderTextureDatas.Add(buildInRenderTextureData);
+                        }
+                        else if (resourceData is TextureListData textureListData) {
+                            Func<RTHandleSystem, int, RTHandle> allocator = (RTHandleSystem rtHandleSystem, int i) => {
+                                textureListData.bufferCount += i;
+                                var rpgTextureDesc = textureListData.m_desc.value;
+                                var desc = rpgTextureDesc.GetDescStruct();
+                                desc.name += $"_{i}";
+                                return rpgTextureDesc.sizeMode switch {
+                                    TextureSizeMode.Explicit => rtHandleSystem.Alloc(desc.width, desc.height, desc.slices, desc.depthBufferBits, desc.colorFormat,
+                                        desc.filterMode, desc.wrapMode, desc.dimension, desc.enableRandomWrite, desc.useMipMap, desc.autoGenerateMips, desc.isShadowMap,
+                                        desc.anisoLevel, desc.mipMapBias, desc.msaaSamples, desc.bindTextureMS, desc.useDynamicScale, desc.useDynamicScaleExplicit,
+                                        desc.memoryless, desc.vrUsage, desc.name),
+                                    TextureSizeMode.Scale => rtHandleSystem.Alloc(desc.scale, desc.slices, desc.depthBufferBits, desc.colorFormat, desc.filterMode,
+                                        desc.wrapMode, desc.dimension, desc.enableRandomWrite, desc.useMipMap, desc.autoGenerateMips, desc.isShadowMap, desc.anisoLevel,
+                                        desc.mipMapBias, desc.msaaSamples, desc.bindTextureMS, desc.useDynamicScale, desc.useDynamicScaleExplicit, desc.memoryless,
+                                        desc.vrUsage, desc.name),
+                                    TextureSizeMode.Functor => rtHandleSystem.Alloc(desc.func, desc.slices, desc.depthBufferBits, desc.colorFormat, desc.filterMode,
+                                        desc.wrapMode,
+                                        desc.dimension, desc.enableRandomWrite, desc.useMipMap, desc.autoGenerateMips, desc.isShadowMap, desc.anisoLevel, desc.mipMapBias,
+                                        desc.msaaSamples, desc.bindTextureMS, desc.useDynamicScale, desc.useDynamicScaleExplicit, desc.memoryless, desc.vrUsage,
+                                        desc.name),
+                                    _ => throw new ArgumentOutOfRangeException()
+                                };
+
+                            };
+
+                            cameraData.historyRTHandleSystem.AllocBuffer(m_TextureList.Count, allocator, textureListData.bufferCount);
+                            m_TextureList.Add(textureListData);
                         }
                         else {
                             m_ResourceImportEveryFrame.Add(resourceData);
@@ -430,7 +403,7 @@ public class RPGRenderer : IDisposable {
                         Assert.IsTrue(buildInRenderTextureData.handle.IsValid());
                     }
                     break;
-                case RPGBuildInRTType.CameraDepth:
+                case RPGBuildInRTType.CameraDepth: // TODO CameraDepth
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -511,6 +484,16 @@ public class RPGRenderer : IDisposable {
                         $"{Enum.GetName(typeof(Usage), resourceData.usage)} {Enum.GetName(typeof(ResourceType), resourceData.type)} is not supported.");
             }
         }
+        for (int i = 0; i < m_TextureList.Count; i++) {
+            var textureListData = m_TextureList[i];
+            textureListData.rtHandles.Clear();
+            textureListData.handles.Clear();
+            for (int j = 0; j < textureListData.bufferCount; j++) {
+                RTHandle rtHandle = cameraData.historyRTHandleSystem.GetFrameRT(i, j);
+                textureListData.rtHandles.Add(rtHandle);
+                textureListData.handles.Add(renderGraph.ImportTexture(rtHandle));
+            }
+        }
     }
 
     void SetupGlobalTexture(CommandBuffer cmd) {
@@ -543,9 +526,6 @@ public class RPGRenderer : IDisposable {
     }
 
     public void Dispose() {
-        foreach (var keyValuePair in CameraDataMap) {
-            CameraData cameraData = keyValuePair.Value;
-            cameraData.Dispose();
-        }
+
     }
 }

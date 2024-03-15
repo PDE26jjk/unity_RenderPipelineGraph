@@ -11,7 +11,7 @@ Shader "MySRP/FinalBlit"
         #pragma multi_compile_local _ BLIT_DECODE_HDR
         #include "Input.hlsl"
         // blit dependence
-        #define TEXTURE2D_X(textureName)                                        TEXTURE2D(textureName)
+        #define TEXTURE2D_X(textureName) TEXTURE2D(textureName)
         #define SAMPLE_TEXTURE2D_X_LOD(textureName, samplerName, coord2, lod)   SAMPLE_TEXTURE2D_LOD(textureName, samplerName, coord2, lod)
         #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
         // blit dependence end

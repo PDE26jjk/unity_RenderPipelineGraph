@@ -7,20 +7,21 @@ namespace RenderPipelineGraph {
     public class TestPassUnlit : RPGPass {
         public class PassData {
 
+            [Fragment]
+            public TextureHandle colorAttachment;
             [Fragment, Depth]
             public TextureHandle depthAttachment;
 
-            [Fragment]
-            public TextureHandle colorAttachment;
+            [Read]
+            public TextureHandle shadowMap1;// If shadowmaps are not marked, they may be recycled before the pass is executed
+            [Read]
+            public TextureHandle shadowMap2;
+
 
             [Default]
             public RendererListHandle rendererList;
         }
 
-        public override bool Valid() {
-            return true;
-        }
-        
         public TestPassUnlit() {
             PassType = PassNodeType.Raster;
         }

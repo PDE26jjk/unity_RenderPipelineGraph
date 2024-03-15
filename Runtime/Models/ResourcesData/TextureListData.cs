@@ -12,6 +12,7 @@ namespace RenderPipelineGraph {
         
         public TextureListData() {
             type = ResourceType.TextureList;
+            usage = Usage.Imported;
             m_desc = new RPGTextureDesc();
         }
         public override void OnBeforeSerialize() {
@@ -19,15 +20,17 @@ namespace RenderPipelineGraph {
             base.OnBeforeSerialize();
         }
 
-        public bool isHistoryBuffer = false;
+        // public bool isHistoryBuffer = false;
+
+        public int bufferCount = 0;
 
         public JsonData<RPGTextureDesc> m_desc;
         
         [NonSerialized]
-        public List<TextureHandle> handle;
+        public List<TextureHandle> handles;
         
         [NonSerialized]
-        public List<RTHandle> rtHandle;
+        public List<RTHandle> rtHandles;
 
     }
 
