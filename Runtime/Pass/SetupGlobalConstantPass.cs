@@ -1,5 +1,6 @@
 ﻿using System;
 using RenderPipelineGraph.Attribute;
+using RenderPipelineGraph.Runtime.RenderHelper;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
@@ -51,8 +52,9 @@ namespace RenderPipelineGraph {
         public class PassData {
             internal Camera camera;
         }
-        public override void Setup(object passData, Camera camera, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
-            ((PassData)passData).camera = camera;
+        public override void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
+            ((PassData)passData).camera = cameraData.camera;
+            // Time.renderedFrameCount
         }
 
         // public override bool Valid() {
@@ -186,8 +188,9 @@ namespace RenderPipelineGraph {
 
             // NOTE: the URP default main view/projection matrices are the CameraData view/projection matrices.
             Matrix4x4 viewMatrix = camera.worldToCameraMatrix;
-            Matrix4x4 projectionMatrix = camera.projectionMatrix; // Jittered, non-gpu
-
+            
+            Matrix4x4 jitterMat = TAAHelper.jitterMat(camera);
+            Matrix4x4 projectionMatrix = jitterMat * camera.projectionMatrix; // Jittered, non-gpu
             // Set the default view/projection, note: projectionMatrix will be set as a gpu-projection (gfx api adjusted) for rendering.
             cmd.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
 

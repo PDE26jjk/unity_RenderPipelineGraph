@@ -132,7 +132,7 @@ public static class RenderGraphUtils {
             renderFunWithPassData.Invoke(builder,renderFun);
         }
     }
-    public static void LoadPassData(PassNodeData passNodeData, object passData, IBaseRenderGraphBuilder builder, RenderGraph renderGraph, Camera camera) {
+    public static void LoadPassData(PassNodeData passNodeData, object passData, IBaseRenderGraphBuilder builder, RenderGraph renderGraph, CameraData cameraData) {
         RPGPass pass = passNodeData.Pass;
         Type passDataType = GetPassDataType(pass);
 
@@ -146,7 +146,7 @@ public static class RenderGraphUtils {
             parameterData.LoadDataField(passData, builder);
         }
 
-        pass.Setup(passData, camera, renderGraph, builder);
+        pass.Setup(passData, cameraData, renderGraph, builder);
 
     }
 }

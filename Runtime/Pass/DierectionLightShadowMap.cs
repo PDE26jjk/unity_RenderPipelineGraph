@@ -16,7 +16,7 @@ namespace RenderPipelineGraph {
             public TextureHandle shadowMap;
         }
 
-        public override void Setup(object passData, Camera camera, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
+        public override void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
             var data = passData as PassData;
         } 
 

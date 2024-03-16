@@ -18,7 +18,7 @@ namespace RenderPipelineGraph {
             public CullingResults cullingResults;
         }
 
-        public override void Setup(object passData, Camera camera, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
+        public override void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
             var data = passData as PassData;
             var shadowSettingsVolume = VolumeManager.instance.stack.GetComponent<HDShadowSettings>();
             m_ShadowSettings ??= new ShadowMapHelper.ShadowSettings();

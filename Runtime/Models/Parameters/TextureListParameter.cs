@@ -42,32 +42,40 @@ namespace RenderPipelineGraph {
                 }
             }
         }
-        
+
         public override void LoadDataField(object passData, IBaseRenderGraphBuilder builder) {
-            if (GetValue() is not TextureData textureData) {
+            if (GetValue() is not TextureListData textureListData) {
                 Debug.LogError($"texture error: {Name} cannot load.");
                 return;
             }
-            passTypeFieldInfo.SetValue(passData, textureData.handle);
-            // if (depth) {
-            //     (builder as IRasterRenderGraphBuilder)?.SetRenderAttachmentDepth(textureData.handle);
-            // }
-            // else if (fragment) {
-            //     (builder as IRasterRenderGraphBuilder)?.SetRenderAttachment(textureData.handle, 0);
-            // }
-            // else if (read || write) {
-            //     AccessFlags flag = AccessFlags.None;
-            //     if (read) flag |= AccessFlags.Read;
-            //     if (write) flag |= AccessFlags.Write;
-            //     builder.UseTexture(textureData.handle, flag);
-            // }
-            // // Set Global Texture After Write.
-            // if (write || depth || fragment) {
-            //     if (textureData.usage == Usage.Created && textureData.SetGlobalTextureAfterAfterWritten && textureData.ShaderPropertyIdStr != string.Empty) {
-            //         builder.SetGlobalTextureAfterPass(textureData.handle, RenderGraphUtils.GetShaderPropertyId(textureData.ShaderPropertyIdStr));
-            //     }
-            // }
+            passTypeFieldInfo.SetValue(passData, textureListData.handles);
+            for (int i = 0; i < textureListData.handles.Count; i++) {
+                bool read = this.read[i];
+                bool write = this.write[i];
+                bool fragment = this.fragment[i].Item1;
+                bool depth = this.depth > 0;
+                var textureHandle = textureListData.handles[i];
+                if (depth) {
+                    (builder as IRasterRenderGraphBuilder)?.SetRenderAttachmentDepth(textureHandle);
+                }
+                else if (fragment) {
+                    (builder as IRasterRenderGraphBuilder)?.SetRenderAttachment(textureHandle, 0);
+                }
+                else if (read || write) {
+                    AccessFlags flag = AccessFlags.None;
+                    if (read) flag |= AccessFlags.Read;
+                    if (write) flag |= AccessFlags.Write;
+                    builder.UseTexture(textureHandle, flag);
+                }
+                // Set Global Texture After Write.
+                if (write || depth || fragment) {
+                    if (textureListData.usage == Usage.Created && textureListData.SetGlobalTextureAfterAfterWritten && textureListData.ShaderPropertyIdStr != string.Empty) {
+                        builder.SetGlobalTextureAfterPass(textureHandle, RenderGraphUtils.GetShaderPropertyId(textureListData.ShaderPropertyIdStr));
+                    }
+                }
+            }
         }
-        TextureListParameterData(){}
+        TextureListParameterData() {
+        }
     }
 }

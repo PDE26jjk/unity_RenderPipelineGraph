@@ -23,9 +23,9 @@ namespace RenderPipelineGraph {
             return camera.clearFlags == CameraClearFlags.Skybox && RenderSettings.skybox != null;
         }
 
-        public override void Setup(object passData, Camera camera, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
+        public override void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
             var pd = passData as PassData;
-            pd.SkyboxListHandle = renderGraph.CreateSkyboxRendererList(camera); // ??? where is it? // fixed in 2023.3.0b10 by unity
+            pd.SkyboxListHandle = renderGraph.CreateSkyboxRendererList(cameraData.camera); // ??? where is it? // fixed in 2023.3.0b10 by unity
             builder.UseRendererList(pd.SkyboxListHandle);
         }
 

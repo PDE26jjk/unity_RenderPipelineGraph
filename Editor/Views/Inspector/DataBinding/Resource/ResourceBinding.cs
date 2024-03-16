@@ -14,13 +14,13 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
         }
     }
     public partial class RPGBlackboardRow : IRPGBindable {
-        class ResourceDataBinding : BindingHelper<ResourceData> {
+        public class ResourceDataBinding : BindingHelper<ResourceData> {
             public string name;
             bool inited = false;
             public virtual void Init(ResourceData model) {
-                if(inited) return;
+                if (inited) return;
                 inited = true;
-                
+
                 this.Model = model;
                 name = Model.name;
             }
@@ -35,16 +35,21 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                 // ResourceType.AccelerationStructure => expr,
                 // ResourceType.RendererList => expr,
                 // ResourceType.CullingResult => expr,
-                // ResourceType.TextureList => expr,
+                ResourceType.TextureList => ScriptableObject.CreateInstance<TextureListBinding>(),
                 _ => ScriptableObject.CreateInstance<ResourceDataBinding>()
             };
             m_BindingObject.Init(this.Model);
             return m_BindingObject;
         }
         [CustomEditor(typeof(ResourceDataBinding))]
-        public class ResourceDataBindingEditor : UnityEditor.Editor {
+        public class ResourceDataBindingEditor : RPGEditorBase {
             public override VisualElement CreateInspectorGUI() {
-                return new Label("UnKnown Resource");
+                var root = new VisualElement();
+                if (!CheckAndAddNameField(root, out ResourceDataBinding binding, out ResourceData data)) {
+                    return root;
+                }
+                root.Add(new Label("UnKnown Resource"));
+                return root;
             }
         }
     }

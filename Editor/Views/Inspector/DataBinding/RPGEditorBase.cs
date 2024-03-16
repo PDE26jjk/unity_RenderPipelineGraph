@@ -52,6 +52,23 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             }
             return field;
         }
+        protected bool CheckAndAddNameField<DataBinding,Data>(VisualElement root, out DataBinding dataBinding, out Data data) where DataBinding: RPGBlackboardRow.ResourceDataBinding where Data: ResourceData{
+            var dataBindings = serializedObject.targetObjects.Cast<DataBinding>().ToList();
+            List<Data> resourceDatas = dataBindings.Select(t => t.Model).Cast<Data>().ToList();
+            dataBinding = dataBindings[0];
+            data = resourceDatas[0];
+            if (data == null) return false;
+            var nameField = CreatePropertyField<string>("name", resourceDatas[0]);
+            if (resourceDatas.Count == 1) {
+                root.Add(nameField);
+                return true;
+            }
+            root.Add(new TextField("name") {
+                value = "---",
+                enabledSelf = false
+            });
+            return false;
+        }
 
     }
 }

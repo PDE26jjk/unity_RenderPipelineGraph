@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using RenderPipelineGraph.Attribute;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -6,40 +7,39 @@ using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
 
-    public class TestFinalBlitPass : RPGPass {
-        static readonly Shader _shader = Shader.Find("MySRP/FinalBlit");
+    public class TemporalAAUpdate : RPGPass {
+        static readonly Shader _shader = Shader.Find("MySRP/TaaUpdate");
         static Material _material;
+        static readonly int LastFrame = Shader.PropertyToID("lastFrame");
         public class PassData {
 
             [Read]
             public TextureHandle colorAttachment;
 
-            [Fragment]
-            public TextureHandle targetAttachment;
+            [Read]
+            public TextureHandle depthAttachment;
 
-            internal bool yFlip;
+            [ListSize(2), Read(new[] {
+                1
+            }), Fragment(0, 0)]
+            public List<TextureHandle> TAABuffers;
         }
-        public TestFinalBlitPass() {
+        public TemporalAAUpdate() {
             PassType = PassNodeType.Raster;
         }
 
         public override void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
-            var yflip = false;
-            var cameraType = cameraData.camera.cameraType;
-            if (cameraType == CameraType.SceneView || cameraType == CameraType.Preview)
-                yflip = true;
-            ((PassData)passData).yFlip = yflip;
+
         }
 
         public static void Record(PassData passData, RasterGraphContext context) {
             var cmd = context.cmd;
             if (_material == null) {
-                _material = new Material(_shader); 
+                _material = new Material(_shader);
             }
+            _material.SetTexture(LastFrame, passData.TAABuffers[1]);
             Vector2 viewportScale = Vector2.one;
-            Vector4 scaleBias = !passData.yFlip ?
-                new Vector4(viewportScale.x, -viewportScale.y, 0, viewportScale.y) :
-                new Vector4(viewportScale.x, viewportScale.y, 0, 0);
+            Vector4 scaleBias = new Vector4(viewportScale.x, viewportScale.y, 0, 0);
             Blitter.BlitTexture(context.cmd, passData.colorAttachment, scaleBias, _material, 0);
         }
     }

@@ -1,4 +1,5 @@
 ﻿using RenderPipelineGraph.Attribute;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
@@ -20,12 +21,14 @@ namespace RenderPipelineGraph {
         }
 
         public override bool Valid(Camera camera) {
-            return camera.cameraType == CameraType.SceneView;
+            if (camera.cameraType != CameraType.SceneView)
+                return false;
+            return Handles.ShouldRenderGizmos() && camera.sceneViewFilterMode != Camera.SceneViewFilterMode.ShowFiltered;
         }
 
-        public override void Setup(object passData, Camera camera, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
+        public override void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
             var pd = passData as PassData;
-            pd.GizmosListHandle = renderGraph.CreateGizmoRendererList(camera, GizmoSubset.PostImageEffects);
+            pd.GizmosListHandle = renderGraph.CreateGizmoRendererList(cameraData.camera, GizmoSubset.PostImageEffects);
             builder.UseRendererList(pd.GizmosListHandle);
             builder.AllowPassCulling(false);
         }

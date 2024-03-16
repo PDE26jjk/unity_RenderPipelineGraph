@@ -19,7 +19,7 @@ namespace RenderPipelineGraph {
         public virtual bool Valid(Camera camera) {
             return true;
         }
-        public virtual void Setup(object passData, Camera camera, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
+        public virtual void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
         }
         public PassNodeType PassType { get; protected set; }
         public string Name {

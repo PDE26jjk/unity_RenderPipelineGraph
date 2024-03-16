@@ -101,5 +101,11 @@ namespace RenderPipelineGraph {
                 parameterData.UseDefault = true;
             }
         }
+        public static void NotifyListIndexChangeVM(this TextureParamView parameterView, int index) {
+            if (!ResourceViewModel.GetValidViewModel(parameterView, out var resourceViewModel))
+                return;
+            var parameterData = parameterView.Model as TextureParameterData;
+            parameterData.listIndex = index;
+        }
     }
 }

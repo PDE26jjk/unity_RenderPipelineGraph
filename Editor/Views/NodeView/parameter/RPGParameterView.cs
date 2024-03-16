@@ -19,16 +19,19 @@ namespace RenderPipelineGraph {
         internal DropdownField defaultValueField;
 
         internal bool inited = false;
+        protected VisualElement m_Fields;
         internal RPGParameterView(ParameterViewModel parameterViewModel, RPGParameterData model) {
             m_Model = model;
             (EditorGUIUtility.Load(UXMLHelpers.PackageResourcePath + UXML) as VisualTreeAsset)?.CloneTree((VisualElement)this);
             this.parameterViewModel = parameterViewModel;
             m_PortContainer = this.Q("port");
             m_Contents = this.Q("contents");
+            m_Fields = new VisualElement();
             defaultValueField = new DropdownField("Options", new List<string> {
                 "Option test",
             }, 0);
-            m_Contents.Add(defaultValueField);
+            m_Fields.Add(defaultValueField);
+            m_Contents.Add(m_Fields);
             defaultValueField.RegisterCallback<ChangeEvent<string>>(changeDefaultValue);
         }
         void changeDefaultValue(ChangeEvent<string> evt) {
@@ -59,7 +62,7 @@ namespace RenderPipelineGraph {
             if (parameterViewModel.GetNodeViewModel().Loading) 
                 inited = true;
         }
-        void ShowDropdownField(bool show) {
+        protected virtual void ShowDropdownField(bool show) {
             defaultValueField.SetDisplay(show);
             if (show) {
                 SetupDefaultValue();
@@ -74,7 +77,7 @@ namespace RenderPipelineGraph {
             this.NotifyDefaultValueChangeVM(defaultValueName);
         }
         protected void UpdateContentsHidden() {
-            if (m_Contents.Children().All(t=>!t.IsDisplay())) {
+            if (m_Fields.Children().All(t=>!t.IsDisplay())) {
                 m_Contents.SetDisplay(false);
             }
             else {

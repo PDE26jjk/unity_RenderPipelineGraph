@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using RenderPipelineGraph.Interface;
 using UnityEditor;
@@ -6,11 +7,12 @@ using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 namespace RenderPipelineGraph.Editor.Views.blackborad {
     public partial class RPGBlackboardRow : IRPGBindable {
-        class TextureBinding : ResourceDataBinding {
+        public class TextureBinding : ResourceDataBinding {
             public string textureName;
             ///<summary>Texture sizing mode.</summary>
             public TextureSizeMode sizeMode;
@@ -30,8 +32,13 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
 
             public override void Init(ResourceData model) {
                 base.Init(model);
-                var textureData = Model as TextureData;
-                var desc = textureData.m_desc.value;
+                if (Model is TextureData textureData) {
+                    var desc = textureData.m_desc.value;
+                    loadDesc(ref desc);
+                }
+            }
+            protected void loadDesc(ref RPGTextureDesc desc) {
+
                 size = new Vector2Int(desc.width, desc.height);
                 sizeMode = desc.sizeMode;
                 slices = desc.slices;
@@ -48,6 +55,17 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                 msaaSamples = desc.msaaSamples;
             }
         }
+        class TextureListBinding : TextureBinding {
+            [FormerlySerializedAs("buffersCount")]
+            public int bufferCount;
+            public override void Init(ResourceData model) {
+                base.Init(model);
+                var textureListData = Model as TextureListData;
+                bufferCount = textureListData.bufferCount;
+                var desc = textureListData.m_desc.value;
+                loadDesc(ref desc);
+            }
+        }
         class BuildInTextureBinding : TextureBinding {
             public RPGBuildInRTType buildInTextureType;
             public override void Init(ResourceData model) {
@@ -60,18 +78,10 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
         public class BuildInTextureBindingEditor : RPGEditorBase {
             public override VisualElement CreateInspectorGUI() {
                 var root = new VisualElement();
-                var textureBindings = serializedObject.targetObjects.Cast<TextureBinding>().ToList();
-                var textureDatas = textureBindings.Select(t => t.Model).Cast<TextureData>().ToList();
-                var textureData = textureDatas[0];
-                if (textureData is null) return null;
-                var nameField = CreatePropertyField<string>("name", textureData);
-                if (textureBindings.Count == 1) root.Add(nameField);
-                else
-                    root.Add(new TextField("name") {
-                        value = "---",
-                        enabledSelf = false
-                    });
-                root.Add(CreatePropertyField<RPGBuildInRTType>("buildInTextureType", textureData,"textureType"));
+                if (!CheckAndAddNameField(root, out TextureBinding textureBinding, out TextureData textureData)) {
+                    return root;
+                }
+                root.Add(CreatePropertyField<RPGBuildInRTType>("buildInTextureType", textureData, "textureType"));
                 return root;
             }
         }
@@ -80,20 +90,17 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
         public class TextureBindingEditor : RPGEditorBase {
             public override VisualElement CreateInspectorGUI() {
                 var root = new VisualElement();
-                var textureBindings = serializedObject.targetObjects.Cast<TextureBinding>().ToList();
-                var textureDatas = textureBindings.Select(t => t.Model).Cast<TextureData>().ToList();
-                var textureData = textureDatas[0];
-                var textureBinding = textureBindings[0];
-                if (textureData is null) return null;
-                var nameField = CreatePropertyField<string>("name", textureData);
-                if (textureBindings.Count == 1) root.Add(nameField);
-                else
-                    root.Add(new TextField("name") {
-                        value = "---",
-                        enabledSelf = false
-                    });
+                if (!CheckAndAddNameField(root, out TextureBinding textureBinding, out TextureData textureData)) {
+                    return root;
+                }
                 var descData = textureData.m_desc.value;
-                var size = CreatePropertyField<Vector2Int>("size", null,null,false, () => {
+                AddTextureCommonField(descData, textureBinding, root);
+
+                return root;
+            }
+            protected void AddTextureCommonField(RPGTextureDesc descData, TextureBinding textureBinding, VisualElement root) {
+
+                var size = CreatePropertyField<Vector2Int>("size", null, null, false, () => {
                     descData.width = textureBinding.size.x;
                     descData.height = textureBinding.size.y;
                 });
@@ -110,9 +117,7 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                 root.Add(scale);
                 root.Add(size);
                 var depthBit = CreatePropertyField<DepthBits>("depthBufferBits", descData);
-                var isDepth = CreatePropertyField<bool>("isDepth", null,callBack: () => {
-                    depthBit.SetDisplay(textureBinding.isDepth);
-                });
+                var isDepth = CreatePropertyField<bool>("isDepth", null, callBack: () => { depthBit.SetDisplay(textureBinding.isDepth); });
                 // var foldout = new Foldout();
                 // foldout.text = "xxxx";
                 // foldout.Add(new TextField("haha"));
@@ -122,10 +127,23 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                 root.Add(depthBit);
 
                 // TODO complete texture data binding
-                
-                return root;
             }
 
+        }
+        [CustomEditor(typeof(TextureListBinding)), CanEditMultipleObjects]
+        public class TextureListBindingEditor : TextureBindingEditor {
+            public override VisualElement CreateInspectorGUI() {
+                var root = new VisualElement();
+                if (!CheckAndAddNameField(root, out TextureListBinding textureListBinding, out TextureListData textureListData)) {
+                    return root;
+                }
+                var descData = textureListData.m_desc.value;
+                var bufferCount = CreatePropertyField<int>("bufferCount", textureListData);
+                root.Add(bufferCount);
+                AddTextureCommonField(descData, textureListBinding, root);
+
+                return root;
+            }
         }
     }
 }

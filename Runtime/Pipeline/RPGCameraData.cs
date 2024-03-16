@@ -8,7 +8,8 @@ namespace RenderPipelineGraph {
     public class CameraData : IDisposable {
         internal readonly RTHandleSystem rtHandleSystem = new();
         internal readonly BufferedRTHandleSystem historyRTHandleSystem = new();
-        internal readonly Camera m_Camera;
+        readonly Camera m_Camera;
+        public Camera camera => m_Camera;
         RPGRenderer m_Renderer;
         RenderGraph renderGraph;
         internal bool needReloadGraph = true;
@@ -27,11 +28,11 @@ namespace RenderPipelineGraph {
             this.m_Renderer = new();
         }
         public void Render(RPGAsset asset, ScriptableRenderContext context) {
-            m_Renderer.Render(asset,renderGraph,context,this);
+            m_Renderer.Render(asset, renderGraph, context, this);
             renderGraph.EndFrame();
             needReloadGraph = false;
         }
-
+        // call it before rendering camera.
         public void BorrowRTHandles() {
             _defaultRTHandlesInstanceInfo ??= typeof(RTHandles).GetField("s_DefaultInstance", BindingFlags.Static | BindingFlags.NonPublic);
 
@@ -39,6 +40,7 @@ namespace RenderPipelineGraph {
 
             _defaultRTHandlesInstanceInfo?.SetValue(null, this.rtHandleSystem);
         }
+        // call it after rendering camera.
         public void RestoreRTHandels() {
             _defaultRTHandlesInstanceInfo?.SetValue(null, _defaultRTHandles);
         }
@@ -49,8 +51,8 @@ namespace RenderPipelineGraph {
                 sizeInPixel.x = m_Camera.pixelWidth;
                 sizeInPixel.y = m_Camera.pixelHeight;
                 RTHandles.ResetReferenceSize(sizeInPixel.x, sizeInPixel.y);
-                historyRTHandleSystem.SwapAndSetReferenceSize(sizeInPixel.x, sizeInPixel.y);
             }
+            historyRTHandleSystem.SwapAndSetReferenceSize(sizeInPixel.x, sizeInPixel.y);
         }
     }
 

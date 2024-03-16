@@ -55,7 +55,7 @@ public class RPGRenderer : IDisposable {
 
     public void Render(RPGAsset asset, RenderGraph renderGraph, ScriptableRenderContext context, CameraData cameraData) {
         this.context = context;
-        this.camera = cameraData.m_Camera;
+        this.camera = cameraData.camera;
         this.cameraData = cameraData;
         this.asset = asset;
         this.renderGraph = renderGraph;
@@ -137,7 +137,7 @@ public class RPGRenderer : IDisposable {
                     {
                         var builder = baseBuilder as IRasterRenderGraphBuilder;
                         RenderGraphUtils.SetRenderFunc(builder, pass);
-                        RenderGraphUtils.LoadPassData(passNodeData, passData, builder, renderGraph, this.camera);
+                        RenderGraphUtils.LoadPassData(passNodeData, passData, builder, renderGraph, this.cameraData);
                     }
                         break;
                     case PassNodeType.Compute: // TODO Compute pass
@@ -269,7 +269,6 @@ public class RPGRenderer : IDisposable {
                         }
                         else if (resourceData is TextureListData textureListData) {
                             Func<RTHandleSystem, int, RTHandle> allocator = (RTHandleSystem rtHandleSystem, int i) => {
-                                textureListData.bufferCount += i;
                                 var rpgTextureDesc = textureListData.m_desc.value;
                                 var desc = rpgTextureDesc.GetDescStruct();
                                 desc.name += $"_{i}";
@@ -486,6 +485,8 @@ public class RPGRenderer : IDisposable {
         }
         for (int i = 0; i < m_TextureList.Count; i++) {
             var textureListData = m_TextureList[i];
+            textureListData.rtHandles ??= new();
+            textureListData.handles ??= new();
             textureListData.rtHandles.Clear();
             textureListData.handles.Clear();
             for (int j = 0; j < textureListData.bufferCount; j++) {

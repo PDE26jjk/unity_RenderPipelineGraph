@@ -12,8 +12,8 @@ namespace RenderPipelineGraph {
         public bool write;
         public bool fragment;
         public bool depth;
-        public bool randomAccess;
-        public int listIndex;
+        // public bool randomAccess;
+        public int listIndex = 0;
 
         internal TextureParameterData(FieldInfo fieldInfo) : base(fieldInfo) {
             m_Port.value.resourceType = ResourceType.Texture;
@@ -40,29 +40,35 @@ namespace RenderPipelineGraph {
                 read = true;
             }
         }
-
         public override void LoadDataField(object passData, IBaseRenderGraphBuilder builder) {
-            if (GetValue() is not TextureData textureData) {
+            var resourceData = GetValue() as CanSetGlobalResourceData;
+            TextureHandle textureHandle;
+            if (resourceData is TextureData textureData) {
+                textureHandle = textureData.handle ;
+            }else if (resourceData is TextureListData textureListData ) {
+                textureHandle = textureListData.handles[listIndex];
+            }
+            else {
                 Debug.LogError($"texture error: {Name} cannot load.");
                 return;
             }
-            passTypeFieldInfo.SetValue(passData, textureData.handle);
+            passTypeFieldInfo.SetValue(passData, textureHandle);
             if (depth) {
-                (builder as IRasterRenderGraphBuilder)?.SetRenderAttachmentDepth(textureData.handle);
+                (builder as IRasterRenderGraphBuilder)?.SetRenderAttachmentDepth(textureHandle);
             }
             else if (fragment) {
-                (builder as IRasterRenderGraphBuilder)?.SetRenderAttachment(textureData.handle, 0);
+                (builder as IRasterRenderGraphBuilder)?.SetRenderAttachment(textureHandle, 0);
             }
             else if (read || write) {
                 AccessFlags flag = AccessFlags.None;
                 if (read) flag |= AccessFlags.Read;
                 if (write) flag |= AccessFlags.Write;
-                builder.UseTexture(textureData.handle, flag);
+                builder.UseTexture(textureHandle, flag);
             }
             // Set Global Texture After Write.
             if (write || depth || fragment) {
-                if (textureData.usage == Usage.Created && textureData.SetGlobalTextureAfterAfterWritten && textureData.ShaderPropertyIdStr != string.Empty) {
-                    builder.SetGlobalTextureAfterPass(textureData.handle, RenderGraphUtils.GetShaderPropertyId(textureData.ShaderPropertyIdStr));
+                if (resourceData.usage == Usage.Created && resourceData.SetGlobalTextureAfterAfterWritten && resourceData.ShaderPropertyIdStr != string.Empty) {
+                    builder.SetGlobalTextureAfterPass(textureHandle, RenderGraphUtils.GetShaderPropertyId(resourceData.ShaderPropertyIdStr));
                 }
             }
         }
