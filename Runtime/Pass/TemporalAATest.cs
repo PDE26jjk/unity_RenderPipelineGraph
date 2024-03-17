@@ -7,8 +7,8 @@ using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
 
-    public class TemporalAAUpdate : RPGPass {
-        static readonly Shader _shader = Shader.Find("MySRP/TaaUpdate");
+    public class TemporalAATest : RPGPass {
+        static readonly Shader _shader = Shader.Find("MySRP/TaaTest");
         static Material _material;
         static readonly int LastFrame = Shader.PropertyToID("lastFrame");
         public class PassData {
@@ -17,17 +17,15 @@ namespace RenderPipelineGraph {
             public TextureHandle colorAttachment;
 
             [Read]
-            public TextureHandle depthAttachment;
+            public TextureHandle motionVector;
             
             [Read]
-            public TextureHandle motionVector;
-
-            [ListSize(2), Read(new[] {
-                1
-            }), Fragment(0, 0)]
-            public List<TextureHandle> TAABuffers; 
+            public TextureHandle lastFrame;
+            
+            [Fragment]
+            public TextureHandle testTarget;
         }
-        public TemporalAAUpdate() {
+        public TemporalAATest() {
             PassType = PassNodeType.Raster;
         }
 
@@ -40,7 +38,7 @@ namespace RenderPipelineGraph {
             if (_material == null) {
                 _material = new Material(_shader);
             }
-            _material.SetTexture(LastFrame, passData.TAABuffers[1]);
+            _material.SetTexture(LastFrame, passData.lastFrame);
             _material.SetTexture("_MotionVectorMap", passData.motionVector);
             Vector4 scaleBias = new Vector4(1 , 1, 0, 0);
             Blitter.BlitTexture(context.cmd, passData.colorAttachment, scaleBias, _material, 0);

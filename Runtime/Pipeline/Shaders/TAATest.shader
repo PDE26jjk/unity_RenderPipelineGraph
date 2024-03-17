@@ -1,4 +1,4 @@
-Shader "MySRP/TaaUpdate"
+Shader "MySRP/TaaTest"
 {
 
     SubShader
@@ -21,7 +21,7 @@ Shader "MySRP/TaaUpdate"
         Pass
         {
             ZWrite Off ZTest Always Blend Off Cull Off
-            Name "taaUpdate"
+            Name "taaTest"
 
             HLSLPROGRAM
             #pragma vertex Vert
@@ -33,12 +33,10 @@ Shader "MySRP/TaaUpdate"
                 float2 motionVector = SAMPLE_TEXTURE2D_X_LOD(_MotionVectorMap, sampler_PointClamp, uv, 0).xy;
                 float4 currentFrameColor = SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_PointClamp, uv, _BlitMipLevel);
                 float4 lastFrameColor = SAMPLE_TEXTURE2D_X_LOD(lastFrame, sampler_PointClamp, uv - motionVector, 0);
-                float threshold = 0.5;
+                float threshold = 0.2;
                 if(length((currentFrameColor - lastFrameColor))>threshold) lastFrameColor = currentFrameColor;
-                float4 color = lerp(currentFrameColor,lastFrameColor,0.5);
-                // float4 color = float4(motionVector,0,0);
-                // float4 color = float4(currentFrameColor - lastFrameColor);
-                return color;
+                
+                return lastFrameColor;
                  
             }
             ENDHLSL

@@ -41,6 +41,8 @@ namespace RenderPipelineGraph {
         public static readonly int worldToCameraMatrix = Shader.PropertyToID("unity_WorldToCamera");
         public static readonly int cameraToWorldMatrix = Shader.PropertyToID("unity_CameraToWorld");
 
+        public static readonly int previousViewProjectionNoJitter = Shader.PropertyToID("_PrevViewProjMatrix");
+        public static readonly int viewProjectionNoJitter = Shader.PropertyToID("_NonJitteredViewProjMatrix");
 
 
         // This uniform is specific to the RTHandle system
@@ -50,10 +52,10 @@ namespace RenderPipelineGraph {
 
     public class SetupGlobalConstantPass : RPGPass {
         public class PassData {
-            internal Camera camera;
+            internal CameraData cameraData;
         }
         public override void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
-            ((PassData)passData).camera = cameraData.camera;
+            ((PassData)passData).cameraData = cameraData;
             // Time.renderedFrameCount
         }
 
@@ -75,7 +77,8 @@ namespace RenderPipelineGraph {
                 isFirstTimePerFrame = false;
                 SetupPerFrameShaderConstants(cmd);
             }
-            SetPerCameraShaderVariables(cmd, passData.camera, yFlip);
+            SetPerCameraShaderVariables(cmd, passData.cameraData, yFlip);
+
         }
 
         public override void EndFrame() {
@@ -117,8 +120,9 @@ namespace RenderPipelineGraph {
             cmd.SetGlobalVector(ShaderPropertyId.lastTimeParameters, lastTimeParametersVector);
         }
         // from URP
-        static void SetPerCameraShaderVariables(RasterCommandBuffer cmd, Camera camera, bool isTargetFlipped) {
+        static void SetPerCameraShaderVariables(RasterCommandBuffer cmd, CameraData cameraData, bool isTargetFlipped) {
 
+            Camera camera = cameraData.camera;
             float scaledCameraWidth = camera.pixelWidth;
             float scaledCameraHeight = camera.pixelHeight;
             float cameraWidth = (float)camera.pixelWidth;
@@ -180,21 +184,37 @@ namespace RenderPipelineGraph {
             // mipBias = Math.Min(mipBias, taaMipBias);
             cmd.SetGlobalVector(ShaderPropertyId.globalMipBias, new Vector2(mipBias, Mathf.Pow(2.0f, mipBias)));
 
-            //Set per camera matrices.
-            SetCameraMatrices(cmd, camera, true, isTargetFlipped);
+
+            SetCameraMatrices(cmd, cameraData, true, isTargetFlipped);
         }
 
-        internal static void SetCameraMatrices(RasterCommandBuffer cmd, Camera camera, bool setInverseMatrices, bool isTargetFlipped) {
+        internal static void SetCameraMatrices(RasterCommandBuffer cmd, CameraData cameraData, bool setInverseMatrices, bool isTargetFlipped) {
 
+            Camera camera = cameraData.camera;
             // NOTE: the URP default main view/projection matrices are the CameraData view/projection matrices.
             Matrix4x4 viewMatrix = camera.worldToCameraMatrix;
-            
+
             Matrix4x4 jitterMat = TAAHelper.jitterMat(camera);
-            Matrix4x4 projectionMatrix = jitterMat * camera.projectionMatrix; // Jittered, non-gpu
+            Matrix4x4 projectionMatrix =jitterMat * camera.projectionMatrix; // Jittered, non-gpu
             // Set the default view/projection, note: projectionMatrix will be set as a gpu-projection (gfx api adjusted) for rendering.
             cmd.SetViewProjectionMatrices(viewMatrix, projectionMatrix);
+            
+
+            // Matrix4x4 viewAndProjectionMatrix = projectionMatrix * viewMatrix;
+            // cmd.SetGlobalMatrix(ShaderPropertyId.viewMatrix, viewMatrix);
+            // cmd.SetGlobalMatrix(ShaderPropertyId.projectionMatrix, projectionMatrix);
+            // cmd.SetGlobalMatrix(ShaderPropertyId.viewAndProjectionMatrix, viewAndProjectionMatrix);
+
+
+            Matrix4x4 gpuProjectionMatrixNoJitter = GL.GetGPUProjectionMatrix(jitterMat *camera.projectionMatrix, true);
+
+            Matrix4x4 vpMatNoJitter = gpuProjectionMatrixNoJitter * viewMatrix;
+            cmd.SetGlobalMatrix(ShaderPropertyId.viewProjectionNoJitter, vpMatNoJitter);
+            cmd.SetGlobalMatrix(ShaderPropertyId.previousViewProjectionNoJitter, cameraData.previousViewProjectionMatrix);
+            cameraData.previousViewProjectionMatrix = vpMatNoJitter;
 
             if (setInverseMatrices) {
+
                 Matrix4x4 gpuProjectionMatrix = GL.GetGPUProjectionMatrix(projectionMatrix, isTargetFlipped);
                 Matrix4x4 inverseViewMatrix = Matrix4x4.Inverse(viewMatrix);
                 Matrix4x4 inverseProjectionMatrix = Matrix4x4.Inverse(gpuProjectionMatrix);

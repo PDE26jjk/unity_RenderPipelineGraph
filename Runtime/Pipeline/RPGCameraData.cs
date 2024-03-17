@@ -22,6 +22,7 @@ namespace RenderPipelineGraph {
         internal Vector2Int sizeInPixel = Vector2Int.zero;
         static FieldInfo _defaultRTHandlesInstanceInfo;
         static RTHandleSystem _defaultRTHandles;
+        public Matrix4x4 previousViewProjectionMatrix = Matrix4x4.identity;
         public CameraData(Camera cam) {
             this.m_Camera = cam;
             renderGraph = new(cam.name + " RPG");
@@ -51,6 +52,7 @@ namespace RenderPipelineGraph {
                 sizeInPixel.x = m_Camera.pixelWidth;
                 sizeInPixel.y = m_Camera.pixelHeight;
                 RTHandles.ResetReferenceSize(sizeInPixel.x, sizeInPixel.y);
+                historyRTHandleSystem.ResetReferenceSize(sizeInPixel.x, sizeInPixel.y);
             }
             historyRTHandleSystem.SwapAndSetReferenceSize(sizeInPixel.x, sizeInPixel.y);
         }

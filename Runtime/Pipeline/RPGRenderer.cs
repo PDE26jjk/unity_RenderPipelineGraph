@@ -271,7 +271,7 @@ public class RPGRenderer : IDisposable {
                             Func<RTHandleSystem, int, RTHandle> allocator = (RTHandleSystem rtHandleSystem, int i) => {
                                 var rpgTextureDesc = textureListData.m_desc.value;
                                 var desc = rpgTextureDesc.GetDescStruct();
-                                desc.name += $"_{i}";
+                                desc.name = $"{resourceData.name}_{i}";
                                 return rpgTextureDesc.sizeMode switch {
                                     TextureSizeMode.Explicit => rtHandleSystem.Alloc(desc.width, desc.height, desc.slices, desc.depthBufferBits, desc.colorFormat,
                                         desc.filterMode, desc.wrapMode, desc.dimension, desc.enableRandomWrite, desc.useMipMap, desc.autoGenerateMips, desc.isShadowMap,
@@ -414,7 +414,11 @@ public class RPGRenderer : IDisposable {
         foreach (ResourceData resourceData in m_ResourceCreateEveryFrame) {
             switch (resourceData.type) {
                 case ResourceType.Texture when resourceData is TextureData textureData:
-                    textureData.handle = renderGraph.CreateTexture(textureData.m_desc.value.GetDescStruct());
+                    TextureDesc textureDesc = textureData.m_desc.value.GetDescStruct();
+                    if (textureDesc.name == "") {
+                        textureDesc.name = textureData.name;
+                    }
+                    textureData.handle = renderGraph.CreateTexture(textureDesc);
                     break;
                 case ResourceType.Buffer when resourceData is BufferData bufferData:
                     bufferData.handle = renderGraph.CreateBuffer(bufferData.desc);

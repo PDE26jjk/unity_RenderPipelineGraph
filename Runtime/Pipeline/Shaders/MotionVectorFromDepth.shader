@@ -1,4 +1,4 @@
-Shader "MySRP/TaaUpdate"
+Shader "MySRP/MotionVectorFromDepth"
 {
 
     SubShader
@@ -21,25 +21,28 @@ Shader "MySRP/TaaUpdate"
         Pass
         {
             ZWrite Off ZTest Always Blend Off Cull Off
-            Name "taaUpdate"
+            Name "Nearest"
 
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
-            TEXTURE2D_X(lastFrame);
-            TEXTURE2D_X(_MotionVectorMap);
+
             float4 Frag(Varyings input) : SV_Target {
-                float2 uv= input.texcoord.xy;
-                float2 motionVector = SAMPLE_TEXTURE2D_X_LOD(_MotionVectorMap, sampler_PointClamp, uv, 0).xy;
-                float4 currentFrameColor = SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_PointClamp, uv, _BlitMipLevel);
-                float4 lastFrameColor = SAMPLE_TEXTURE2D_X_LOD(lastFrame, sampler_PointClamp, uv - motionVector, 0);
-                float threshold = 0.5;
-                if(length((currentFrameColor - lastFrameColor))>threshold) lastFrameColor = currentFrameColor;
-                float4 color = lerp(currentFrameColor,lastFrameColor,0.5);
-                // float4 color = float4(motionVector,0,0);
-                // float4 color = float4(currentFrameColor - lastFrameColor);
-                return color;
-                 
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+                float2 uv = input.texcoord.xy;
+                float depth = SAMPLE_TEXTURE2D_X_LOD(_BlitTexture, sampler_PointClamp, uv, _BlitMipLevel).x;
+                float3 posWS = ComputeWorldSpacePosition(uv, depth, UNITY_MATRIX_I_VP);
+
+                float4 posCS = mul(_NonJitteredViewProjMatrix, float4(posWS.xyz, 1.0));
+                float4 prevPosCS = mul(_PrevViewProjMatrix, float4(posWS.xyz, 1.0));
+
+                float2 posNDC = posCS.xy * rcp(posCS.w);
+                float2 prevPosNDC = prevPosCS.xy * rcp(prevPosCS.w);
+                float2 velocity = (posNDC - prevPosNDC) * 0.5;
+                #if UNITY_UV_STARTS_AT_TOP
+                    velocity.y = -velocity.y;
+                #endif
+                return float4(velocity, 0, 0);
             }
             ENDHLSL
         }

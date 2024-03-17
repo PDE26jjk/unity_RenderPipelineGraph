@@ -10,6 +10,7 @@ namespace RenderPipelineGraph {
         internal TextureParamView(ParameterViewModel parameterViewModel, TextureParameterData model) : base(parameterViewModel, model) {
             m_PortView = new AttachPortView(Direction.Input, typeof(TextureParameterData));
             listIndexField = new IntegerField("index");
+            listIndexField.value = model.listIndex;
             listIndexField.RegisterCallback<ChangeEvent<int>>(ChangeListIndex);
             m_Fields.Add(listIndexField);
         }

@@ -7,6 +7,8 @@ CBUFFER_START(UnityPerDraw)
 float4x4 unity_ObjectToWorld;
 float4x4 unity_WorldToObject;
 real4 unity_WorldTransformParams;
+float4x4 _PrevViewProjMatrix;         // non-jittered. Motion vectors.
+float4x4 _NonJitteredViewProjMatrix;
 
 // Velocity
 float4x4 unity_MatrixPreviousM;
