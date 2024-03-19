@@ -109,7 +109,6 @@ public class RPGRenderer : IDisposable {
         renderGraph.EndRecordingAndExecute();
         renderGraph.nativeRenderPassesEnabled = false;
 
-        // Cleanup(); 
         Submit();
         CommandBufferPool.Release(renderGraphParameters.commandBuffer);
         cameraData.RestoreRTHandels();
