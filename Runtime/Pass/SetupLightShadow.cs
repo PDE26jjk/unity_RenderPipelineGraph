@@ -9,8 +9,7 @@ namespace RenderPipelineGraph {
     public class SetupLightShadow : RPGPass {
         ShadowMapHelper.ShadowSettings m_ShadowSettings;
 
-        public SetupLightShadow() {
-            this.PassType = PassNodeType.Raster;
+        public SetupLightShadow():base() {
             m_AllowGlobalStateModification = true;
         }
 

@@ -16,8 +16,7 @@ namespace RenderPipelineGraph {
             internal RendererListHandle GizmosListHandle;
         }
 
-        public DrawGizmos() {
-            PassType = PassNodeType.Raster;
+        public DrawGizmos():base() {
         }
 
         public override bool Valid(Camera camera) {

@@ -15,8 +15,7 @@ namespace RenderPipelineGraph {
             internal RendererListHandle SkyboxListHandle;
         }
 
-        public DrawSkybox() {
-            PassType = PassNodeType.Raster;
+        public DrawSkybox():base() {
         }
 
         public override bool Valid(Camera camera) {

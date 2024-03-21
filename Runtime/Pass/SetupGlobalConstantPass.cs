@@ -62,8 +62,7 @@ namespace RenderPipelineGraph {
         // public override bool Valid() {
         //     return true;
         // }
-        public SetupGlobalConstantPass() {
-            PassType = PassNodeType.Raster;
+        public SetupGlobalConstantPass():base() {
             m_AllowPassCulling = false;
             m_AllowGlobalStateModification = true;
         }

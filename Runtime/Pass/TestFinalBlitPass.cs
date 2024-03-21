@@ -19,8 +19,7 @@ namespace RenderPipelineGraph {
 
             internal bool yFlip;
         }
-        public TestFinalBlitPass() {
-            PassType = PassNodeType.Raster;
+        public TestFinalBlitPass():base() {
         }
 
         public override void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {

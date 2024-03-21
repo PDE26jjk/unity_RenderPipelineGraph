@@ -22,8 +22,7 @@ namespace RenderPipelineGraph {
             public RendererListHandle rendererList;
         }
 
-        public TestPassUnlit() {
-            PassType = PassNodeType.Raster;
+        public TestPassUnlit():base() {
         }
         public static void Record(PassData passData, RasterGraphContext context) {
             var cmd = context.cmd;

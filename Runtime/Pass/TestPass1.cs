@@ -12,8 +12,7 @@ namespace RenderPipelineGraph {
             public TextureHandle write1;
         }
 
-        public TestPass1() {
-            PassType = PassNodeType.Raster;
+        public TestPass1():base() {
         }
         public static void Record(PassData passData, RasterGraphContext context) {
             var cmd = context.cmd;

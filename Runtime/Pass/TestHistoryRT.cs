@@ -14,8 +14,7 @@ namespace RenderPipelineGraph {
             return true;
         }
 
-        public TestHistoryRT() {
-            PassType = PassNodeType.Raster;
+        public TestHistoryRT():base() {
         }
         
         public static void Record(PassData passData, RasterGraphContext context) {

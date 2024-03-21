@@ -18,8 +18,7 @@ namespace RenderPipelineGraph {
             public TextureHandle motionVectorMap;
 
         }
-        public MotionVectorFromDepth() {
-            PassType = PassNodeType.Raster;
+        public MotionVectorFromDepth():base() {
         }
 
         public override void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {

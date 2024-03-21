@@ -18,8 +18,7 @@ namespace RenderPipelineGraph {
             public TextureHandle dst;
 
         }
-        public BlitPass() {
-            PassType = PassNodeType.Raster;
+        public BlitPass():base(PassNodeType.Raster) {
         }
 
         public override void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {

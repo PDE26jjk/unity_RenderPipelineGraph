@@ -74,7 +74,6 @@ public static class RenderGraphUtils {
     }
 
     static MethodInfo GetDefaultProfilingSampler;
-    static readonly string rpgMakeaddrenderpassparam = "RPG MakeAddRenderPassParam";
     public static object[] MakeAddRenderPassParam(RenderGraph renderGraph, RPGPass pass, ProfilingSampler profilingSampler = null) {
         GetDefaultProfilingSampler ??= typeof(RenderGraph).GetMethod(nameof(GetDefaultProfilingSampler), BindingFlags.NonPublic | BindingFlags.Instance);
         return new object[] {
@@ -85,7 +84,7 @@ public static class RenderGraphUtils {
             }) // ProfilingSampler sampler
 #if !CORE_PACKAGE_DOCTOOLS
             ,
-            rpgMakeaddrenderpassparam,
+            pass.filePath,
             0,
 #endif
         };

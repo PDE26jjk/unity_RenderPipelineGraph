@@ -7,8 +7,7 @@ using UnityEngine.Rendering.RenderGraphModule;
 namespace RenderPipelineGraph {
     public class DirectionLightShadowMap : RPGPass {
 
-        public DirectionLightShadowMap() {
-            this.PassType = PassNodeType.Raster;// 
+        public DirectionLightShadowMap():base() {
             this.m_AllowGlobalStateModification = true;
         }
         public class PassData {

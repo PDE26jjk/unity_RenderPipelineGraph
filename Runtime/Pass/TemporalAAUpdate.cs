@@ -27,8 +27,7 @@ namespace RenderPipelineGraph {
             }), Fragment(0, 0)]
             public List<TextureHandle> TAABuffers; 
         }
-        public TemporalAAUpdate() {
-            PassType = PassNodeType.Raster;
+        public TemporalAAUpdate():base() {
         }
 
         public override void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {

@@ -7,8 +7,7 @@ using UnityEngine.Rendering.RenderGraphModule;
 namespace RenderPipelineGraph {
     public class OtherLightShadowMap : RPGPass {
 
-        public OtherLightShadowMap() {
-            this.PassType = PassNodeType.Raster;
+        public OtherLightShadowMap():base() {
             this.m_AllowGlobalStateModification = true;
         }
         public class PassData {

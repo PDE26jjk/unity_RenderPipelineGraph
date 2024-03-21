@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using System.Runtime.CompilerServices;
+using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
 
     public enum PassNodeType {
-        Legacy=0,
+        Legacy = 0,
         Unsafe,
         Raster,
         Compute
@@ -26,11 +27,22 @@ namespace RenderPipelineGraph {
             get => m_Name ?? GetType().Name;
             protected set => m_Name = value;
         }
-        
+
         public virtual void EndFrame() {
         }
-        protected RPGPass() {
-            PassType = PassNodeType.Raster;
+        protected RPGPass(
+            PassNodeType passType = PassNodeType.Raster,
+#if UNITY_EDITOR // for debug in render graph viewer
+            [CallerFilePath] string filePath = ""
+#endif
+        ) {
+#if UNITY_EDITOR
+            this.filePath = filePath;
+#endif
+            PassType = passType;
         }
+#if UNITY_EDITOR
+        public string filePath = "";
+#endif
     }
 }

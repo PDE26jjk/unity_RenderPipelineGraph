@@ -19,6 +19,10 @@
 ### 2024年3月22日：
 - 支持Native Render Pass
 
+- 点Render Graph Viewer下面这个按钮可以跳转到对应Pass的cs文件了，不过要在派生的pass中主动调用父类构造函数才能用
+
+  ![image-20240322024016604](https://raw.githubusercontent.com/PDE26jjk/misc/main/img/image-20240322024016604.png)
+
 ### 2024年3月17日：
 - 帧间保留的Texture List可以用了
 - 加上了简陋的TAA

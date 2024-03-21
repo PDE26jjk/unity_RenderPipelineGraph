@@ -25,8 +25,7 @@ namespace RenderPipelineGraph {
             [Fragment]
             public TextureHandle testTarget;
         }
-        public TemporalAATest() {
-            PassType = PassNodeType.Raster;
+        public TemporalAATest():base() {
         }
 
         public override void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
