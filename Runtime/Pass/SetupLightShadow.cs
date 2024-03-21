@@ -10,6 +10,7 @@ namespace RenderPipelineGraph {
         ShadowMapHelper.ShadowSettings m_ShadowSettings;
 
         public SetupLightShadow() {
+            this.PassType = PassNodeType.Raster;
             m_AllowGlobalStateModification = true;
         }
 

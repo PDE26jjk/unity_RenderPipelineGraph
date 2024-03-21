@@ -117,15 +117,24 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                 root.Add(scale);
                 root.Add(size);
                 var depthBit = CreatePropertyField<DepthBits>("depthBufferBits", descData);
-                var isDepth = CreatePropertyField<bool>("isDepth", null, callBack: () => { depthBit.SetDisplay(textureBinding.isDepth); });
+                var isDepth = CreatePropertyField<bool>("isDepth", null, callBack: () => {
+                    depthBit.SetDisplay(textureBinding.isDepth || textureBinding.isShadowMap);
+                    if (!textureBinding.isDepth && !textureBinding.isShadowMap) {
+                        descData.depthBufferBits = DepthBits.None;
+                    }
+                });
                 // var foldout = new Foldout();
                 // foldout.text = "xxxx";
                 // foldout.Add(new TextField("haha"));
                 // root.Add(foldout);
-                depthBit.SetDisplay(textureBinding.isDepth);
+                depthBit.SetDisplay(textureBinding.isDepth || textureBinding.isShadowMap);
                 root.Add(isDepth);
+                var isShadowMap = CreatePropertyField<bool>("isShadowMap", descData);
+                root.Add(isShadowMap);
+                var clearBuffer = CreatePropertyField<bool>("clearBuffer", descData);
                 root.Add(depthBit);
-
+                
+                root.Add(clearBuffer);
                 // TODO complete texture data binding
             }
 

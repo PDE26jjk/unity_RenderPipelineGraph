@@ -11,9 +11,14 @@ using Object = System.Object;
 
 public static class RenderGraphUtils {
     static readonly string RenderFunName = "Record";
-    static readonly Dictionary<Type, MethodInfo> AddRasterRenderPasses = new();
+    static readonly Dictionary<Type, MethodInfo> AddxxxRenderPassInfos = new();
     static MethodInfo _addComputeRenderPass;
-    static MethodInfo rgAddRasterRenderPassMethodInfo;
+    static MethodInfo[] rgAddxxxMethodInfos = {
+        null,
+        null,
+        null,
+        null
+    };
     static readonly Dictionary<Type, Type> passDataTypes = new();
 
     static Dictionary<string, ShaderTagId> m_ShaderTagIdsMap = new();
@@ -53,12 +58,18 @@ public static class RenderGraphUtils {
 
         Type passDataType = GetPassDataType(pass);
 
-        if (AddRasterRenderPasses.TryGetValue(passDataType, out var value)) return value;
-        string addRasterRenderPassName = nameof(renderGraph.AddRasterRenderPass);
-        rgAddRasterRenderPassMethodInfo ??= renderGraph.GetType().GetMethods().First(info =>
-            info.Name == addRasterRenderPassName && info.GetParameters().Length >= 3 && info.GetParameters()[2].ParameterType == typeof(ProfilingSampler));
-        MethodInfo methodInfo = rgAddRasterRenderPassMethodInfo.MakeGenericMethod(passDataType);
-        AddRasterRenderPasses[passDataType] = methodInfo;
+        if (AddxxxRenderPassInfos.TryGetValue(passDataType, out var value)) return value;
+        string addxxxRenderPassName = pass.PassType switch {
+            PassNodeType.Legacy => nameof(renderGraph.AddRenderPass),
+            PassNodeType.Unsafe => nameof(renderGraph.AddUnsafePass),
+            PassNodeType.Raster => nameof(renderGraph.AddRasterRenderPass),
+            PassNodeType.Compute => nameof(renderGraph.AddComputePass),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        rgAddxxxMethodInfos[(int)pass.PassType] ??= renderGraph.GetType().GetMethods().First(info =>
+            info.Name == addxxxRenderPassName && info.GetParameters().Length >= 3 && info.GetParameters()[2].ParameterType == typeof(ProfilingSampler));
+        MethodInfo methodInfo = rgAddxxxMethodInfos[(int)pass.PassType].MakeGenericMethod(passDataType);
+        AddxxxRenderPassInfos[passDataType] = methodInfo;
         return methodInfo;
     }
 
@@ -85,7 +96,7 @@ public static class RenderGraphUtils {
     static readonly Dictionary<PassNodeType, MethodInfo> rgSetRenderFuncMethodInfos = new();
 
     // replace builder.SetRenderFunc
-    public static void SetRenderFunc(IRasterRenderGraphBuilder builder, RPGPass pass) {
+    public static void SetRenderFunc(IBaseRenderGraphBuilder builder, RPGPass pass) {
         Type passType = pass.GetType();
         Type passDataType = GetPassDataType(pass);
         Type rgContextType = pass.PassType switch {
@@ -98,7 +109,12 @@ public static class RenderGraphUtils {
 
         // get builder.SetRenderFunc from RenderGraph Builder
         if (!renderFunWithPassDatas.TryGetValue(passType, out MethodInfo renderFunWithPassData)) {
-            string setRenderFuncName = nameof(builder.SetRenderFunc);
+            string setRenderFuncName = builder switch {
+                IComputeRenderGraphBuilder cb => nameof(cb.SetRenderFunc),
+                IRasterRenderGraphBuilder rb => nameof(rb.SetRenderFunc),
+                IUnsafeRenderGraphBuilder ub => nameof(ub.SetRenderFunc),
+                _ => throw new ArgumentOutOfRangeException()
+            };
 
             if (!rgSetRenderFuncMethodInfos.TryGetValue(pass.PassType, out var rgSetRenderFuncMethodInfo)) {
 
@@ -129,7 +145,16 @@ public static class RenderGraphUtils {
         }
         using (new ProfilingScope(ProfilingSampler.Get(RPGProfileId.FindGC))) {
             // like builder.SetRenderFunc(renderFun)
-            renderFunWithPassData.Invoke(builder,renderFun);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            try {
+#endif
+                renderFunWithPassData.Invoke(builder, renderFun);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            }
+            catch (Exception e) {
+                Debug.LogError($"Check the signature of {pass.Name}.Record!");
+            }
+#endif
         }
     }
     public static void LoadPassData(PassNodeData passNodeData, object passData, IBaseRenderGraphBuilder builder, RenderGraph renderGraph, CameraData cameraData) {

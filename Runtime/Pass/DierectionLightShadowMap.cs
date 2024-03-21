@@ -8,11 +8,11 @@ namespace RenderPipelineGraph {
     public class DirectionLightShadowMap : RPGPass {
 
         public DirectionLightShadowMap() {
-            this.PassType = PassNodeType.Raster;
+            this.PassType = PassNodeType.Raster;// 
             this.m_AllowGlobalStateModification = true;
         }
         public class PassData {
-            [Fragment]
+            [Depth]
             public TextureHandle shadowMap;
         }
 

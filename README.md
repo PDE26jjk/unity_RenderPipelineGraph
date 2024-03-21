@@ -16,6 +16,9 @@
 本项目受到[【图程回收站】Unity SRP自定义渲染管线demo演示](https://www.bilibili.com/video/BV1rj41117hy)启发。
 
 ## 开发日志
+### 2024年3月22日：
+- 支持Native Render Pass
+
 ### 2024年3月17日：
 - 帧间保留的Texture List可以用了
 - 加上了简陋的TAA

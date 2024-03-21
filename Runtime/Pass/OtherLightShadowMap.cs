@@ -12,7 +12,7 @@ namespace RenderPipelineGraph {
             this.m_AllowGlobalStateModification = true;
         }
         public class PassData {
-            [Fragment]
+            [Depth]
             public TextureHandle shadowMap;
         }
 

@@ -51,7 +51,7 @@ public class RPGRenderer : IDisposable {
     RenderGraph renderGraph;
 
 
-    // Data stored by the camera
+    // Data stored by the camera 
 
     public void Render(RPGAsset asset, RenderGraph renderGraph, ScriptableRenderContext context, CameraData cameraData) {
         this.context = context;
@@ -89,7 +89,7 @@ public class RPGRenderer : IDisposable {
 
         ReorderPasses();
 
-        // renderGraph.nativeRenderPassesEnabled = true;
+        renderGraph.nativeRenderPassesEnabled = true;
         renderGraph.BeginRecording(renderGraphParameters);
 
         UpdateVolumeFramework();
@@ -131,6 +131,11 @@ public class RPGRenderer : IDisposable {
                     case PassNodeType.Legacy: // TODO Legacy pass
                         break;
                     case PassNodeType.Unsafe: // TODO Unsafe pass
+                    {
+                        var builder = baseBuilder as IUnsafeRenderGraphBuilder;
+                        RenderGraphUtils.SetRenderFunc(builder, pass);
+                        RenderGraphUtils.LoadPassData(passNodeData, passData, builder, renderGraph, this.cameraData);
+                    }
                         break;
                     case PassNodeType.Raster:
                     {
@@ -382,8 +387,10 @@ public class RPGRenderer : IDisposable {
         importBackbufferColorParams.clearColor = Color.clear;
         importBackbufferColorParams.discardOnLastUse = false;
         RenderTargetInfo importInfo = new RenderTargetInfo();
-        importInfo.width = Screen.width;
-        importInfo.height = Screen.height;
+        // importInfo.width = Screen.width;
+        // importInfo.height = Screen.height;
+        importInfo.width = camera.pixelWidth;
+        importInfo.height = camera.pixelHeight;
         importInfo.volumeDepth = 1;
         importInfo.msaaSamples = numSamples;
         // importInfo.format = SystemInfo.GetGraphicsFormat(DefaultFormat.HDR);
