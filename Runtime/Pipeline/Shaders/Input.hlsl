@@ -7,8 +7,6 @@ CBUFFER_START(UnityPerDraw)
 float4x4 unity_ObjectToWorld;
 float4x4 unity_WorldToObject;
 real4 unity_WorldTransformParams;
-float4x4 _PrevViewProjMatrix;         // non-jittered. Motion vectors.
-float4x4 _NonJitteredViewProjMatrix;
 
 // Velocity
 float4x4 unity_MatrixPreviousM;
@@ -32,14 +30,19 @@ float4 unity_ProbeVolumeParams;
 float4x4 unity_ProbeVolumeWorldToObject;
 float4 unity_ProbeVolumeSizeInv;
 float4 unity_ProbeVolumeMin;
+
+
 CBUFFER_END
 
 float4x4 unity_MatrixV;
 float4x4 unity_MatrixInvV;
 float4x4 unity_MatrixVP;
-float4x4 unity_MatrixInvP;
 float4x4 unity_MatrixInvVP;
+float4x4 unity_MatrixInvP;
 
+
+float4x4 _PrevViewProjMatrix;         // non-jittered. Motion vectors.
+float4x4 _NonJitteredViewProjMatrix;
 
 #define UNITY_MATRIX_M     unity_ObjectToWorld
 #define UNITY_MATRIX_I_M   unity_WorldToObject
