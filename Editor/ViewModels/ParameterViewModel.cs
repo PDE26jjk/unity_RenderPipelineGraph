@@ -44,6 +44,7 @@ namespace RenderPipelineGraph {
                     var portLinkTo = parameterData.Port.LinkTo.First() as ResourcePortData;
                     if (parameterData.NeedPort() && portLinkTo is not null) {
                         nodeViewModel.GetNodeView(portLinkTo.Owner as NodeData, out RPGNodeView linkToNodeView);
+                        if (linkToNodeView is null) continue;
                         if (linkToNodeView is not ResourceNodeView resourceNodeView)
                             throw new Exception();
                         var edge = resourceNodeView.PortView.ConnectTo(parameterView.PortView);
@@ -89,6 +90,8 @@ namespace RenderPipelineGraph {
                 return;
             ResourcePortData port1 = edge.output.GetFirstAncestorOfType<ResourceNodeView>().Model.m_AttachTo;
             ResourcePortData port2 = parameterView.Model.Port;
+            // if(port2.LinkTo.)
+            port2.DisconnectAll();
             PortData.Connect(port1, port2);
             parameterView.Model.UseDefault = false;
         }

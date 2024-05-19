@@ -31,9 +31,9 @@ namespace RenderPipelineGraph {
         public virtual void EndFrame() {
         }
         protected RPGPass(
-            PassNodeType passType = PassNodeType.Raster,
+            PassNodeType passType = PassNodeType.Raster
 #if UNITY_EDITOR // for debug in render graph viewer
-            [CallerFilePath] string filePath = ""
+            ,[CallerFilePath] string filePath = ""
 #endif
         ) {
 #if UNITY_EDITOR

@@ -35,7 +35,7 @@ namespace RenderPipelineGraph {
         public virtual ResourceData GetValue() {
             if (UseDefault) return m_DefaultResource;
             if (Port.LinkTo.Count > 0) {
-                return (Port.LinkTo[0].Owner as ResourceNodeData)?.Resource;
+                return (Port.LinkTo[0]?.Owner as ResourceNodeData)?.Resource;
             }
             return null;
         }

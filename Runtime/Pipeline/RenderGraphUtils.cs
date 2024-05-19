@@ -82,7 +82,7 @@ public static class RenderGraphUtils {
             profilingSampler ?? GetDefaultProfilingSampler.Invoke(renderGraph, new object[] {
                 pass.Name
             }) // ProfilingSampler sampler
-#if !CORE_PACKAGE_DOCTOOLS
+#if !CORE_PACKAGE_DOCTOOLS && UNITY_EDITOR
             ,
             pass.filePath,
             0,

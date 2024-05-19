@@ -122,8 +122,8 @@ MonoBehaviour:
     \"m_Id\": \"55498356a66f446da40720f4f388b88e\"\n    },\n    \"portType\": 0,\n   
     \"m_LinkTo\": [],\n    \"name\": \"\",\n    \"resourceType\": 0\n}\n\n{\n   
     \"m_Type\": \"RenderPipelineGraph.ResourceNodeData\",\n    \"m_ObjectId\": \"333f3854bfb545baa87e351370e363d8\",\n   
-    \"exposedName\": \"\",\n    \"pos\": {\n        \"x\": 532.4334106445313,\n       
-    \"y\": 1138.8001708984375\n    },\n    \"color\": {\n        \"r\": 0.0,\n       
+    \"exposedName\": \"\",\n    \"pos\": {\n        \"x\": 534.4334106445313,\n       
+    \"y\": 1148.133544921875\n    },\n    \"color\": {\n        \"r\": 0.0,\n       
     \"g\": 0.0,\n        \"b\": 0.0,\n        \"a\": 0.0\n    },\n    \"m_Resource\":
     {\n        \"m_Id\": \"edfc10b412914080bae0a9b2c6593f9d\"\n    },\n    \"m_AttachTo\":
     {\n        \"m_Id\": \"1e3dcffe602c41b7b24b76dfaefddf16\"\n    }\n}\n\n{\n   

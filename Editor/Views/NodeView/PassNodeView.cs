@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 
 
 namespace RenderPipelineGraph {
-    public class PassNodeView : RPGNodeView {
+    public partial class PassNodeView : RPGNodeView {
         PassNodeType m_RGPassType;
         internal readonly ParameterViewModel parameterViewModel;
         public new PassNodeData Model {

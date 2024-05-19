@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using RenderPipelineGraph.Editor;
+using RenderPipelineGraph.Editor.Views.blackborad;
+using RenderPipelineGraph.Interface;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.UIElements;
 
 namespace RenderPipelineGraph {
 
-    public class ResourceNodeView : RPGNodeView {
+    public partial class ResourceNodeView : RPGNodeView{
         string m_Name;
         protected AttachPortView m_PortView;
         public new ResourceNodeData Model => (ResourceNodeData)base.Model;
@@ -47,6 +50,10 @@ namespace RenderPipelineGraph {
         public void NotifyDisconnectPort(Edge edge) {
             this.NotifyDisconnectPortVM(edge.input as AttachPortView);
         }
+        RPGBlackboardRow GetBlackboardRow() {
+            return ResourceViewModel.GetViewModel(this).TryGetResourceViews(Model.Resource, out var row) ? row : null;
+        }
+
     }
 
 }

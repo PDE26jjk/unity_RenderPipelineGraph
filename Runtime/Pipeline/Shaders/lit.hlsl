@@ -92,7 +92,21 @@ void ClipLOD (float2 positionCS, float fade) {
 		clip(fade + (fade < 0.0 ? dither : -dither));
 	#endif
 }
-
+struct FragGBufferOutput
+{
+	half4 GBuffer0 : SV_Target0;
+	half4 GBuffer1 : SV_Target1;
+	half4 GBuffer2 : SV_Target2;
+	// half4 GBuffer3 : SV_Target3; // Camera color attachment
+};
+FragGBufferOutput fragGBuffer(Varyings IN) {
+	FragGBufferOutput OUT;
+	OUT.GBuffer0 = half4(1,0,0,1);
+	OUT.GBuffer1 = half4(1,1,0,1);
+	OUT.GBuffer2 = half4(1,1,1,1);
+	// OUT.GBuffer3 = 0;
+	return OUT;
+}
 float4 fragLit (Varyings IN) : SV_TARGET {
 	// return 1;
 #ifdef _WATER

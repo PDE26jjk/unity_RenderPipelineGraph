@@ -299,11 +299,13 @@ namespace RenderPipelineGraph {
 
         Vector2 m_PasteCenter;
         public void UpdateGlobalSelection() {
-            var bindables = selection
-                .OfType<IRPGBindable>().Select(t => t.BindingObject()).Cast<Object>()
-                .ToArray();
+            IEnumerable<IRPGBindable> Bindables = selection
+                .OfType<IRPGBindable>().ToHashSet();
+            var bindables = Enumerable.OfType<Object>(Bindables.Select(t => t.BindingObject(Bindables.Count() > 1))).ToArray();
 
+            // return;
             if (bindables.Length > 0) {
+                // Selection.objects = Array.Empty<Object>();
                 Selection.objects = bindables;
                 return;
             }

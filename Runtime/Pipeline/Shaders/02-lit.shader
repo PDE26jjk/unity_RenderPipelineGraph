@@ -17,10 +17,13 @@ Shader "MySRP/02-lit"
     CustomEditor "litGUI"
     SubShader
     {
-        Tags { "LightMode" = "MySRPMode1"}
 
         Pass
         {
+            Tags
+            {
+                "LightMode" = "MySRPMode1"
+            }
             Name "Lit"
             HLSLPROGRAM
             #pragma multi_compile _ LOD_FADE_CROSSFADE
@@ -29,7 +32,7 @@ Shader "MySRP/02-lit"
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile _ _SHADOW_MASK_ALWAYS _SHADOW_MASK_DISTANCE
             #pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
-			#pragma multi_compile _ _OTHER_PCF3 _OTHER_PCF5 _OTHER_PCF7
+            #pragma multi_compile _ _OTHER_PCF3 _OTHER_PCF5 _OTHER_PCF7
 
             #pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
 
@@ -37,13 +40,38 @@ Shader "MySRP/02-lit"
             #pragma fragment fragLit
 
             #include "lit.hlsl"
-
-
             ENDHLSL
         }
         Pass
         {
-            Tags { "LightMode" = "ShadowCaster"}
+            Tags
+            {
+                "LightMode" = "GBuffer"
+            }
+            Name "GBuffer"
+            HLSLPROGRAM
+            #pragma multi_compile _ LOD_FADE_CROSSFADE
+            #pragma shader_feature _BRDF_Unity _BRDF_catlikeCoding
+            #pragma shader_feature _RECEIVE_SHADOWS
+            #pragma multi_compile _ LIGHTMAP_ON
+            #pragma multi_compile _ _SHADOW_MASK_ALWAYS _SHADOW_MASK_DISTANCE
+            #pragma multi_compile _ _DIRECTIONAL_PCF3 _DIRECTIONAL_PCF5 _DIRECTIONAL_PCF7
+            #pragma multi_compile _ _OTHER_PCF3 _OTHER_PCF5 _OTHER_PCF7
+
+            #pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
+
+            #pragma vertex vertLit
+            #pragma fragment fragGBuffer
+
+            #include "lit.hlsl"
+            ENDHLSL
+        }
+        Pass
+        {
+            Tags
+            {
+                "LightMode" = "ShadowCaster"
+            }
             Name "ShadowCaster"
             HLSLPROGRAM
             #pragma vertex vert
@@ -52,8 +80,10 @@ Shader "MySRP/02-lit"
             ENDHLSL
         }
 
-        Pass{
-            Tags {
+        Pass
+        {
+            Tags
+            {
                 "LightMode" = "Meta"
             }
 

@@ -1,6 +1,6 @@
 ﻿using RenderPipelineGraph.Attribute;
-using UnityEditor;
 using UnityEngine;
+using UnityEditor;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 
@@ -16,13 +16,17 @@ namespace RenderPipelineGraph {
             internal RendererListHandle GizmosListHandle;
         }
 
-        public DrawGizmos():base() {
+        public DrawGizmos() : base() {
         }
 
         public override bool Valid(Camera camera) {
+#if UNITY_EDITOR
             if (camera.cameraType != CameraType.SceneView)
                 return false;
             return Handles.ShouldRenderGizmos() && camera.sceneViewFilterMode != Camera.SceneViewFilterMode.ShowFiltered;
+#else
+            return false;
+#endif
         }
 
         public override void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {

@@ -2,6 +2,6 @@
 
 namespace RenderPipelineGraph.Interface {
     interface IRPGBindable {
-        ScriptableObject BindingObject();
+        Object BindingObject(bool multiple=false);
     }
 }

@@ -20,6 +20,9 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             }
             return fieldInfo;
         }
+        internal VisualElement CreatePropertyField<T>(string path, Action callBack) {
+            return CreatePropertyField<T>(path, null, null, false, callBack);
+        }
         internal VisualElement CreatePropertyField<T>(string path, object bindingData, string bindingPath = null, bool autoBinding = true, Action callBack = null) {
             bindingPath ??= path;
             SerializedProperty property = serializedObject.FindProperty(path);
@@ -53,7 +56,12 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             return field;
         }
         protected bool CheckAndAddNameField<DataBinding,Data>(VisualElement root, out DataBinding dataBinding, out Data data) where DataBinding: RPGBlackboardRow.ResourceDataBinding where Data: ResourceData{
-            var dataBindings = serializedObject.targetObjects.Cast<DataBinding>().ToList();
+            var dataBindings = serializedObject.targetObjects.OfType<DataBinding>().ToList();
+            if (dataBindings.Count != serializedObject.targetObjects.Length) {
+                dataBinding = null;
+                data = null;
+                return false;
+            }
             List<Data> resourceDatas = dataBindings.Select(t => t.Model).Cast<Data>().ToList();
             dataBinding = dataBindings[0];
             data = resourceDatas[0];

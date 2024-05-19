@@ -14,6 +14,7 @@ namespace RenderPipelineGraph {
         public bool depth;
         // public bool randomAccess;
         public int listIndex = 0;
+        public int fragmentIndex = 0;
 
         internal TextureParameterData(FieldInfo fieldInfo) : base(fieldInfo) {
             m_Port.value.resourceType = ResourceType.Texture;
@@ -28,7 +29,9 @@ namespace RenderPipelineGraph {
                 write = true;
             }
             if (customAttributes.Contains(typeof(FragmentAttribute))) {
+                FragmentAttribute fragmentAttribute = passTypeFieldInfo.GetCustomAttributes<FragmentAttribute>().First();
                 fragment = true;
+                fragmentIndex = fragmentAttribute.index;
                 write = true;
             }
             if (customAttributes.Contains(typeof(WriteAttribute))
@@ -57,7 +60,7 @@ namespace RenderPipelineGraph {
                 (builder as IRasterRenderGraphBuilder)?.SetRenderAttachmentDepth(textureHandle);
             }
             else if (fragment) {
-                (builder as IRasterRenderGraphBuilder)?.SetRenderAttachment(textureHandle, 0);
+                (builder as IRasterRenderGraphBuilder)?.SetRenderAttachment(textureHandle, fragmentIndex);
             }
             else if (read || write) {
                 AccessFlags flag = AccessFlags.None;

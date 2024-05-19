@@ -42,9 +42,9 @@ public class RPGRenderer : IDisposable {
         public MethodInfo addRenderPassMethodInfo;
         public int refCount;
         public object[] parameters;
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+// #if UNITY_EDITOR || DEVELOPMENT_BUILD
         public ProfilingSampler profilingSampler;
-#endif
+// #endif
     }
     List<PassSortData> passSorted = new();
     RPGAsset asset;
@@ -116,7 +116,9 @@ public class RPGRenderer : IDisposable {
     void RecordPasses(RenderGraph renderGraph) {
         using var profilingScope = new ProfilingScope(ProfilingSampler.Get(RPGProfileId.RecordPasses));
         foreach (PassSortData passSortData in passSorted) {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             using var recordPassProfilingScope = new ProfilingScope(passSortData.profilingSampler);
+#endif
             var passNodeData = passSortData.passNodeData;
             var pass = passNodeData.m_Pass;
             if (!pass.Valid(this.camera)) continue;
@@ -215,7 +217,7 @@ public class RPGRenderer : IDisposable {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             var str = new StringBuilder("Pass order: ");
             str.AppendJoin(", ", passSorted.Select(t => t.passNodeData.exposedName));
-            Debug.Log(str.ToString());
+            Debug.Log(str.ToString()); 
 #endif
             foreach (PassSortData passSortData in passSorted) {
                 passSortData.addRenderPassMethodInfo = RenderGraphUtils.GetAddRasterRenderPassMethodInfo(renderGraph, passSortData.passNodeData.m_Pass);

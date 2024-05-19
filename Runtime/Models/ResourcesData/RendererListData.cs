@@ -7,19 +7,37 @@ using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Serialization;
 
 namespace RenderPipelineGraph {
-
+    [Serializable]
+    public class RenderQueueRangeClass {
+        public int LowerBound;
+        public int UpperBound;
+        public RenderQueueRangeClass(RenderQueueRange renderQueueRange) {
+            LowerBound = renderQueueRange.lowerBound;
+            UpperBound = renderQueueRange.upperBound;
+        }
+        public static implicit operator RenderQueueRangeClass(RenderQueueRange renderQueueRange)
+        {
+            return new RenderQueueRangeClass(renderQueueRange);
+        }
+        
+        public static implicit operator RenderQueueRange(RenderQueueRangeClass cla)
+        {
+            return new RenderQueueRange(cla.LowerBound,cla.UpperBound);
+        }
+        
+    }
     public class RPGRenderListDesc : JsonObject {
 
         public SortingCriteria sortingCriteria = SortingCriteria.CommonOpaque;
         public List<string> shaderTagIdStrs = new();
-        public RenderQueueRange renderQueueRange = RenderQueueRange.all;
+        
+        public RenderQueueRangeClass renderQueueRange = RenderQueueRange.all;
         public int layerMask = -1;
 
         public bool enableDynamicBatching = false;
         public PerObjectData perObjectData = PerObjectData.None;
 
         public bool useOverrideShader = false;
-        [FormerlySerializedAs("overrideShaderTagIdStr")]
         public string overrideShaderPath = string.Empty;
     }
     public class RendererListData : ResourceData {

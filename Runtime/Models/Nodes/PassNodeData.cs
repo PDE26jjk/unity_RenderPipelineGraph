@@ -48,16 +48,29 @@ namespace RenderPipelineGraph {
             }
             base.OnBeforeSerialize();
         }
+        // https://stackoverflow.com/questions/1825147/type-gettypenamespace-a-b-classname-returns-null
+        static Type GetType(string typeName)
+        {
+            var type = Type.GetType(typeName);
+            if (type != null) return type;
+            foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                type = a.GetType(typeName);
+                if (type != null)
+                    return type;
+            }
+            return null;
+        }
         public override void OnAfterMultiDeserialize(string json) {
             base.OnAfterMultiDeserialize(json);
             if (m_PassClassName != null) {
-                var passType = Type.GetType(m_PassClassName);
+                var passType = GetType(m_PassClassName);
                 if (passType != null) {
                     Init(passType);
                     return;
                 }
             }
-            Debug.LogError("No pass class found.");
+            Debug.LogError($"Class {m_PassClassName} not found!");
         }
         internal void Init(Type passType) {
             if (inited) return;

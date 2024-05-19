@@ -60,6 +60,9 @@ namespace RenderPipelineGraph {
                 }
                 if (nodeView is null) // can not happen
                     continue;
+                if (nodeView is ResourceNodeView resourceNodeView && resourceNodeView.Model.Resource == null) {
+                    continue;
+                }
 
                 yield return nodeView;
                 nodeView.Init();
@@ -70,7 +73,8 @@ namespace RenderPipelineGraph {
             m_NodeViews = newNodeViews;
 
             // Link Nodes
-            foreach (PassNodeView passNodeView in currentGraph.NodeList.Select(nodeData => m_NodeViews[nodeData]).OfType<PassNodeView>()) {
+            IEnumerable<PassNodeView> passNodeViews = m_NodeViews.Values.OfType<PassNodeView>();
+            foreach (PassNodeView passNodeView in passNodeViews) {
                 passNodeView.parameterViewModel.InitAttachEdge();
             }
             InitDependenceEdge();

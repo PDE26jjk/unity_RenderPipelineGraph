@@ -64,9 +64,10 @@ namespace RenderPipelineGraph {
         }
 
         public RPGGraphData Save(RPGGraphData graphData = null) {
+#if UNITY_EDITOR
             // m_Graph.TestInit3();
             graphData ??= m_Graph;
-            printDebug(graphData);
+            // printDebug(graphData);
             var json = MultiJson.Serialize(graphData);
             var deserializedGraph = new RPGGraphData();
             MultiJson.Deserialize(deserializedGraph, json);
@@ -91,6 +92,7 @@ namespace RenderPipelineGraph {
             Deserialized = false;
             NeedRecompile = true;
             // printDebug(deserializedGraph);
+#endif
             return m_Graph;
         }
         public void debug1() {

@@ -13,8 +13,6 @@ public class SerializableTagGraphPair {
 }
 [CreateAssetMenu(menuName = "Rendering/myRenderPipelineAsset")]
 public class RPGRenderPipelineAsset : RenderPipelineAsset<RPGRenderPipeline> {
-    [SerializeField]
-    RPGAsset RpgAsset = default;
     public VolumeProfile defaultVolumeProfile;
 
 
@@ -25,8 +23,10 @@ public class RPGRenderPipelineAsset : RenderPipelineAsset<RPGRenderPipeline> {
     protected override UnityEngine.Rendering.RenderPipeline CreatePipeline() {
         Debug.Log("createPipeline");
         // RpgAsset.Graph.TestInit3();
-        RpgAsset.NeedRecompile = true;
-        RpgAsset.Deserialized = false;
+        foreach (var pair in cameraRenderGraphs) {
+            pair.graph.NeedRecompile = true;
+            pair.graph.Deserialized = false;
+        }
         try {
             Blitter.Initialize(Shader.Find("MySRP/FinalBlit"), Shader.Find("MySRP/FinalBlit"));
         }

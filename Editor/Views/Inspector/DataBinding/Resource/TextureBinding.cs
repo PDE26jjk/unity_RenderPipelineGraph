@@ -33,11 +33,10 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             public override void Init(ResourceData model) {
                 base.Init(model);
                 if (Model is TextureData textureData) {
-                    var desc = textureData.m_desc.value;
-                    loadDesc(ref desc);
+                    loadDesc(textureData.m_desc);
                 }
             }
-            protected void loadDesc(ref RPGTextureDesc desc) {
+            protected void loadDesc(RPGTextureDesc desc) {
 
                 size = new Vector2Int(desc.width, desc.height);
                 sizeMode = desc.sizeMode;
@@ -62,8 +61,7 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                 base.Init(model);
                 var textureListData = Model as TextureListData;
                 bufferCount = textureListData.bufferCount;
-                var desc = textureListData.m_desc.value;
-                loadDesc(ref desc);
+                loadDesc(textureListData.m_desc);
             }
         }
         class BuildInTextureBinding : TextureBinding {
@@ -86,7 +84,7 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             }
         }
 
-        [CustomEditor(typeof(TextureBinding)), CanEditMultipleObjects]
+        [CustomEditor(typeof(TextureBinding))]
         public class TextureBindingEditor : RPGEditorBase {
             public override VisualElement CreateInspectorGUI() {
                 var root = new VisualElement();

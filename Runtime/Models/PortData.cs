@@ -19,7 +19,14 @@ namespace RenderPipelineGraph {
         public List<PortData> LinkTo => m_LinkTo.SelectValue().ToList();
 
         public List<Slottable> LinkToOwners => m_LinkTo.SelectValue().Select(t=>t.Owner).ToList();
-        
+        public override void OnAfterDeserialize() {
+            base.OnAfterDeserialize();
+            // foreach (JsonRef<PortData> linkTo in m_LinkTo) {
+            //     if (linkTo.value == null) {
+            //         m_LinkTo.Remove(linkTo);
+            //     }
+            // }
+        }
         public string name;
         public static void Connect(PortData p1, PortData p2) {
             if (!p1.m_LinkTo.Contains(p2)) {
@@ -38,6 +45,14 @@ namespace RenderPipelineGraph {
             }
             return true;
         }
+        public void DisconnectAll() {
+            foreach (var p in m_LinkTo.SelectValue()) {
+                if (p != null && p.m_LinkTo.Contains(this)) {
+                    p.m_LinkTo.Remove(this);
+                }
+            }
+            m_LinkTo.Clear();
+        }
         internal PortData(Slottable owner) {
             m_Owner = owner;
         }
@@ -50,6 +65,7 @@ namespace RenderPipelineGraph {
         }
         
         ResourcePortData(){}
+
 
     }
     public sealed class DependencePortData : PortData {
