@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
+using Debug = UnityEngine.Debug;
 
 namespace RenderPipelineGraph {
     public class RPGGraphData : RPGModel {
@@ -26,7 +27,16 @@ namespace RenderPipelineGraph {
             foreach (var data in m_ResourceList) {
                 data.OnBeforeSerialize();
             }
+            for (int index = 0; index < m_NodeList.Count; index++) {
+                JsonData<NodeData> data = m_NodeList[index];
+                if (data.value is ResourceNodeData resourceNodeData && resourceNodeData.Resource is null) {
+                    m_NodeList.Remove(data);
+                    Debug.LogError($"{resourceNodeData.exposedName} is null.");
+                    index--;
+                }
+            }
             foreach (var data in m_NodeList) {
+                
                 data.OnBeforeSerialize();
             }
         }

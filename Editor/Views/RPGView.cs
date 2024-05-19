@@ -240,15 +240,18 @@ namespace RenderPipelineGraph {
             }
             if (elementsToRemove is not null && elementsToRemove.Count > 0) {
                 RecordUndo("delete");
-                var deletables = selection.OfType<IRPGDeletable>().ToList();
+                IEnumerable<GraphElement> deleteList = toDeleteList.Concat(elementsToRemove.OfType<GraphElement>()).ToList();
+                var deletables = deleteList.OfType<IRPGDeletable>();
                 foreach (var deletable in deletables) {
                     deletable.OnDelete();
                 }
-                var edgesToRemove = selection.OfType<Edge>().ToList();
+                
+                var edgesToRemove = deleteList.OfType<Edge>();
                 foreach (Edge edge in edgesToRemove) {
                     if (edge.input is RPGPortView input) input.OnDisconnect(edge);
                     if (edge.output is RPGPortView output) output.OnDisconnect(edge);
                 }
+                toDeleteList.Clear();
             }
             if (edgesToCreate is not null && edgesToCreate.Count > 0) {
                 RecordUndo("connect port");
@@ -271,6 +274,7 @@ namespace RenderPipelineGraph {
             }
             m_NodeViewModel.Loading = false;
         }
+        List<GraphElement> toDeleteList = new();
         void Delete(string cmd, AskUser askuser) {
             // var currentSelection = selection.ToList();
             // Debug.Log(cmd + currentSelection);
@@ -279,7 +283,7 @@ namespace RenderPipelineGraph {
             // foreach (var deletable in deletables) {
             //     deletable.OnDelete();
             // }
-
+            toDeleteList = selection.OfType<GraphElement>().ToList();
             DeleteSelection();
             // m_GraphUndoable.RecordUndo("delete");
         }

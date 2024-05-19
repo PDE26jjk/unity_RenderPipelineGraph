@@ -57,13 +57,24 @@ namespace RenderPipelineGraph {
             m_Owner = owner;
         }
         protected PortData(){}
+        public override void OnBeforeSerialize() {
+            base.OnBeforeSerialize();
+            for (int index = 0; index < m_LinkTo.Count; index++) {
+                JsonRef<PortData> port = m_LinkTo[index];
+                if (port.value?.Owner == null) {
+                    m_LinkTo.Remove(port);
+                    index--;
+                }
+            }
+        }
     }
     public class ResourcePortData : PortData {
         public ResourceType resourceType;
         internal ResourcePortData(Slottable owner):base(owner) {
             this.portType = PortType.Resource;
         }
-        
+
+
         ResourcePortData(){}
 
 

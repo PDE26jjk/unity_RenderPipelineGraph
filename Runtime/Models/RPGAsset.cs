@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
@@ -74,17 +75,20 @@ namespace RenderPipelineGraph {
             var json2 = MultiJson.Serialize(deserializedGraph);
             if (json != json2) {
                 int diffIndex = 0;
-                for (int i = 0; i < Math.Min(json.Length, json2.Length); i++)
-                {
-                    if (json[i] != json2[i])
-                    {
+                for (int i = 0; i < Math.Min(json.Length, json2.Length); i++) {
+                    if (json[i] != json2[i]) {
                         diffIndex = i;
                         break;
                     }
                 }
                 int start = Math.Max(0, diffIndex - 20);
                 int length = Math.Min(40, json.Length - start);
-            Debug.LogError($"序列化失败：\n{json.Substring(start, length)}  !=  {json2.Substring(start, length)}");
+                Debug.LogError($"序列化失败：\n{json.Substring(start, length)}  !=  {json2.Substring(start, length)}");
+                string tempDir = Path.GetTempPath();
+                string filePath = Path.Combine(tempDir, "json1.txt");
+                File.WriteAllText(filePath, json);
+                filePath = Path.Combine(tempDir, "json2.txt");
+                File.WriteAllText(filePath, json2);
             }
             content = json;
             Debug.Log(json);
