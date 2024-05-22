@@ -240,7 +240,7 @@ namespace RenderPipelineGraph {
             }
             if (elementsToRemove is not null && elementsToRemove.Count > 0) {
                 RecordUndo("delete");
-                IEnumerable<GraphElement> deleteList = toDeleteList.Concat(elementsToRemove.OfType<GraphElement>()).ToList();
+                IEnumerable<GraphElement> deleteList = toDeleteList.Concat(elementsToRemove.OfType<GraphElement>()).ToHashSet().ToList();
                 var deletables = deleteList.OfType<IRPGDeletable>();
                 foreach (var deletable in deletables) {
                     deletable.OnDelete();

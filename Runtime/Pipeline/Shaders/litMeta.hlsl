@@ -6,12 +6,18 @@
 #include "./BRDF.hlsl" 
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/MetaPass.hlsl"
-#include "./litInput.hlsl"
 TEXTURE2D(_BaseMap);SAMPLER(sampler_BaseMap);
 TEXTURE2D(_EmissionMap); 
+CBUFFER_START(UnityPerMaterial)
+	float4 _BaseMap_ST;
+	float _NormalScale;
+	float4 _BaseColor;
+	float4 _EmissionColor;
+	float _Roughness;
+	float _Metallic;
+CBUFFER_END
 
-
-struct Attributes
+struct MetaAttributes
 {
 	float4 positionOS   : POSITION;
 	float3 normalOS     : NORMAL;
@@ -29,7 +35,7 @@ struct Varyings
 	float4 LightCoord   : TEXCOORD2;
 #endif
 };
-Varyings MetaPassVertex (Attributes input) {
+Varyings MetaPassVertex (MetaAttributes input) {
 	Varyings output = (Varyings)0;
 		output.positionCS = UnityMetaVertexPosition(input.positionOS.xyz, input.uv1, input.uv2);
 		output.uv = TRANSFORM_TEX(input.uv0, _BaseMap);

@@ -29,6 +29,11 @@ namespace RenderPipelineGraph.Attribute {
         }
     }
     [AttributeUsage(AttributeTargets.Field)]
+    public class InputAttribute : FragmentAttribute {
+        public InputAttribute(int index = 0, int listIndex = 0) : base(index, listIndex) {
+        }
+    }
+    [AttributeUsage(AttributeTargets.Field)]
     public class DepthAttribute : FragmentAttribute {
         public DepthAttribute(int index = 0, int listIndex = 0) : base(index, listIndex) {
         }

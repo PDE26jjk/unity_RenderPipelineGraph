@@ -22,12 +22,10 @@ struct Varyings
 
 #include "./litInput.hlsl"
 
-TEXTURE2D(_BaseMap);
-SAMPLER(sampler_BaseMap);
 bool _ShadowPancaking;
 
-Varyings vert(Attributes IN) {
-	Varyings OUT;
+VaryingsLit vert(Attributes IN) {
+	VaryingsLit OUT;
 	OUT.positionWS = TransformObjectToWorld(IN.positionOS.xyz);
 	OUT.positionCS = TransformWorldToHClip(OUT.positionWS);
 	OUT.uv = TRANSFORM_TEX(IN.texcoord, _BaseMap);
@@ -44,7 +42,7 @@ Varyings vert(Attributes IN) {
 	return OUT;
 }
 
-void frag(Varyings IN) {
+void frag(VaryingsLit IN) {
 
 }
 

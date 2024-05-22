@@ -25,7 +25,7 @@ namespace RenderPipelineGraph {
         public override void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
             var yflip = false;
             var cameraType = cameraData.camera.cameraType;
-            if (cameraType == CameraType.SceneView || cameraType == CameraType.Preview)
+            if (cameraType == CameraType.SceneView || cameraType == CameraType.Preview || (cameraType== CameraType.Game && !SystemInfo.graphicsUVStartsAtTop) )
                 yflip = true;
             ((PassData)passData).yFlip = yflip;
         }

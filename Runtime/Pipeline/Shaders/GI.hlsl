@@ -1,6 +1,8 @@
 #ifndef GI_INCLUDE
 #define GI_INCLUDE
 
+#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/EntityLighting.hlsl"
+#include "./Input.hlsl" 
 TEXTURE2D(unity_Lightmap);
 SAMPLER(samplerunity_Lightmap);
 

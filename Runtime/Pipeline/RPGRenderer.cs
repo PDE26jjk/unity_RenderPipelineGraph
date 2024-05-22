@@ -89,7 +89,7 @@ public class RPGRenderer : IDisposable {
 
         ReorderPasses();
 
-        renderGraph.nativeRenderPassesEnabled = true;
+        renderGraph.nativeRenderPassesEnabled = false;
         renderGraph.BeginRecording(renderGraphParameters);
 
         UpdateVolumeFramework();
@@ -217,7 +217,7 @@ public class RPGRenderer : IDisposable {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             var str = new StringBuilder("Pass order: ");
             str.AppendJoin(", ", passSorted.Select(t => t.passNodeData.exposedName));
-            Debug.Log(str.ToString()); 
+            Debug.Log(str.ToString());
 #endif
             foreach (PassSortData passSortData in passSorted) {
                 passSortData.addRenderPassMethodInfo = RenderGraphUtils.GetAddRasterRenderPassMethodInfo(renderGraph, passSortData.passNodeData.m_Pass);

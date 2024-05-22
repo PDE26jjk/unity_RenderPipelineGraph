@@ -31,6 +31,8 @@ struct BRDF_INPUT
 	float3 lightColor;
 	float3 viewDir;
 	float3 normal;
+	float3 positionWS;
+	float3 positionCS;
 	float smoothness;
 	float oneMinusReflectivity;
 	float3 diffColor;

@@ -5,34 +5,43 @@ using RenderPipelineGraph.Serialization;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
+using UnityEngine.Serialization;
 
 namespace RenderPipelineGraph {
     public class TextureParameterData : RPGParameterData {
         public bool read;
         public bool write;
         public bool fragment;
+        public bool input;
         public bool depth;
         // public bool randomAccess;
         public int listIndex = 0;
-        public int fragmentIndex = 0;
+        [FormerlySerializedAs("fragmentIndex")]
+        public int mrtIndex = 0;
 
         internal TextureParameterData(FieldInfo fieldInfo) : base(fieldInfo) {
             m_Port.value.resourceType = ResourceType.Texture;
         }
-        
+
         public override void Init() {
             base.Init();
 
             if (customAttributes.Contains(typeof(DepthAttribute))) {
                 depth = true;
-                read = true;
-                write = true;
             }
-            if (customAttributes.Contains(typeof(FragmentAttribute))) {
+            if (customAttributes.Contains(typeof(InputAttribute))) {
+                InputAttribute inputAttribute = passTypeFieldInfo.GetCustomAttributes<InputAttribute>().First();
+                input = true;
+                mrtIndex = inputAttribute.index;
+                read = true;
+                write = false;
+            }
+            else if (customAttributes.Contains(typeof(FragmentAttribute))) {
                 FragmentAttribute fragmentAttribute = passTypeFieldInfo.GetCustomAttributes<FragmentAttribute>().First();
                 fragment = true;
-                fragmentIndex = fragmentAttribute.index;
+                mrtIndex = fragmentAttribute.index;
                 write = true;
+                read = false;
             }
             if (customAttributes.Contains(typeof(WriteAttribute))
             ) {
@@ -47,8 +56,9 @@ namespace RenderPipelineGraph {
             var resourceData = GetValue() as CanSetGlobalResourceData;
             TextureHandle textureHandle;
             if (resourceData is TextureData textureData) {
-                textureHandle = textureData.handle ;
-            }else if (resourceData is TextureListData textureListData ) {
+                textureHandle = textureData.handle;
+            }
+            else if (resourceData is TextureListData textureListData) {
                 textureHandle = textureListData.handles[listIndex];
             }
             else {
@@ -60,7 +70,10 @@ namespace RenderPipelineGraph {
                 (builder as IRasterRenderGraphBuilder)?.SetRenderAttachmentDepth(textureHandle);
             }
             else if (fragment) {
-                (builder as IRasterRenderGraphBuilder)?.SetRenderAttachment(textureHandle, fragmentIndex);
+                (builder as IRasterRenderGraphBuilder)?.SetRenderAttachment(textureHandle, mrtIndex);
+            }
+            else if (input) {
+                (builder as IRasterRenderGraphBuilder)?.SetInputAttachment(textureHandle, mrtIndex);
             }
             else if (read || write) {
                 AccessFlags flag = AccessFlags.None;
@@ -75,6 +88,7 @@ namespace RenderPipelineGraph {
                 }
             }
         }
-        TextureParameterData(){}
+        TextureParameterData() {
+        }
     }
 }
