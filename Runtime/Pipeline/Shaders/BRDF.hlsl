@@ -35,6 +35,7 @@ struct BRDF_INPUT
 	float3 positionCS;
 	float smoothness;
 	float oneMinusReflectivity;
+	float posMaxErr;
 	float3 diffColor;
 	float3 specColor;
 	float3 giDiffuse;

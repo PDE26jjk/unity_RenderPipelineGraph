@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using PDE;
 using RenderPipelineGraph;
+using RenderPipelineGraph.Runtime.Volumes;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Experimental.GlobalIllumination;
@@ -14,16 +15,16 @@ public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
     // RenderGraph renderGraph = new RenderGraph("RPG");
     VolumeProfile defaultProfile;
     Dictionary<Camera, CameraData> CameraDataMap = new();
-
-    public RPGRenderPipeline(List<SerializableTagGraphPair> graphPairs) {
-        foreach (var pair in graphPairs) {
+    RPGRenderPipelineAsset m_PipelineAsset;
+    public RPGRenderPipeline( RPGRenderPipelineAsset pipelineAsset) {
+        m_PipelineAsset = pipelineAsset;
+        foreach (var pair in m_PipelineAsset.cameraRenderGraphs) {
             graphs[pair.tag] = pair.graph;
         }
-        GraphicsSettings.useScriptableRenderPipelineBatching = true;
-        GraphicsSettings.lightsUseLinearIntensity = true;
         VolumeManager.instance.Initialize(VolumeProfileSetting.GetOrCreateDefaultVolumeProfile());
         DebugManager.instance.RefreshEditor();
         InitializeForEditor();
+        // RTHandles.Initialize(1,1);
     }
     protected override void Dispose(bool disposing) {
         base.Dispose(disposing);
@@ -39,6 +40,8 @@ public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
     protected override void Render(ScriptableRenderContext context, Camera[] cameras) {
         Render(context, new List<Camera>(cameras));
     }
+    CameraData _ScreenCameraData;
+    CameraData _PreviewCameraData;
     protected override void Render(ScriptableRenderContext context, List<Camera> cameras) {
         SortCamaras(cameras);
 
@@ -50,7 +53,10 @@ public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
         //     renderGraph?.Cleanup();
         //     renderGraph = new("Some Render Graph");
         // }
-
+        var settings = VolumeManager.instance.stack.GetComponent<PipelineSetting>();
+        GraphicsSettings.useScriptableRenderPipelineBatching = settings.useSRPBatching.value;
+        GraphicsSettings.lightsUseLinearIntensity = settings.lightsUseLinearIntensity.value;
+        
         // Iterate over all Cameras
         foreach (Camera camera in cameras) {
             if (!graphs.TryGetValue(camera.tag, out var graph)) {
@@ -59,12 +65,22 @@ public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
                     continue;
             }
             // renderer.Render(renderGraph, context, camera, shadowSettings, postFXSettings);
-
-            if (!CameraDataMap.TryGetValue(camera, out var cameraData)) {
+            CameraData cameraData;
+            if (camera.cameraType == CameraType.SceneView) {
+                cameraData = _ScreenCameraData ??= new CameraData(camera);
+                _ScreenCameraData.m_Camera = camera;
+            }else if (camera.cameraType == CameraType.Preview) {
+                cameraData = _PreviewCameraData ??= new CameraData(camera);
+                _PreviewCameraData.m_Camera = camera;
+            }
+            else if (!CameraDataMap.TryGetValue(camera, out cameraData)) {
                 CameraDataMap[camera] = cameraData = new CameraData(camera);
+                // Debug.Log(camera.GetInstanceID()); 
             }
             if (graph.NeedRecompile) cameraData.needReloadGraph = true;
             if (!graph.Deserialized) graph.Deserialize();
+
+            cameraData.renderGraph.nativeRenderPassesEnabled = m_PipelineAsset.useNRP;
             cameraData.Render(graph, context);
         }
         foreach (RPGAsset graph in graphs.Values) {

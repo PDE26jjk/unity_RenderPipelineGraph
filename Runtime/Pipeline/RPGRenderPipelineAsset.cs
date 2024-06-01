@@ -14,11 +14,11 @@ public class SerializableTagGraphPair {
 [CreateAssetMenu(menuName = "Rendering/myRenderPipelineAsset")]
 public class RPGRenderPipelineAsset : RenderPipelineAsset<RPGRenderPipeline> {
     public VolumeProfile defaultVolumeProfile;
-
-
+    [Tooltip("bug:turn it on need to restart editor")]
+    public bool useNRP;
     // tag->graph
     [SerializeField]
-    List<SerializableTagGraphPair> cameraRenderGraphs = default;
+    internal List<SerializableTagGraphPair> cameraRenderGraphs = default;
 
     protected override UnityEngine.Rendering.RenderPipeline CreatePipeline() {
         Debug.Log("createPipeline");
@@ -32,7 +32,7 @@ public class RPGRenderPipelineAsset : RenderPipelineAsset<RPGRenderPipeline> {
         }
         catch {
         }
-        return new RPGRenderPipeline(cameraRenderGraphs);
+        return new RPGRenderPipeline(this);
     }
     protected void OnDestroy() {
     }

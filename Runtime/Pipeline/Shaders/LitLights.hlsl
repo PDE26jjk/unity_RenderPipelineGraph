@@ -22,7 +22,7 @@ CBUFFER_START(_Light)
 CBUFFER_END
 
 #include "./shadows.hlsl"
-float3 LitDirectionalLight(float3 normalRaw,BRDF_INPUT brdfInput) {
+float3 LitDirectionalLight(float3 normalRaw, BRDF_INPUT brdfInput) {
 	float3 color = 0;
 	for (int i = 0; i < _DirectionalLightCount; i++) {
 		float gi_shadows = 1.;
@@ -56,8 +56,8 @@ float3 LitDirectionalLight(float3 normalRaw,BRDF_INPUT brdfInput) {
 	}
 	return color;
 }
-float3 LitOtherLight(float3 normalRaw,BRDF_INPUT brdfInput) {
-	float3 color =0;
+float3 LitOtherLight(float3 normalRaw, BRDF_INPUT brdfInput) {
+	float3 color = 0;
 	//////////////////////////////////////////////
 	// Other Light
 	//////////////////////////////////////////////
@@ -65,21 +65,24 @@ float3 LitOtherLight(float3 normalRaw,BRDF_INPUT brdfInput) {
 	brdfInput.giSpecular = 0;
 	for (int i = 0; i < _OtherLightCount; i++) {
 		float3 toLight = _OtherLightPositions[i].xyz - brdfInput.positionWS;
+		float3 errDir = normalize(toLight + brdfInput.viewDir * dot(toLight, brdfInput.viewDir));
+		float3 posErr = min(brdfInput.posMaxErr*2,0.25) * errDir;
+		float3 positionWS = brdfInput.positionWS + brdfInput.posMaxErr * posErr;
 		//////////////////////////////////////////////
 		// shadow
 		//////////////////////////////////////////////
 		#if !defined(_RECEIVE_SHADOWS)
-	float shadow = 1;
+		float shadow = 1;
 		#else
 		float gi_shadows = 1.;
 		#if defined(_SHADOW_MASK_DISTANCE) || defined(_SHADOW_MASK_ALWAYS)
 	float strength = _OtherLightShadowData[i].x;
 	int shadowMaskChannel = _OtherLightShadowData[i].w;
 	if(shadowMaskChannel >=0)
-		gi_shadows = SampleBakedShadows(lightMapUV,IN.positionWS)[shadowMaskChannel];
+		gi_shadows = SampleBakedShadows(lightMapUV,positionWS)[shadowMaskChannel];
 		#endif
 		// normal map does not affect shadow
-		float shadow = GetOtherShadow(i, toLight, brdfInput.positionWS, brdfInput.positionCS.xyz, normalRaw, gi_shadows);
+		float shadow = GetOtherShadow(i, toLight, positionWS, brdfInput.positionCS.xyz, normalRaw, gi_shadows);
 		#endif
 
 		//////////////////////////////////////////////

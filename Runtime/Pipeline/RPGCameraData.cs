@@ -1,32 +1,45 @@
 ﻿using System;
 using System.Reflection;
+using RenderPipelineGraph.Runtime.Volumes;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
     public class CameraData : IDisposable {
-        internal readonly RTHandleSystem rtHandleSystem = new();
-        internal readonly BufferedRTHandleSystem historyRTHandleSystem = new();
-        readonly Camera m_Camera;
+        internal RTHandleSystem rtHandleSystem;
+        internal BufferedRTHandleSystem historyRTHandleSystem;
+        internal Camera m_Camera;
         public Camera camera => m_Camera;
         RPGRenderer m_Renderer;
-        RenderGraph renderGraph;
+        internal RenderGraph renderGraph;
         internal bool needReloadGraph = true;
         public void Dispose() {
-            m_Renderer.Dispose();
+            renderGraph?.Cleanup();
+            m_Renderer?.Dispose();
             RestoreRTHandels();
-            rtHandleSystem.Dispose();
-            historyRTHandleSystem.Dispose();
+            rtHandleSystem?.Dispose();
+            historyRTHandleSystem?.Dispose();
         }
-        internal Vector2Int sizeInPixel = Vector2Int.zero;
+        Vector2Int sizeInPixel = Vector2Int.zero;
         static FieldInfo _defaultRTHandlesInstanceInfo;
         static RTHandleSystem _defaultRTHandles;
         public Matrix4x4 previousViewProjectionMatrix = Matrix4x4.identity;
+        void Refresh() {
+            Dispose();
+            needReloadGraph = true;
+            sizeInPixel = Vector2Int.zero;
+            rtHandleSystem = new();
+            historyRTHandleSystem = new();
+            renderGraph = CreateRenderGraph(m_Camera);
+            this.m_Renderer = new();
+        }
         public CameraData(Camera cam) {
             this.m_Camera = cam;
-            renderGraph = new(cam.name + " RPG");
-            this.m_Renderer = new();
+            Refresh();
+        }
+        RenderGraph CreateRenderGraph(Camera cam) {
+            return new(cam.name + " RPG");
         }
         public void Render(RPGAsset asset, ScriptableRenderContext context) {
             m_Renderer.Render(asset, renderGraph, context, this);
@@ -43,7 +56,8 @@ namespace RenderPipelineGraph {
         }
         // call it after rendering camera.
         public void RestoreRTHandels() {
-            _defaultRTHandlesInstanceInfo?.SetValue(null, _defaultRTHandles);
+            if (_defaultRTHandles != null)
+                _defaultRTHandlesInstanceInfo?.SetValue(null, _defaultRTHandles);
         }
 
         public void SwapAndSetReferenceSize() {

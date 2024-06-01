@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using RenderPipelineGraph;
+using RenderPipelineGraph.Runtime.Volumes;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Rendering;
@@ -89,11 +90,14 @@ public class RPGRenderer : IDisposable {
 
         ReorderPasses();
 
-        renderGraph.nativeRenderPassesEnabled = false;
         renderGraph.BeginRecording(renderGraphParameters);
-
         UpdateVolumeFramework();
 
+        if (renderGraph.nativeRenderPassesEnabled == false) {
+            Debug.Log("????????????");
+        }
+        // renderGraph.nativeRenderPassesEnabled = settings.useNativePass.value;
+        
         Cull();
 
         ImportBuildInRenderTexture();
@@ -107,7 +111,6 @@ public class RPGRenderer : IDisposable {
         RecordPasses(renderGraph);
 
         renderGraph.EndRecordingAndExecute();
-        renderGraph.nativeRenderPassesEnabled = false;
 
         Submit();
         CommandBufferPool.Release(renderGraphParameters.commandBuffer);

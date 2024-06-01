@@ -37,6 +37,7 @@ Shader "MySRP/DeferredLit"
             FRAMEBUFFER_INPUT_FLOAT(3);
             float4 _ZBufferParams;
             float4 _ScaledScreenParams;
+            float4 _ProjectionParam;
             // float3 _WorldSpaceCameraPos;
             #include "LitLights.hlsl"
             #include "GI.hlsl"
@@ -57,26 +58,33 @@ Shader "MySRP/DeferredLit"
 
                 float2 ndc = input.texcoord;
                 #if UNITY_UV_STARTS_AT_TOP
-                ndc.y = 1 - ndc.y - 1/_ScaledScreenParams.y * 2;
+                ndc.y = 1 - ndc.y - 1 / _ScaledScreenParams.y * 2;
                 #endif
 
                 float3 positionWS = ComputeWorldSpacePosition(ndc, deviceDepth,UNITY_MATRIX_I_VP);
+                // float vs_z = mul(unity_MatrixV, float4(positionWS,1)).z;
+                // depth = -vs_z;
+                float depth = LinearEyeDepth(deviceDepth, _ZBufferParams);
+                float n = _ZBufferParams.x/(_ZBufferParams.z * abs(_ZBufferParams.x)+1);
+                float maxErr = depth / (min(_ScaledScreenParams.x, _ScaledScreenParams.y) * n);
+                // return maxErr;
                 // return deviceDepth;
-                // float distFromEye = depth / dot(ViewDir, cameraForward);
                 // float3 depthTextureWorldPos = _WorldSpaceCameraPos + ViewDir * dist;
                 // return 1- deviceDepth;
                 float3 tangent = ddx(positionWS);
                 float3 biTangent = -ddy(positionWS);
                 float3 normalRB = cross(tangent, biTangent); // normal rebuilt from depth
                 normalRB = length(normalRB) > 0.00 ? normalWS : normalize(normalRB);
-
                 // return half4(biTangent,1);
                 // return length(normalRB)>0.01;
                 float3 gi_diffuse = SampleLightProbe(positionWS, normalWS).rgb;
                 float metallic = mixMap.g;
                 float roughness = mixMap.r;
                 float3 view = normalize(_WorldSpaceCameraPos - positionWS);
+                float distFromEye = depth / dot(view, unity_MatrixV[2]);
+                // return distFromEye;
                 BRDF_INPUT brdfInput;
+                brdfInput.posMaxErr = maxErr;
                 brdfInput.viewDir = view;
                 brdfInput.positionCS = input.positionCS.xyz;
                 brdfInput.positionWS = positionWS;
@@ -93,7 +101,7 @@ Shader "MySRP/DeferredLit"
                 color += LitOtherLight(normalRB, brdfInput);
 
                 return half4(color, 1);
-                // return half4(normalWS, 1);
+                return half4(normalRB, 1);
             }
             ENDHLSL
         }

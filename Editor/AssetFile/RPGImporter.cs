@@ -1,9 +1,11 @@
+using System;
 using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEditor.AssetImporters;
 
 namespace RenderPipelineGraph.Editor.AssetFile {
+    [Obsolete("no use")]
     public class RPGImporter : ScriptedImporter {
 
         public const string Extension = "rpg";

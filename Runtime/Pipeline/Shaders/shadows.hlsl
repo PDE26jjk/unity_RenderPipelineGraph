@@ -100,26 +100,7 @@ static const float3 pointShadowPlanes[6] = {
 	float3(0.0, 0.0, -1.0),
 	float3(0.0, 0.0, 1.0)
 };
-SAMPLER(sampler_PointClamp2);
-float3 GetOtherShadow2(uint lightIndex, float3 toLight, float3 positionWS, float3 normalWS) {
-	int tileIndex = 0;
-	float3 lightPlane = _OtherLightDirections[lightIndex].xyz;
 
-	float4 tileData = _OtherShadowTiles[tileIndex];
-
-	float distanceToLightPlane = dot(toLight, lightPlane);
-	float3 normalBias = normalWS * (distanceToLightPlane * tileData.w);
-
-	float4 positionSTS = mul(_OtherShadowMatrices[0],
-		float4(positionWS, 1.0));
-
-	positionSTS.xyz /= positionSTS.w;
-	// positionSTS.z+=0.0003;
-	float shadow = SAMPLE_TEXTURE2D_SHADOW(
-		_OtherShadowAtlas, SHADOW_SAMPLER, positionSTS.xyz
-	);
-	return shadow;
-}
 float GetOtherShadow(uint lightIndex, float3 toLight, float3 positionWS, float3 positionCS, float3 normalWS, float backedShadow) {
 	bool isPoint = _OtherLightShadowData[lightIndex].z == 1.0;
 	float tileIndex = _OtherLightShadowData[lightIndex].y;
@@ -144,11 +125,6 @@ float GetOtherShadow(uint lightIndex, float3 toLight, float3 positionWS, float3 
 	positionSTS.xyz /= positionSTS.w;
 	float shadow = lerp(FilterOtherShadow(positionSTS.xyz, tileData.xyz), 1, 1 - strength);
 	return shadow;
-	// return tileData.z > 0.15;
-	// return SAMPLE_TEXTURE2D_SHADOW(
-	//     _OtherShadowAtlas, sampler_linear_clamp_compare, positionSTS
-	// );
-	return SampleOtherShadowAtlas(positionSTS, tileData.xyz);
 }
 
 float GetDirectionalShadow(uint lightIndex, float3 positionWS, float3 positionCS, float3 normalWS, float backedShadow) {

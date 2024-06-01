@@ -123,6 +123,7 @@ float4 fragLit(VaryingsLit IN) : SV_TARGET {
 	float3 view = normalize(_WorldSpaceCameraPos - IN.positionWS);
 	float3 baseColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, IN.uv).rgb * _BaseColor.rgb;
 	BRDF_INPUT brdfInput;
+	brdfInput.posMaxErr = 0;
 	brdfInput.viewDir = view;
 	brdfInput.positionCS = IN.positionCS;
 	brdfInput.positionWS = IN.positionWS;
