@@ -1,5 +1,5 @@
-#ifndef LIT_LightS_INCLUDE
-#define LIT_LightS_INCLUDE
+#ifndef LIT_Lights_INCLUDE
+#define LIT_Lights_INCLUDE
 
 #include "./BRDF.hlsl"
 
@@ -26,7 +26,11 @@ float3 LitDirectionalLight(float3 normalRaw, BRDF_INPUT brdfInput) {
 	float3 color = 0;
 	for (int i = 0; i < _DirectionalLightCount; i++) {
 		float gi_shadows = 1.;
-
+		float3 light = _DirectionalLightDirections[i].xyz;
+		// brdfInput.viewDir* dot(brdfInput.viewDir,light)
+		float3 errDir = normalize(light);
+		float3 posErr = min(brdfInput.posMaxErr,0.06) * errDir;
+		float3 positionWS = brdfInput.positionWS + posErr;
 		//////////////////////////////////////////////
 		// shadow
 		//////////////////////////////////////////////
@@ -36,15 +40,14 @@ float3 LitDirectionalLight(float3 normalRaw, BRDF_INPUT brdfInput) {
 		#if defined(_SHADOW_MASK_DISTANCE) || defined(_SHADOW_MASK_ALWAYS)
 		int shadowMaskChannel = _DirectionalLightShadowData[i].w;
 		if(shadowMaskChannel >=0)
-		gi_shadows = SampleBakedShadows(lightMapUV,IN.positionWS)[shadowMaskChannel];
+		gi_shadows = SampleBakedShadows(lightMapUV,positionWS)[shadowMaskChannel];
 		#endif
 		// normal map does not affect shadow
-		float shadow = GetDirectionalShadow(i, brdfInput.positionWS, brdfInput.positionCS.xyz, normalRaw, gi_shadows);
+		float shadow = GetDirectionalShadow(i, positionWS, brdfInput.positionCS.xyz, normalRaw, gi_shadows);
 		#endif
 		//////////////////////////////////////////////
 		// BRDF
 		//////////////////////////////////////////////
-		float3 light = _DirectionalLightDirections[i].xyz;
 		brdfInput.lightDir = light;
 		brdfInput.lightColor = _DirectionalLightColors[i].rgb * shadow;
 
@@ -65,9 +68,9 @@ float3 LitOtherLight(float3 normalRaw, BRDF_INPUT brdfInput) {
 	brdfInput.giSpecular = 0;
 	for (int i = 0; i < _OtherLightCount; i++) {
 		float3 toLight = _OtherLightPositions[i].xyz - brdfInput.positionWS;
-		float3 errDir = normalize(toLight + brdfInput.viewDir * dot(toLight, brdfInput.viewDir));
-		float3 posErr = min(brdfInput.posMaxErr*2,0.25) * errDir;
-		float3 positionWS = brdfInput.positionWS + brdfInput.posMaxErr * posErr;
+		float3 errDir = normalize(toLight);
+		float3 posErr = min(brdfInput.posMaxErr,0.06) * errDir;
+		float3 positionWS = brdfInput.positionWS + posErr;
 		//////////////////////////////////////////////
 		// shadow
 		//////////////////////////////////////////////

@@ -141,6 +141,11 @@ namespace RenderPipelineGraph {
             // asset.m_Graph = asset.Save();
             // if (!asset.Deserialized) asset.Deserialize();
             currentGraph = new RPGGraphData();
+            if (string.IsNullOrEmpty(asset.Content)) {
+                // init the graph
+                asset.m_Graph.TestInit3();
+                asset.Save();
+            }
             MultiJson.Deserialize(currentGraph, asset.Content);
             m_GraphUndoable = ScriptableObject.CreateInstance<GraphUndoable>();
             m_GraphUndoable.graph = currentGraph;

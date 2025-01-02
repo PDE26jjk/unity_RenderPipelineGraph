@@ -48,6 +48,11 @@ namespace RenderPipelineGraph.Attribute {
         public CullingWhenEmptyAttribute() {
         }
     }
+    [AttributeUsage(AttributeTargets.Field)]
+    public class HiddenAttribute : System.Attribute {
+        public HiddenAttribute() {
+        }
+    }
 
     [AttributeUsage(AttributeTargets.Field)]
     public class ListSizeAttribute : System.Attribute {

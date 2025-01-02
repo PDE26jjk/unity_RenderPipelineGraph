@@ -82,6 +82,9 @@ namespace RenderPipelineGraph {
             if (PassInputType is null)
                 return;
             foreach (var fieldInfo in PassInputType.GetFields()) {
+                if (fieldInfo.GetCustomAttribute<HiddenAttribute>() != null) {
+                    continue;
+                }
                 var p = m_Parameters.Where(t => t.value.Name == fieldInfo.Name).ToArray();
                 RPGParameterData parameterData = null;
                 bool needCreate = false;

@@ -37,7 +37,6 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
                 }
             }
             protected void loadDesc(RPGTextureDesc desc) {
-
                 size = new Vector2Int(desc.width, desc.height);
                 sizeMode = desc.sizeMode;
                 slices = desc.slices;

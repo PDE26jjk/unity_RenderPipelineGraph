@@ -66,8 +66,8 @@ float3 BRDF_Unity(BRDF_INPUT IN) {
 	float3 diffuse = DisneyDisfuse(a, NdotL, NdotV, LdotH) * NdotL * IN.lightColor;
 	diffuse *= IN.diffColor;
 
-	float D = D_GGX(sqr(lerp(0.002, 1, roughness)), NdotH);
 	float3 F = SchlickFresnel(IN.specColor, LdotH);
+	float D = D_GGX(sqr(lerp(0.002, 1, roughness)), NdotH);
 	float G = min(1, SmithGGX(NdotL, NdotV, roughness));
 
 	float3 spq = D * F * G * NdotL * PI * IN.lightColor;

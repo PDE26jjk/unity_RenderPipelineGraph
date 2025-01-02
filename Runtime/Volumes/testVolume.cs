@@ -12,4 +12,5 @@ public class testVolume : VolumeComponent {
     [Indent(0)]
     public FloatParameter postExposure = new FloatParameter(0f);
 
+    public VolumeParameter<ComputeShader> computeShader = new VolumeParameter<ComputeShader>();
 }

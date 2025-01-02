@@ -6,7 +6,8 @@
         "Unity.RenderPipelines.Core.Runtime",
         "Unity.RenderPipelines.Core.Runtime.Shared",
         "Unity.RenderPipelines.Core.Editor",
-        "Unity.RenderPipelines.Core.Editor.Shared"
+        "Unity.RenderPipelines.Core.Editor.Shared",
+        "Unity.ShaderGraph.Editor"
     ],
     "includePlatforms": [
         "Editor"

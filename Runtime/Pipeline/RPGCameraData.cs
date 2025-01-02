@@ -22,6 +22,7 @@ namespace RenderPipelineGraph {
             historyRTHandleSystem?.Dispose();
         }
         Vector2Int sizeInPixel = Vector2Int.zero;
+        public Vector2Int SizeInPixel => sizeInPixel;
         static FieldInfo _defaultRTHandlesInstanceInfo;
         static RTHandleSystem _defaultRTHandles;
         public Matrix4x4 previousViewProjectionMatrix = Matrix4x4.identity;

@@ -94,10 +94,10 @@ public class RPGRenderer : IDisposable {
         UpdateVolumeFramework();
 
         if (renderGraph.nativeRenderPassesEnabled == false) {
-            Debug.Log("????????????");
+            Debug.Log("renderGraph.nativeRenderPassesEnabled == false");
         }
         // renderGraph.nativeRenderPassesEnabled = settings.useNativePass.value;
-        
+
         Cull();
 
         ImportBuildInRenderTexture();
@@ -150,6 +150,11 @@ public class RPGRenderer : IDisposable {
                     }
                         break;
                     case PassNodeType.Compute: // TODO Compute pass
+                    {
+                        var builder = baseBuilder as IUnsafeRenderGraphBuilder;
+                        RenderGraphUtils.SetRenderFunc(builder, pass);
+                        RenderGraphUtils.LoadPassData(passNodeData, passData, builder, renderGraph, this.cameraData);
+                    }
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

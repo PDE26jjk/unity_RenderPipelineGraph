@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using RenderPipelineGraph.Editor;
 using RenderPipelineGraph.Editor.Views.blackborad;
@@ -22,8 +23,8 @@ namespace RenderPipelineGraph {
             }
         }
         PassDataBinding m_BindingObject;
-        PlaceholderObject m_PlaceholderObject;// multiple select must be same type, or Unity could crash.
-        public Object BindingObject(bool multiple=false) {
+        PlaceholderObject m_PlaceholderObject; // multiple select must be same type, or Unity could crash.
+        public Object BindingObject(bool multiple = false) {
             if (multiple) {
                 m_PlaceholderObject ??= ScriptableObject.CreateInstance<PlaceholderObject>();
                 return m_PlaceholderObject;
@@ -72,14 +73,30 @@ namespace RenderPipelineGraph {
             var editButton = new Button() {
                 text = "Edit"
             };
-            editButton.clicked += (() => {
-                string passFilePath = dataBinding.Model.Pass.filePath;
-                if (passFilePath != "") {
-                    var scriptAsset = FindScriptAssetByAbsolutePath(passFilePath);
-                    AssetDatabase.OpenAsset(scriptAsset, 0);
+            string passFilePath = dataBinding.Model.Pass.filePath;
+            Object scriptAsset = null;
+            if (passFilePath != "") {
+                scriptAsset = FindScriptAssetByAbsolutePath(passFilePath);
+                StreamReader reader = new StreamReader(passFilePath);
+                long len = reader.BaseStream.Length;
+                const int bigLen = 1024 * 10;
+                char[] buffer = new char[bigLen];
+                reader.Read(buffer, 0, bigLen);
+                reader.Close();
+                var scriptView = new TextField();
+                string scriptStr  =new string( buffer);
+                if (len > bigLen) {
+                    scriptStr += "\ntoo long to view";
                 }
-            });
-            root.Add(editButton);
+                scriptView.value = scriptStr;
+                scriptView.SetEnabled(false);
+                root.Add(scriptView);
+            }
+            editButton.clicked += (() => { AssetDatabase.OpenAsset(scriptAsset, 0); });
+            
+            if (scriptAsset != null) {
+                root.Add(editButton);
+            }
             return root;
         }
     }

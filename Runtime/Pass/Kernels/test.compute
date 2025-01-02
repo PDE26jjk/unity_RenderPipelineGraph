@@ -1,0 +1,20 @@
+﻿uint width;
+uint height;
+
+// RWStructuredBuffer<uint> g_buffer : register(u0);
+
+RWTexture2D<float4> tex;
+
+// groupshared int lds_histograms[NUM_BINS];
+
+//[RootSignature(ROOT_SIGNATURE)]
+#pragma kernel t1
+[numthreads(1, 1, 1)]
+void t1(
+	in uint3 gidx: SV_DispatchThreadID,
+	in uint lidx: SV_GroupThreadID,
+	in uint bidx: SV_GroupID) {
+	uint2 ind = uint2(gidx.x, gidx.y);
+
+	tex[ind] = float4((float)gidx.x / width, (float)gidx.y / height, 1, 1);
+}

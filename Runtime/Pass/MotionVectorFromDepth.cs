@@ -31,7 +31,7 @@ namespace RenderPipelineGraph {
                 _material = new Material(_shader); 
             }
             Vector4 scaleBias = new Vector4(1, 1, 0, 0);
-            Blitter.BlitTexture(context.cmd, passData.depthMap, scaleBias, _material, 0);
+            Blitter.BlitTexture(cmd, passData.depthMap, scaleBias, _material, 0);
         }
     }
 }
