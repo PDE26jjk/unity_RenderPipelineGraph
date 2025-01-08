@@ -128,14 +128,15 @@ public class RPGRenderer : IDisposable {
             ref object[] parameters = ref passSortData.parameters;
             parameters ??= RenderGraphUtils.MakeAddRenderPassParam(renderGraph, pass, passSortData.profilingSampler);
             using (var baseBuilder = passSortData.addRenderPassMethodInfo.Invoke(renderGraph, parameters) as IBaseRenderGraphBuilder) {
+                if (baseBuilder == null) {
+                    throw new Exception("Legacy pass is not supported");
+                }
                 baseBuilder.AllowPassCulling(pass.AllowPassCulling);
                 baseBuilder.AllowGlobalStateModification(pass.AllowGlobalStateModification);
 
                 ref object passData = ref parameters[1];
                 switch (pass.PassType) {
-                    case PassNodeType.Legacy: // TODO Legacy pass
-                        break;
-                    case PassNodeType.Unsafe: // TODO Unsafe pass
+                    case PassNodeType.Unsafe:
                     {
                         var builder = baseBuilder as IUnsafeRenderGraphBuilder;
                         RenderGraphUtils.SetRenderFunc(builder, pass);
@@ -149,7 +150,7 @@ public class RPGRenderer : IDisposable {
                         RenderGraphUtils.LoadPassData(passNodeData, passData, builder, renderGraph, this.cameraData);
                     }
                         break;
-                    case PassNodeType.Compute: // TODO Compute pass
+                    case PassNodeType.Compute:
                     {
                         var builder = baseBuilder as IUnsafeRenderGraphBuilder;
                         RenderGraphUtils.SetRenderFunc(builder, pass);

@@ -17,7 +17,7 @@ Shader "MySRP/02-lit"
     CustomEditor "litGUI"
     SubShader
     {
-
+        Tags{ "RenderPipeline" = "RPG" "RenderType" = "Opaque"}
         Pass
         {
             Tags
@@ -84,6 +84,33 @@ Shader "MySRP/02-lit"
             #pragma vertex MetaPassVertex
             #pragma fragment MetaPassFragment
             #include "./litMeta.hlsl"
+            ENDHLSL
+        }
+        Pass
+        {
+            Tags
+            {
+                "LightMode" = "DXR"
+            }
+            Name "DXR"
+            HLSLPROGRAM
+            // #pragma enable_d3d11_debug_symbols
+            #include "./RayTrace.hlsl"
+            struct AttributeData
+            {
+                float2 barycentrics;
+            };
+            #pragma only_renderers d3d11 xboxseries ps5
+            #pragma raytracing whyimhere
+            [shader("closesthit")]
+            void ClosestHitMain(inout Hit payload : SV_RayPayload, AttributeData attribs : SV_IntersectionAttributes) {
+                float3 worldRayOrigin = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
+                payload.instanceID = InstanceID();
+                payload.primitiveIndex = PrimitiveIndex();
+                payload.uvBarycentrics = attribs.barycentrics;
+                payload.hitDistance = RayTCurrent();
+                payload.isFrontFace = (HitKind() == HIT_KIND_TRIANGLE_FRONT_FACE);
+            }
             ENDHLSL
         }
     }

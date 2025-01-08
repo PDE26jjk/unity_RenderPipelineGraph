@@ -9,10 +9,8 @@ namespace RenderPipelineGraph {
         public class PassData {
             [Write]
             public TextureHandle texture;
-            [Hidden]
-            public int width;
-            [Hidden]
-            public int height;
+            internal int width;
+            internal int height;
         }
         public TestPass3() : base(PassNodeType.Compute) {
             this.m_AllowPassCulling = false;

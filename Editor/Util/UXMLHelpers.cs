@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEditor;
 using UnityEngine.UIElements;
 
@@ -13,9 +14,8 @@ namespace RenderPipelineGraph.Editor {
             return visualTreeAsset ? visualTreeAsset.Instantiate() : null;
         }
         public static string PackageResourcePath => "Assets/RenderPipelineGraph/Editor/Resources/";
-        
-        public static StyleSheet LoadStyleSheet(string path)
-        {
+
+        public static StyleSheet LoadStyleSheet(string path) {
             return AssetDatabase.LoadAssetAtPath<StyleSheet>(PackageResourcePath + path);
         }
     }

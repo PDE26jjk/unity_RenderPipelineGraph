@@ -43,3 +43,9 @@ Label {
     /*font-size: 12px;*/
     
 }
+RPGNodeOuterEffect{
+    border-radius: 8px;
+    border-width: 0px;
+    --start-color:#BF9220;
+    --end-color: #20bf87;
+}

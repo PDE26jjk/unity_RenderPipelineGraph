@@ -25,6 +25,7 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             this.Model = model;
             Button button = this.Q<Button>("expandButton");
             if (button != null) {
+                button.SetDisplay(false);
                 // button.clickable.clicked += OnExpand;
             }
         }

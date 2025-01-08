@@ -1,30 +1,30 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <ui:VisualElement name="node-border" picking-mode="Ignore" >
-        <ui:VisualElement name="title" picking-mode="Ignore" >
-            <ui:Label name="title-label" text="" />
-            <ui:VisualElement name="title-button-container" picking-mode="Ignore">
-                <ui:VisualElement name="collapse-button" text="">
-                    <ui:VisualElement name="icon" text=""/>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <RenderPipelineGraph.RPGNodeOuterEffect>
+        <ui:VisualElement name="node-border" picking-mode="Ignore">
+            <ui:VisualElement name="title" picking-mode="Ignore">
+                <ui:Label name="title-label" />
+                <ui:VisualElement name="title-button-container" picking-mode="Ignore">
+                    <ui:VisualElement name="collapse-button">
+                        <ui:VisualElement name="icon" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="contents" picking-mode="Ignore">
+                <ui:VisualElement name="divider" class="horizontal" />
+                <ui:VisualElement name="top" picking-mode="Ignore">
+                    <ui:VisualElement name="parameter" picking-mode="Ignore" />
+                    <ui:VisualElement name="input" picking-mode="Ignore" class="hide" />
+                    <ui:VisualElement name="divider" class="vertical hide" />
+                    <ui:VisualElement name="output" picking-mode="Ignore" class="hide" />
+                </ui:VisualElement>
+                <ui:VisualElement name="collapsible-area" picking-mode="Ignore">
+                    <ui:VisualElement name="divider" class="horizontal" />
+                    <ui:VisualElement name="extension" picking-mode="Ignore" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="contents" picking-mode="Ignore">
-            <ui:VisualElement name="divider" class="horizontal"/>
-            <ui:VisualElement name="top" picking-mode="Ignore">
-                <ui:VisualElement name="parameter" picking-mode="Ignore" />
-                <ui:VisualElement name="input" class="hide" picking-mode="Ignore" />
-                <ui:VisualElement name="divider"  class="vertical hide"/>
-                <ui:VisualElement name="output" class="hide" picking-mode="Ignore" />
-                
-            </ui:VisualElement>
-            <ui:VisualElement name="collapsible-area" picking-mode="Ignore">
-                <ui:VisualElement name="divider" class="horizontal"/>
-                <ui:VisualElement name="extension" picking-mode="Ignore" />
-            </ui:VisualElement>
-        </ui:VisualElement>
-    </ui:VisualElement>
+    </RenderPipelineGraph.RPGNodeOuterEffect>
     <ui:VisualElement name="selection-border" picking-mode="Ignore" />
-    <ui:VisualElement name="flow-outputs" pickingMode="Ignore" class="flow-container output" />
-    <ui:VisualElement name="flow-inputs" pickingMode="Ignore" class="flow-container input" />
+    <ui:VisualElement name="flow-outputs" picking-mode="Ignore" class="flow-container output" />
+    <ui:VisualElement name="flow-inputs" picking-mode="Ignore" class="flow-container input" />
 </ui:UXML>
- 

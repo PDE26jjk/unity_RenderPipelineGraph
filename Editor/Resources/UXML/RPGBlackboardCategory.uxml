@@ -1,13 +1,14 @@
-<?xml version="1.0" encoding="Windows-1252"?>
-<UXML xmlns:ui="UnityEngine.UIElements">
-    <ui:VisualElement class="Category">
-        <ui:VisualElement name="divider" class="horizontal"/>
-        <ui:VisualElement name="sectionHeader" pickingMode="Ignore">
-            <ui:Button name="expandButton">
-                <ui:Image name="buttonImage"/>
-            </ui:Button>
-            <ui:Label name="sectionTitleLabel" pickingMode="Ignore"/>
+<UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement class="Category" style="opacity: 1;">
+        <ui:VisualElement name="divider" class="horizontal" />
+        <ui:VisualElement name="sectionHeader" picking-mode="Ignore">
+            <ui:VisualElement style="flex-grow: 1; flex-direction: row;">
+                <ui:Button name="expandButton">
+                    <ui:Image name="buttonImage" />
+                </ui:Button>
+                <ui:Label name="sectionTitleLabel" picking-mode="Ignore" style="-unity-font-style: normal; font-size: 14px; flex-direction: column;" />
+            </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="rowsContainer" pickingMode="Ignore"/>
+        <ui:VisualElement name="rowsContainer" picking-mode="Ignore" />
     </ui:VisualElement>
 </UXML>

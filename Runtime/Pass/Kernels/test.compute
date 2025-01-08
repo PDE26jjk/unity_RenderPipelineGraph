@@ -16,5 +16,5 @@ void t1(
 	in uint bidx: SV_GroupID) {
 	uint2 ind = uint2(gidx.x, gidx.y);
 
-	tex[ind] = float4((float)gidx.x / width, (float)gidx.y / height, 1, 1);
+	tex[ind] = float4((float)gidx.x / width, (float)gidx.y / height, 0, 1);
 }

@@ -21,16 +21,17 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             var tpl = Resources.Load("UXML/RPGBlackboardCategory") as VisualTreeAsset;
             m_MainContainer = tpl.CloneTree();
             m_MainContainer.AddToClassList("mainContainer");
+
             m_Header = m_MainContainer.Q<VisualElement>("sectionHeader");
             m_TitleLabel = m_MainContainer.Q<Label>("sectionTitleLabel");
 
             m_RowsContainer = m_MainContainer.Q<VisualElement>("rowsContainer");
             m_ExpandButton = m_Header.Q<Button>("expandButton");
-            m_ExpandButton.clickable.clicked += ToggleExpand;
-
+            m_ExpandButton.clickable.clicked += (() => expanded = !expanded);
+            expanded = true;
+            
             hierarchy.Add(m_MainContainer);
-            hierarchy.Add(m_MainContainer);
-
+            // hierarchy.Add(m_MainContainer);
 
             m_DragIndicator = new VisualElement();
 
@@ -99,22 +100,19 @@ namespace RenderPipelineGraph.Editor.Views.blackborad {
             m_Header.pickingMode = PickingMode.Position;
             m_NameField.style.display = DisplayStyle.None;
         }
-        void ToggleExpand() {
-            var parent = GetFirstAncestorOfType<RPGBlackboard>();
-            if (parent != null) {
-                // parent.SetCategoryExpanded(this, !expanded);
-            }
-        }
 
         bool m_Expanded;
         public bool expanded {
             get { return m_Expanded; }
             set {
                 m_Expanded = value;
+                m_RowsContainer.SetDisplay(value);
                 if (m_Expanded) {
+                    m_MainContainer.Add(m_RowsContainer);
                     AddToClassList("expanded");
                 }
                 else {
+                    m_MainContainer.Remove(m_RowsContainer);
                     RemoveFromClassList("expanded");
                 }
             }

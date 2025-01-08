@@ -173,4 +173,10 @@ public static class RenderGraphUtils {
         pass.Setup(passData, cameraData, renderGraph, builder);
 
     }
+    static FieldInfo WrappedCommandBufferFieldInfo;
+    public static CommandBuffer GetWrappedCommandBufferUnsafe(this BaseCommandBuffer baseCommandBuffer) {
+        WrappedCommandBufferFieldInfo ??= typeof(BaseCommandBuffer).GetField("m_WrappedCommandBuffer", BindingFlags.NonPublic | BindingFlags.Instance);
+        if (WrappedCommandBufferFieldInfo == null) return null;
+        return WrappedCommandBufferFieldInfo.GetValue(baseCommandBuffer) as CommandBuffer;
+    }
 }

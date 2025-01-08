@@ -5,7 +5,7 @@ using UnityEngine.Rendering.RenderGraphModule;
 namespace RenderPipelineGraph {
 
     public enum PassNodeType {
-        Legacy = 0,
+        Legacy = 0,// not supported
         Unsafe,
         Raster,
         Compute

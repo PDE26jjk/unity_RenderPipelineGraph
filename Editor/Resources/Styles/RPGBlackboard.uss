@@ -68,7 +68,7 @@ Label
     height: 12px;
 }
 
-.Category .expanded #expandButton > #buttonImage {
+.expanded #expandButton > #buttonImage {
     --unity-image : resource("GraphView/Nodes/NodeChevronDown.png");
 }
 
