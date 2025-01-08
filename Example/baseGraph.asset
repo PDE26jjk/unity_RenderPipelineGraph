@@ -53,9 +53,9 @@ MonoBehaviour:
     \"013b0311395a490c91c9c19c82bcecbf\",\n    \"name\": \"colorAttachment\",\n   
     \"sizeMode\": 1,\n    \"width\": 0,\n    \"height\": 0,\n    \"slices\": 1,\n   
     \"scale\": {\n        \"x\": 1.0,\n        \"y\": 1.0\n    },\n    \"colorFormat\":
-    4,\n    \"depthBufferBits\": 0,\n    \"filterMode\": 1,\n    \"dimension\": 2,\n   
-    \"clearBuffer\": true,\n    \"clearColor\": {\n        \"r\": 0.0,\n        \"g\":
-    0.0,\n        \"b\": 0.0,\n        \"a\": 0.0\n    },\n    \"enableRandomWrite\":
+    74,\n    \"depthBufferBits\": 0,\n    \"filterMode\": 1,\n    \"dimension\":
+    2,\n    \"clearBuffer\": true,\n    \"clearColor\": {\n        \"r\": 0.0,\n       
+    \"g\": 0.0,\n        \"b\": 0.0,\n        \"a\": 0.0\n    },\n    \"enableRandomWrite\":
     true,\n    \"isShadowMap\": false,\n    \"msaaSamples\": 1\n}\n\n{\n    \"m_Type\":
     \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\": \"02d59370b6b046a898ebfac3f9e31670\",\n   
     \"m_Owner\": {\n        \"m_Id\": \"879c964bbda74e898f7d6a840971134b\"\n    },\n   
@@ -117,25 +117,26 @@ MonoBehaviour:
     \"m_Id\": \"\"\n    },\n    \"m_Name\": \"motionVectorMap\",\n    \"m_Port\":
     {\n        \"m_Id\": \"7c153cd217974e1583b0f86f8bccfbbe\"\n    },\n    \"UseDefault\":
     false,\n    \"read\": false,\n    \"write\": true,\n    \"fragment\": true,\n   
-    \"depth\": false,\n    \"listIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n   
-    \"m_ObjectId\": \"3189873e52e64dea822de4c6764de5f3\",\n    \"m_Owner\": {\n       
-    \"m_Id\": \"55498356a66f446da40720f4f388b88e\"\n    },\n    \"portType\": 0,\n   
-    \"m_LinkTo\": [],\n    \"name\": \"\",\n    \"resourceType\": 0\n}\n\n{\n   
-    \"m_Type\": \"RenderPipelineGraph.ResourceNodeData\",\n    \"m_ObjectId\": \"333f3854bfb545baa87e351370e363d8\",\n   
-    \"exposedName\": \"\",\n    \"pos\": {\n        \"x\": 534.4334106445313,\n       
-    \"y\": 1148.133544921875\n    },\n    \"color\": {\n        \"r\": 0.0,\n       
-    \"g\": 0.0,\n        \"b\": 0.0,\n        \"a\": 0.0\n    },\n    \"m_Resource\":
-    {\n        \"m_Id\": \"edfc10b412914080bae0a9b2c6593f9d\"\n    },\n    \"m_AttachTo\":
-    {\n        \"m_Id\": \"1e3dcffe602c41b7b24b76dfaefddf16\"\n    }\n}\n\n{\n   
-    \"m_Type\": \"RenderPipelineGraph.ResourceNodeData\",\n    \"m_ObjectId\": \"378fee3876914428af67713c2baa335b\",\n   
-    \"exposedName\": \"\",\n    \"pos\": {\n        \"x\": 188.66668701171876,\n       
-    \"y\": 584.0\n    },\n    \"color\": {\n        \"r\": 0.0,\n        \"g\": 0.0,\n       
-    \"b\": 0.0,\n        \"a\": 0.0\n    },\n    \"m_Resource\": {\n        \"m_Id\":
-    \"4f73a519d1d14169a8c4f0181632b847\"\n    },\n    \"m_AttachTo\": {\n       
-    \"m_Id\": \"764d3daeeb714fe0bdc000aba30d9770\"\n    }\n}\n\n{\n    \"m_Type\":
-    \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\": \"3b5a077acbfe4c8ab373376a13a1781d\",\n   
-    \"m_Owner\": {\n        \"m_Id\": \"4f28ddf235bd4b0187ad1dfc9e23cfa4\"\n    },\n   
-    \"portType\": 0,\n    \"m_LinkTo\": [\n        {\n            \"m_Id\": \"78962b4b509b441d8e163b2fdded850d\"\n       
+    \"input\": false,\n    \"depth\": false,\n    \"listIndex\": 0,\n    \"mrtIndex\":
+    0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\":
+    \"3189873e52e64dea822de4c6764de5f3\",\n    \"m_Owner\": {\n        \"m_Id\":
+    \"55498356a66f446da40720f4f388b88e\"\n    },\n    \"portType\": 0,\n    \"m_LinkTo\":
+    [],\n    \"name\": \"\",\n    \"resourceType\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourceNodeData\",\n   
+    \"m_ObjectId\": \"333f3854bfb545baa87e351370e363d8\",\n    \"exposedName\": \"\",\n   
+    \"pos\": {\n        \"x\": 534.4334106445313,\n        \"y\": 1148.133544921875\n   
+    },\n    \"color\": {\n        \"r\": 0.0,\n        \"g\": 0.0,\n        \"b\":
+    0.0,\n        \"a\": 0.0\n    },\n    \"m_Resource\": {\n        \"m_Id\": \"edfc10b412914080bae0a9b2c6593f9d\"\n   
+    },\n    \"m_AttachTo\": {\n        \"m_Id\": \"1e3dcffe602c41b7b24b76dfaefddf16\"\n   
+    }\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourceNodeData\",\n    \"m_ObjectId\":
+    \"378fee3876914428af67713c2baa335b\",\n    \"exposedName\": \"\",\n    \"pos\":
+    {\n        \"x\": 188.66668701171876,\n        \"y\": 584.0\n    },\n    \"color\":
+    {\n        \"r\": 0.0,\n        \"g\": 0.0,\n        \"b\": 0.0,\n        \"a\":
+    0.0\n    },\n    \"m_Resource\": {\n        \"m_Id\": \"4f73a519d1d14169a8c4f0181632b847\"\n   
+    },\n    \"m_AttachTo\": {\n        \"m_Id\": \"764d3daeeb714fe0bdc000aba30d9770\"\n   
+    }\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\":
+    \"3b5a077acbfe4c8ab373376a13a1781d\",\n    \"m_Owner\": {\n        \"m_Id\":
+    \"4f28ddf235bd4b0187ad1dfc9e23cfa4\"\n    },\n    \"portType\": 0,\n    \"m_LinkTo\":
+    [\n        {\n            \"m_Id\": \"78962b4b509b441d8e163b2fdded850d\"\n       
     }\n    ],\n    \"name\": \"Attach To\",\n    \"resourceType\": 5\n}\n\n{\n   
     \"m_Type\": \"RenderPipelineGraph.RPGTextureDesc\",\n    \"m_ObjectId\": \"3c5f98e1843a41be9e1ba460fabfb007\",\n   
     \"name\": \"\",\n    \"sizeMode\": 1,\n    \"width\": 0,\n    \"height\": 0,\n   
@@ -165,13 +166,14 @@ MonoBehaviour:
     {\n        \"m_Id\": \"dd4c920795b04ff183a3588d76b1ffdb\"\n    },\n    \"m_Name\":
     \"shadowMap\",\n    \"m_Port\": {\n        \"m_Id\": \"8f7df5f06f0d441f91f8a4393dd82cb2\"\n   
     },\n    \"UseDefault\": true,\n    \"read\": true,\n    \"write\": true,\n   
-    \"fragment\": true,\n    \"depth\": true,\n    \"listIndex\": 0\n}\n\n{\n   
-    \"m_Type\": \"RenderPipelineGraph.TextureParameterData\",\n    \"m_ObjectId\":
-    \"4471b21572d04bd492cb95f3b2447421\",\n    \"m_DefaultResource\": {\n       
-    \"m_Id\": \"8aedbb74ea074e9ab1684f9709c4b169\"\n    },\n    \"m_Name\": \"dst\",\n   
-    \"m_Port\": {\n        \"m_Id\": \"7c2f15aaa3e042daa42ec3e6eb8ead1c\"\n    },\n   
-    \"UseDefault\": true,\n    \"read\": false,\n    \"write\": true,\n    \"fragment\":
-    true,\n    \"depth\": false,\n    \"listIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n   
+    \"fragment\": true,\n    \"input\": false,\n    \"depth\": true,\n    \"listIndex\":
+    0,\n    \"mrtIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureParameterData\",\n   
+    \"m_ObjectId\": \"4471b21572d04bd492cb95f3b2447421\",\n    \"m_DefaultResource\":
+    {\n        \"m_Id\": \"8aedbb74ea074e9ab1684f9709c4b169\"\n    },\n    \"m_Name\":
+    \"dst\",\n    \"m_Port\": {\n        \"m_Id\": \"7c2f15aaa3e042daa42ec3e6eb8ead1c\"\n   
+    },\n    \"UseDefault\": true,\n    \"read\": false,\n    \"write\": true,\n   
+    \"fragment\": true,\n    \"input\": false,\n    \"depth\": false,\n    \"listIndex\":
+    0,\n    \"mrtIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n   
     \"m_ObjectId\": \"487e859a7186489d9e3d92ddacb13818\",\n    \"m_Owner\": {\n       
     \"m_Id\": \"a4f6725f1b474483a13cea8ff562c05c\"\n    },\n    \"portType\": 0,\n   
     \"m_LinkTo\": [],\n    \"name\": \"\",\n    \"resourceType\": 0\n}\n\n{\n   
@@ -180,13 +182,14 @@ MonoBehaviour:
     \"m_Id\": \"8aedbb74ea074e9ab1684f9709c4b169\"\n    },\n    \"m_Name\": \"colorAttachment\",\n   
     \"m_Port\": {\n        \"m_Id\": \"a3ffa4ba02944d04b3eb030620805161\"\n    },\n   
     \"UseDefault\": true,\n    \"read\": true,\n    \"write\": false,\n    \"fragment\":
-    false,\n    \"depth\": false,\n    \"listIndex\": 0\n}\n\n{\n    \"m_Type\":
-    \"RenderPipelineGraph.TextureParameterData\",\n    \"m_ObjectId\": \"4aee2eb9d4884a6592ac97bc0c046dc3\",\n   
-    \"m_DefaultResource\": {\n        \"m_Id\": \"8aedbb74ea074e9ab1684f9709c4b169\"\n   
-    },\n    \"m_Name\": \"colorAttachment\",\n    \"m_Port\": {\n        \"m_Id\":
-    \"a8995413c1994ab4a76c45cace933b24\"\n    },\n    \"UseDefault\": true,\n   
-    \"read\": false,\n    \"write\": true,\n    \"fragment\": true,\n    \"depth\":
-    false,\n    \"listIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourceNodeData\",\n   
+    false,\n    \"input\": false,\n    \"depth\": false,\n    \"listIndex\": 0,\n   
+    \"mrtIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureParameterData\",\n   
+    \"m_ObjectId\": \"4aee2eb9d4884a6592ac97bc0c046dc3\",\n    \"m_DefaultResource\":
+    {\n        \"m_Id\": \"8aedbb74ea074e9ab1684f9709c4b169\"\n    },\n    \"m_Name\":
+    \"colorAttachment\",\n    \"m_Port\": {\n        \"m_Id\": \"a8995413c1994ab4a76c45cace933b24\"\n   
+    },\n    \"UseDefault\": true,\n    \"read\": false,\n    \"write\": true,\n   
+    \"fragment\": true,\n    \"input\": false,\n    \"depth\": false,\n    \"listIndex\":
+    0,\n    \"mrtIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourceNodeData\",\n   
     \"m_ObjectId\": \"4f28ddf235bd4b0187ad1dfc9e23cfa4\",\n    \"exposedName\": \"\",\n   
     \"pos\": {\n        \"x\": 247.333251953125,\n        \"y\": 1105.3330078125\n   
     },\n    \"color\": {\n        \"r\": 0.0,\n        \"g\": 0.0,\n        \"b\":
@@ -212,54 +215,56 @@ MonoBehaviour:
     {\n        \"m_Id\": \"8aedbb74ea074e9ab1684f9709c4b169\"\n    },\n    \"m_Name\":
     \"colorAttachment\",\n    \"m_Port\": {\n        \"m_Id\": \"3189873e52e64dea822de4c6764de5f3\"\n   
     },\n    \"UseDefault\": true,\n    \"read\": true,\n    \"write\": false,\n   
-    \"fragment\": false,\n    \"depth\": false,\n    \"listIndex\": 0\n}\n\n{\n   
-    \"m_Type\": \"RenderPipelineGraph.RPGCullingDesc\",\n    \"m_ObjectId\": \"59576e504962467f80998703b85ba624\",\n   
-    \"cullingFunctionTypeName\": \"RenderPipelineGraph.CullingDefault\"\n}\n\n{\n   
-    \"m_Type\": \"RenderPipelineGraph.PassNodeData\",\n    \"m_ObjectId\": \"5bd9d0ed62dd427db3914bbc06a5db91\",\n   
-    \"exposedName\": \"SetupLightShadow\",\n    \"pos\": {\n        \"x\": 414.1058349609375,\n       
-    \"y\": -308.9577331542969\n    },\n    \"color\": {\n        \"r\": 0.0,\n       
-    \"g\": 0.0,\n        \"b\": 0.0,\n        \"a\": 0.0\n    },\n    \"m_Parameters\":
-    [\n        {\n            \"m_Id\": \"ed9e9f97ab484955ad083e16d848dbd3\"\n       
-    }\n    ],\n    \"m_PassClassName\": \"RenderPipelineGraph.SetupLightShadow\",\n   
-    \"dependencies\": []\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.PassNodeData\",\n   
-    \"m_ObjectId\": \"5c9b5bf600214610a873414a70bfc5d3\",\n    \"exposedName\": \"DirectionLightShadowMap\",\n   
-    \"pos\": {\n        \"x\": 612.6666870117188,\n        \"y\": -85.33333587646485\n   
+    \"fragment\": false,\n    \"input\": false,\n    \"depth\": false,\n    \"listIndex\":
+    0,\n    \"mrtIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.RPGCullingDesc\",\n   
+    \"m_ObjectId\": \"59576e504962467f80998703b85ba624\",\n    \"cullingFunctionTypeName\":
+    \"RenderPipelineGraph.CullingDefault\"\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.PassNodeData\",\n   
+    \"m_ObjectId\": \"5bd9d0ed62dd427db3914bbc06a5db91\",\n    \"exposedName\": \"SetupLightShadow\",\n   
+    \"pos\": {\n        \"x\": 414.1058349609375,\n        \"y\": -308.9577331542969\n   
     },\n    \"color\": {\n        \"r\": 0.0,\n        \"g\": 0.0,\n        \"b\":
     0.0,\n        \"a\": 0.0\n    },\n    \"m_Parameters\": [\n        {\n           
-    \"m_Id\": \"69b1eb312408478cbf68ba2cb6f6eb73\"\n        }\n    ],\n    \"m_PassClassName\":
-    \"RenderPipelineGraph.DirectionLightShadowMap\",\n    \"dependencies\": [\n       
-    {\n            \"m_Id\": \"5bd9d0ed62dd427db3914bbc06a5db91\"\n        }\n   
-    ]\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\":
-    \"60a555d88c124036ae4f0fcbdf9389ed\",\n    \"m_Owner\": {\n        \"m_Id\":
-    \"ccb6294589f24a6eb73d31cb21ee8d25\"\n    },\n    \"portType\": 0,\n    \"m_LinkTo\":
-    [],\n    \"name\": \"\",\n    \"resourceType\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n   
-    \"m_ObjectId\": \"646f75cb1e6848f9b9e22bdb6f62dbc5\",\n    \"m_Owner\": {\n       
-    \"m_Id\": \"69b1eb312408478cbf68ba2cb6f6eb73\"\n    },\n    \"portType\": 0,\n   
+    \"m_Id\": \"ed9e9f97ab484955ad083e16d848dbd3\"\n        }\n    ],\n    \"m_PassClassName\":
+    \"RenderPipelineGraph.SetupLightShadow\",\n    \"dependencies\": []\n}\n\n{\n   
+    \"m_Type\": \"RenderPipelineGraph.PassNodeData\",\n    \"m_ObjectId\": \"5c9b5bf600214610a873414a70bfc5d3\",\n   
+    \"exposedName\": \"DirectionLightShadowMap\",\n    \"pos\": {\n        \"x\":
+    612.6666870117188,\n        \"y\": -85.33333587646485\n    },\n    \"color\":
+    {\n        \"r\": 0.0,\n        \"g\": 0.0,\n        \"b\": 0.0,\n        \"a\":
+    0.0\n    },\n    \"m_Parameters\": [\n        {\n            \"m_Id\": \"69b1eb312408478cbf68ba2cb6f6eb73\"\n       
+    }\n    ],\n    \"m_PassClassName\": \"RenderPipelineGraph.DirectionLightShadowMap\",\n   
+    \"dependencies\": [\n        {\n            \"m_Id\": \"5bd9d0ed62dd427db3914bbc06a5db91\"\n       
+    }\n    ]\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n   
+    \"m_ObjectId\": \"60a555d88c124036ae4f0fcbdf9389ed\",\n    \"m_Owner\": {\n       
+    \"m_Id\": \"ccb6294589f24a6eb73d31cb21ee8d25\"\n    },\n    \"portType\": 0,\n   
     \"m_LinkTo\": [],\n    \"name\": \"\",\n    \"resourceType\": 0\n}\n\n{\n   
-    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\": \"64fc408ea67a4354b683d3ebf817b808\",\n   
-    \"m_Owner\": {\n        \"m_Id\": \"eb9c4407c17d4bada9d902efb155fa62\"\n    },\n   
+    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\": \"646f75cb1e6848f9b9e22bdb6f62dbc5\",\n   
+    \"m_Owner\": {\n        \"m_Id\": \"69b1eb312408478cbf68ba2cb6f6eb73\"\n    },\n   
     \"portType\": 0,\n    \"m_LinkTo\": [],\n    \"name\": \"\",\n    \"resourceType\":
-    0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.RPGRenderListDesc\",\n    \"m_ObjectId\":
-    \"68d346ba3d0c418fb1586c65da6afd18\",\n    \"sortingCriteria\": 59,\n    \"shaderTagIdStrs\":
-    [\n        \"MySRPMode1\"\n    ],\n    \"layerMask\": -1,\n    \"enableDynamicBatching\":
-    false,\n    \"perObjectData\": 0,\n    \"useOverrideShader\": false,\n    \"overrideShaderPath\":
-    \"\"\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureParameterData\",\n   
+    0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\":
+    \"64fc408ea67a4354b683d3ebf817b808\",\n    \"m_Owner\": {\n        \"m_Id\":
+    \"eb9c4407c17d4bada9d902efb155fa62\"\n    },\n    \"portType\": 0,\n    \"m_LinkTo\":
+    [],\n    \"name\": \"\",\n    \"resourceType\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.RPGRenderListDesc\",\n   
+    \"m_ObjectId\": \"68d346ba3d0c418fb1586c65da6afd18\",\n    \"sortingCriteria\":
+    59,\n    \"shaderTagIdStrs\": [\n        \"MySRPMode1\"\n    ],\n    \"renderQueueRange\":
+    {\n        \"LowerBound\": 0,\n        \"UpperBound\": 5000\n    },\n    \"layerMask\":
+    -1,\n    \"enableDynamicBatching\": false,\n    \"perObjectData\": 0,\n    \"useOverrideShader\":
+    false,\n    \"overrideShaderPath\": \"\"\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureParameterData\",\n   
     \"m_ObjectId\": \"69b1eb312408478cbf68ba2cb6f6eb73\",\n    \"m_DefaultResource\":
     {\n        \"m_Id\": \"f24b5bd30ae745e9b58c561cb0e37ad5\"\n    },\n    \"m_Name\":
     \"shadowMap\",\n    \"m_Port\": {\n        \"m_Id\": \"646f75cb1e6848f9b9e22bdb6f62dbc5\"\n   
     },\n    \"UseDefault\": true,\n    \"read\": true,\n    \"write\": true,\n   
-    \"fragment\": true,\n    \"depth\": true,\n    \"listIndex\": 0\n}\n\n{\n   
-    \"m_Type\": \"RenderPipelineGraph.RPGCullingDesc\",\n    \"m_ObjectId\": \"6d6b0a85c14543e39126ab36cf550678\",\n   
-    \"cullingFunctionTypeName\": \"RenderPipelineGraph.CullingDefault\"\n}\n\n{\n   
-    \"m_Type\": \"RenderPipelineGraph.PassNodeData\",\n    \"m_ObjectId\": \"7021dc7df92749349c1d5d67cfb48ea9\",\n   
-    \"exposedName\": \"TestPassUnlit\",\n    \"pos\": {\n        \"x\": 379.3333435058594,\n       
-    \"y\": 280.0\n    },\n    \"color\": {\n        \"r\": 0.0,\n        \"g\": 0.0,\n       
-    \"b\": 0.0,\n        \"a\": 0.0\n    },\n    \"m_Parameters\": [\n        {\n           
-    \"m_Id\": \"d040287e1ffa4c81922033a7fd74718c\"\n        },\n        {\n           
-    \"m_Id\": \"7c29e908a508465087c62ccdd689a8b7\"\n        },\n        {\n           
-    \"m_Id\": \"151d7f52c5cd4a4587dddda6685fbcd3\"\n        },\n        {\n           
-    \"m_Id\": \"8336fbdbf8e7413ca49884833c51c39b\"\n        },\n        {\n           
-    \"m_Id\": \"8b51088498a14b9b982aebd98a1a5ba0\"\n        }\n    ],\n    \"m_PassClassName\":
+    \"fragment\": true,\n    \"input\": false,\n    \"depth\": true,\n    \"listIndex\":
+    0,\n    \"mrtIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.RPGCullingDesc\",\n   
+    \"m_ObjectId\": \"6d6b0a85c14543e39126ab36cf550678\",\n    \"cullingFunctionTypeName\":
+    \"RenderPipelineGraph.CullingDefault\"\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.PassNodeData\",\n   
+    \"m_ObjectId\": \"7021dc7df92749349c1d5d67cfb48ea9\",\n    \"exposedName\": \"TestPassUnlit\",\n   
+    \"pos\": {\n        \"x\": 379.3333435058594,\n        \"y\": 280.0\n    },\n   
+    \"color\": {\n        \"r\": 0.0,\n        \"g\": 0.0,\n        \"b\": 0.0,\n       
+    \"a\": 0.0\n    },\n    \"m_Parameters\": [\n        {\n            \"m_Id\":
+    \"d040287e1ffa4c81922033a7fd74718c\"\n        },\n        {\n            \"m_Id\":
+    \"7c29e908a508465087c62ccdd689a8b7\"\n        },\n        {\n            \"m_Id\":
+    \"151d7f52c5cd4a4587dddda6685fbcd3\"\n        },\n        {\n            \"m_Id\":
+    \"8336fbdbf8e7413ca49884833c51c39b\"\n        },\n        {\n            \"m_Id\":
+    \"8b51088498a14b9b982aebd98a1a5ba0\"\n        }\n    ],\n    \"m_PassClassName\":
     \"RenderPipelineGraph.TestPassUnlit\",\n    \"dependencies\": [\n        {\n           
     \"m_Id\": \"13309d40db784518ba545ddce83c43ee\"\n        },\n        {\n           
     \"m_Id\": \"13309d40db784518ba545ddce83c43ee\"\n        }\n    ]\n}\n\n{\n   
@@ -279,26 +284,27 @@ MonoBehaviour:
     \"m_DefaultResource\": {\n        \"m_Id\": \"8aedbb74ea074e9ab1684f9709c4b169\"\n   
     },\n    \"m_Name\": \"colorAttachment\",\n    \"m_Port\": {\n        \"m_Id\":
     \"90335757f87948749da7658a2a509075\"\n    },\n    \"UseDefault\": true,\n   
-    \"read\": false,\n    \"write\": true,\n    \"fragment\": true,\n    \"depth\":
-    false,\n    \"listIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n   
-    \"m_ObjectId\": \"7c2f15aaa3e042daa42ec3e6eb8ead1c\",\n    \"m_Owner\": {\n       
-    \"m_Id\": \"4471b21572d04bd492cb95f3b2447421\"\n    },\n    \"portType\": 0,\n   
-    \"m_LinkTo\": [],\n    \"name\": \"\",\n    \"resourceType\": 0\n}\n\n{\n   
-    \"m_Type\": \"RenderPipelineGraph.TextureParameterData\",\n    \"m_ObjectId\":
-    \"8336fbdbf8e7413ca49884833c51c39b\",\n    \"m_DefaultResource\": {\n       
-    \"m_Id\": \"f24b5bd30ae745e9b58c561cb0e37ad5\"\n    },\n    \"m_Name\": \"shadowMap1\",\n   
-    \"m_Port\": {\n        \"m_Id\": \"53eafc726a234b1e90a6b8ba6cb90661\"\n    },\n   
-    \"UseDefault\": true,\n    \"read\": true,\n    \"write\": false,\n    \"fragment\":
-    false,\n    \"depth\": false,\n    \"listIndex\": 0\n}\n\n{\n    \"m_Type\":
-    \"RenderPipelineGraph.TextureListParameterData\",\n    \"m_ObjectId\": \"85727004eec742c4bf53c45890942c30\",\n   
-    \"m_DefaultResource\": {\n        \"m_Id\": \"\"\n    },\n    \"m_Name\": \"TAABuffers\",\n   
-    \"m_Port\": {\n        \"m_Id\": \"78962b4b509b441d8e163b2fdded850d\"\n    },\n   
-    \"UseDefault\": false,\n    \"listSize\": 2,\n    \"read\": [\n        false,\n       
-    true,\n        false,\n        false,\n        false,\n        false,\n       
-    false,\n        false,\n        false,\n        false\n    ],\n    \"write\":
-    [\n        false,\n        false,\n        false,\n        false,\n        false,\n       
-    false,\n        false,\n        false,\n        false,\n        false\n    ],\n   
-    \"depth\": -1,\n    \"randomAccess\": []\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureData\",\n   
+    \"read\": false,\n    \"write\": true,\n    \"fragment\": true,\n    \"input\":
+    false,\n    \"depth\": false,\n    \"listIndex\": 0,\n    \"mrtIndex\": 0\n}\n\n{\n   
+    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\": \"7c2f15aaa3e042daa42ec3e6eb8ead1c\",\n   
+    \"m_Owner\": {\n        \"m_Id\": \"4471b21572d04bd492cb95f3b2447421\"\n    },\n   
+    \"portType\": 0,\n    \"m_LinkTo\": [],\n    \"name\": \"\",\n    \"resourceType\":
+    0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureParameterData\",\n   
+    \"m_ObjectId\": \"8336fbdbf8e7413ca49884833c51c39b\",\n    \"m_DefaultResource\":
+    {\n        \"m_Id\": \"f24b5bd30ae745e9b58c561cb0e37ad5\"\n    },\n    \"m_Name\":
+    \"shadowMap1\",\n    \"m_Port\": {\n        \"m_Id\": \"53eafc726a234b1e90a6b8ba6cb90661\"\n   
+    },\n    \"UseDefault\": true,\n    \"read\": true,\n    \"write\": false,\n   
+    \"fragment\": false,\n    \"input\": false,\n    \"depth\": false,\n    \"listIndex\":
+    0,\n    \"mrtIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureListParameterData\",\n   
+    \"m_ObjectId\": \"85727004eec742c4bf53c45890942c30\",\n    \"m_DefaultResource\":
+    {\n        \"m_Id\": \"\"\n    },\n    \"m_Name\": \"TAABuffers\",\n    \"m_Port\":
+    {\n        \"m_Id\": \"78962b4b509b441d8e163b2fdded850d\"\n    },\n    \"UseDefault\":
+    false,\n    \"listSize\": 2,\n    \"read\": [\n        false,\n        true,\n       
+    false,\n        false,\n        false,\n        false,\n        false,\n       
+    false,\n        false,\n        false\n    ],\n    \"write\": [\n        false,\n       
+    false,\n        false,\n        false,\n        false,\n        false,\n       
+    false,\n        false,\n        false,\n        false\n    ],\n    \"depth\":
+    -1,\n    \"randomAccess\": []\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureData\",\n   
     \"m_ObjectId\": \"864c699056c84de3bfea43976b535516\",\n    \"type\": 0,\n   
     \"usage\": 0,\n    \"name\": \"defaultDepth\",\n    \"category\": \"Default\",\n   
     \"m_SetGlobalTextureAfterAfterWritten\": false,\n    \"shaderPropertyIdStr\":
@@ -308,20 +314,21 @@ MonoBehaviour:
     {\n        \"m_Id\": \"\"\n    },\n    \"m_Name\": \"motionVector\",\n    \"m_Port\":
     {\n        \"m_Id\": \"02d59370b6b046a898ebfac3f9e31670\"\n    },\n    \"UseDefault\":
     false,\n    \"read\": true,\n    \"write\": false,\n    \"fragment\": false,\n   
-    \"depth\": false,\n    \"listIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureData\",\n   
-    \"m_ObjectId\": \"8aedbb74ea074e9ab1684f9709c4b169\",\n    \"type\": 0,\n   
-    \"usage\": 0,\n    \"name\": \"defaultColor\",\n    \"category\": \"Default\",\n   
-    \"m_SetGlobalTextureAfterAfterWritten\": false,\n    \"shaderPropertyIdStr\":
-    \"\",\n    \"m_desc\": {\n        \"m_Id\": \"013b0311395a490c91c9c19c82bcecbf\"\n   
-    }\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureParameterData\",\n   
+    \"input\": false,\n    \"depth\": false,\n    \"listIndex\": 0,\n    \"mrtIndex\":
+    0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureData\",\n    \"m_ObjectId\":
+    \"8aedbb74ea074e9ab1684f9709c4b169\",\n    \"type\": 0,\n    \"usage\": 0,\n   
+    \"name\": \"defaultColor\",\n    \"category\": \"Default\",\n    \"m_SetGlobalTextureAfterAfterWritten\":
+    false,\n    \"shaderPropertyIdStr\": \"\",\n    \"m_desc\": {\n        \"m_Id\":
+    \"013b0311395a490c91c9c19c82bcecbf\"\n    }\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureParameterData\",\n   
     \"m_ObjectId\": \"8b51088498a14b9b982aebd98a1a5ba0\",\n    \"m_DefaultResource\":
     {\n        \"m_Id\": \"dd4c920795b04ff183a3588d76b1ffdb\"\n    },\n    \"m_Name\":
     \"shadowMap2\",\n    \"m_Port\": {\n        \"m_Id\": \"ad1caa402e874c8b8a02d9e7480ceff2\"\n   
     },\n    \"UseDefault\": true,\n    \"read\": true,\n    \"write\": false,\n   
-    \"fragment\": false,\n    \"depth\": false,\n    \"listIndex\": 0\n}\n\n{\n   
-    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\": \"8d6cd6210a7a41b580766c628e368b28\",\n   
-    \"m_Owner\": {\n        \"m_Id\": \"1c6ec49d798e4e338392b7b1e4d1a5b3\"\n    },\n   
-    \"portType\": 0,\n    \"m_LinkTo\": [\n        {\n            \"m_Id\": \"02d59370b6b046a898ebfac3f9e31670\"\n       
+    \"fragment\": false,\n    \"input\": false,\n    \"depth\": false,\n    \"listIndex\":
+    0,\n    \"mrtIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n   
+    \"m_ObjectId\": \"8d6cd6210a7a41b580766c628e368b28\",\n    \"m_Owner\": {\n       
+    \"m_Id\": \"1c6ec49d798e4e338392b7b1e4d1a5b3\"\n    },\n    \"portType\": 0,\n   
+    \"m_LinkTo\": [\n        {\n            \"m_Id\": \"02d59370b6b046a898ebfac3f9e31670\"\n       
     }\n    ],\n    \"name\": \"Attach To\",\n    \"resourceType\": 0\n}\n\n{\n   
     \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\": \"8f7df5f06f0d441f91f8a4393dd82cb2\",\n   
     \"m_Owner\": {\n        \"m_Id\": \"445e8e69b3214b7e8f27500991701750\"\n    },\n   
@@ -375,8 +382,9 @@ MonoBehaviour:
     \"a4f6725f1b474483a13cea8ff562c05c\",\n    \"m_DefaultResource\": {\n       
     \"m_Id\": \"864c699056c84de3bfea43976b535516\"\n    },\n    \"m_Name\": \"depthAttachment\",\n   
     \"m_Port\": {\n        \"m_Id\": \"487e859a7186489d9e3d92ddacb13818\"\n    },\n   
-    \"UseDefault\": true,\n    \"read\": true,\n    \"write\": true,\n    \"fragment\":
-    true,\n    \"depth\": true,\n    \"listIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.PassNodeData\",\n   
+    \"UseDefault\": true,\n    \"read\": false,\n    \"write\": true,\n    \"fragment\":
+    true,\n    \"input\": false,\n    \"depth\": true,\n    \"listIndex\": 0,\n   
+    \"mrtIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.PassNodeData\",\n   
     \"m_ObjectId\": \"a506cda3ab7047538e85bef28edf723b\",\n    \"exposedName\": \"DrawGizmos\",\n   
     \"pos\": {\n        \"x\": 397.3333435058594,\n        \"y\": 1181.3330078125\n   
     },\n    \"color\": {\n        \"r\": 0.0,\n        \"g\": 0.0,\n        \"b\":
@@ -393,45 +401,49 @@ MonoBehaviour:
     {\n        \"m_Id\": \"\"\n    },\n    \"m_Name\": \"src\",\n    \"m_Port\":
     {\n        \"m_Id\": \"001ef68319394faba509c93d0fe5d735\"\n    },\n    \"UseDefault\":
     false,\n    \"read\": true,\n    \"write\": false,\n    \"fragment\": false,\n   
-    \"depth\": false,\n    \"listIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n   
-    \"m_ObjectId\": \"a9452c1817604d6c91396c2808a05ef2\",\n    \"m_Owner\": {\n       
-    \"m_Id\": \"fb87928099ea45519b1a16eeba2966a7\"\n    },\n    \"portType\": 0,\n   
-    \"m_LinkTo\": [\n        {\n            \"m_Id\": \"e6422582c0a24f76b499b8a3c09ff1ff\"\n       
+    \"input\": false,\n    \"depth\": false,\n    \"listIndex\": 0,\n    \"mrtIndex\":
+    0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\":
+    \"a9452c1817604d6c91396c2808a05ef2\",\n    \"m_Owner\": {\n        \"m_Id\":
+    \"fb87928099ea45519b1a16eeba2966a7\"\n    },\n    \"portType\": 0,\n    \"m_LinkTo\":
+    [\n        {\n            \"m_Id\": \"e6422582c0a24f76b499b8a3c09ff1ff\"\n       
     }\n    ],\n    \"name\": \"Attach To\",\n    \"resourceType\": 4\n}\n\n{\n   
     \"m_Type\": \"RenderPipelineGraph.TextureParameterData\",\n    \"m_ObjectId\":
     \"aafce803d0324db98e1d3019722f88bd\",\n    \"m_DefaultResource\": {\n       
     \"m_Id\": \"864c699056c84de3bfea43976b535516\"\n    },\n    \"m_Name\": \"depthAttachment\",\n   
     \"m_Port\": {\n        \"m_Id\": \"b689c558be04422ebe5a4cae82340d4f\"\n    },\n   
     \"UseDefault\": true,\n    \"read\": true,\n    \"write\": false,\n    \"fragment\":
-    false,\n    \"depth\": false,\n    \"listIndex\": 0\n}\n\n{\n    \"m_Type\":
-    \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\": \"ad1caa402e874c8b8a02d9e7480ceff2\",\n   
-    \"m_Owner\": {\n        \"m_Id\": \"8b51088498a14b9b982aebd98a1a5ba0\"\n    },\n   
+    false,\n    \"input\": false,\n    \"depth\": false,\n    \"listIndex\": 0,\n   
+    \"mrtIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n   
+    \"m_ObjectId\": \"ad1caa402e874c8b8a02d9e7480ceff2\",\n    \"m_Owner\": {\n       
+    \"m_Id\": \"8b51088498a14b9b982aebd98a1a5ba0\"\n    },\n    \"portType\": 0,\n   
+    \"m_LinkTo\": [],\n    \"name\": \"\",\n    \"resourceType\": 0\n}\n\n{\n   
+    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\": \"b689c558be04422ebe5a4cae82340d4f\",\n   
+    \"m_Owner\": {\n        \"m_Id\": \"aafce803d0324db98e1d3019722f88bd\"\n    },\n   
     \"portType\": 0,\n    \"m_LinkTo\": [],\n    \"name\": \"\",\n    \"resourceType\":
     0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\":
-    \"b689c558be04422ebe5a4cae82340d4f\",\n    \"m_Owner\": {\n        \"m_Id\":
-    \"aafce803d0324db98e1d3019722f88bd\"\n    },\n    \"portType\": 0,\n    \"m_LinkTo\":
-    [],\n    \"name\": \"\",\n    \"resourceType\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n   
-    \"m_ObjectId\": \"bd1e10adf15d4339b5cfb92d096e62ec\",\n    \"m_Owner\": {\n       
-    \"m_Id\": \"151d7f52c5cd4a4587dddda6685fbcd3\"\n    },\n    \"portType\": 0,\n   
-    \"m_LinkTo\": [\n        {\n            \"m_Id\": \"764d3daeeb714fe0bdc000aba30d9770\"\n       
+    \"bd1e10adf15d4339b5cfb92d096e62ec\",\n    \"m_Owner\": {\n        \"m_Id\":
+    \"151d7f52c5cd4a4587dddda6685fbcd3\"\n    },\n    \"portType\": 0,\n    \"m_LinkTo\":
+    [\n        {\n            \"m_Id\": \"764d3daeeb714fe0bdc000aba30d9770\"\n       
     }\n    ],\n    \"name\": \"\",\n    \"resourceType\": 3\n}\n\n{\n    \"m_Type\":
     \"RenderPipelineGraph.TextureParameterData\",\n    \"m_ObjectId\": \"bf666d6447954db08a8d9529be53f41e\",\n   
     \"m_DefaultResource\": {\n        \"m_Id\": \"93e7191c722249d39a9b6d81877bfced\"\n   
     },\n    \"m_Name\": \"targetAttachment\",\n    \"m_Port\": {\n        \"m_Id\":
     \"5361f8f293624f749c5088e26876a9d3\"\n    },\n    \"UseDefault\": true,\n   
-    \"read\": false,\n    \"write\": true,\n    \"fragment\": true,\n    \"depth\":
-    false,\n    \"listIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureParameterData\",\n   
-    \"m_ObjectId\": \"ccb6294589f24a6eb73d31cb21ee8d25\",\n    \"m_DefaultResource\":
-    {\n        \"m_Id\": \"864c699056c84de3bfea43976b535516\"\n    },\n    \"m_Name\":
-    \"depthAttachment\",\n    \"m_Port\": {\n        \"m_Id\": \"60a555d88c124036ae4f0fcbdf9389ed\"\n   
-    },\n    \"UseDefault\": true,\n    \"read\": true,\n    \"write\": true,\n   
-    \"fragment\": true,\n    \"depth\": true,\n    \"listIndex\": 0\n}\n\n{\n   
+    \"read\": false,\n    \"write\": true,\n    \"fragment\": true,\n    \"input\":
+    false,\n    \"depth\": false,\n    \"listIndex\": 0,\n    \"mrtIndex\": 0\n}\n\n{\n   
     \"m_Type\": \"RenderPipelineGraph.TextureParameterData\",\n    \"m_ObjectId\":
-    \"d040287e1ffa4c81922033a7fd74718c\",\n    \"m_DefaultResource\": {\n       
+    \"ccb6294589f24a6eb73d31cb21ee8d25\",\n    \"m_DefaultResource\": {\n       
     \"m_Id\": \"864c699056c84de3bfea43976b535516\"\n    },\n    \"m_Name\": \"depthAttachment\",\n   
-    \"m_Port\": {\n        \"m_Id\": \"208dc0be453f49d9a3e44710cb66f3d7\"\n    },\n   
-    \"UseDefault\": true,\n    \"read\": true,\n    \"write\": true,\n    \"fragment\":
-    true,\n    \"depth\": true,\n    \"listIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.PassNodeData\",\n   
+    \"m_Port\": {\n        \"m_Id\": \"60a555d88c124036ae4f0fcbdf9389ed\"\n    },\n   
+    \"UseDefault\": true,\n    \"read\": false,\n    \"write\": true,\n    \"fragment\":
+    true,\n    \"input\": false,\n    \"depth\": true,\n    \"listIndex\": 0,\n   
+    \"mrtIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureParameterData\",\n   
+    \"m_ObjectId\": \"d040287e1ffa4c81922033a7fd74718c\",\n    \"m_DefaultResource\":
+    {\n        \"m_Id\": \"864c699056c84de3bfea43976b535516\"\n    },\n    \"m_Name\":
+    \"depthAttachment\",\n    \"m_Port\": {\n        \"m_Id\": \"208dc0be453f49d9a3e44710cb66f3d7\"\n   
+    },\n    \"UseDefault\": true,\n    \"read\": false,\n    \"write\": true,\n   
+    \"fragment\": true,\n    \"input\": false,\n    \"depth\": true,\n    \"listIndex\":
+    0,\n    \"mrtIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.PassNodeData\",\n   
     \"m_ObjectId\": \"d56c4d5054f245f091d67fea39ba071f\",\n    \"exposedName\": \"MotionVectorFromDepth\",\n   
     \"pos\": {\n        \"x\": 949.5064697265625,\n        \"y\": 664.739990234375\n   
     },\n    \"color\": {\n        \"r\": 0.0,\n        \"g\": 0.0,\n        \"b\":
@@ -465,10 +477,11 @@ MonoBehaviour:
     {\n        \"m_Id\": \"8aedbb74ea074e9ab1684f9709c4b169\"\n    },\n    \"m_Name\":
     \"colorAttachment\",\n    \"m_Port\": {\n        \"m_Id\": \"9e0b4ff77bb447d18117df32801937aa\"\n   
     },\n    \"UseDefault\": true,\n    \"read\": false,\n    \"write\": true,\n   
-    \"fragment\": true,\n    \"depth\": false,\n    \"listIndex\": 0\n}\n\n{\n   
-    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n    \"m_ObjectId\": \"e6422582c0a24f76b499b8a3c09ff1ff\",\n   
-    \"m_Owner\": {\n        \"m_Id\": \"ed9e9f97ab484955ad083e16d848dbd3\"\n    },\n   
-    \"portType\": 0,\n    \"m_LinkTo\": [\n        {\n            \"m_Id\": \"a9452c1817604d6c91396c2808a05ef2\"\n       
+    \"fragment\": true,\n    \"input\": false,\n    \"depth\": false,\n    \"listIndex\":
+    0,\n    \"mrtIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.ResourcePortData\",\n   
+    \"m_ObjectId\": \"e6422582c0a24f76b499b8a3c09ff1ff\",\n    \"m_Owner\": {\n       
+    \"m_Id\": \"ed9e9f97ab484955ad083e16d848dbd3\"\n    },\n    \"portType\": 0,\n   
+    \"m_LinkTo\": [\n        {\n            \"m_Id\": \"a9452c1817604d6c91396c2808a05ef2\"\n       
     }\n    ],\n    \"name\": \"\",\n    \"resourceType\": 4\n}\n\n{\n    \"m_Type\":
     \"RenderPipelineGraph.ResourceNodeData\",\n    \"m_ObjectId\": \"e881b16df2c94c7a9c697dcf9a49d6af\",\n   
     \"exposedName\": \"\",\n    \"pos\": {\n        \"x\": 818.6432495117188,\n       
@@ -480,12 +493,12 @@ MonoBehaviour:
     \"m_DefaultResource\": {\n        \"m_Id\": \"864c699056c84de3bfea43976b535516\"\n   
     },\n    \"m_Name\": \"depthMap\",\n    \"m_Port\": {\n        \"m_Id\": \"64fc408ea67a4354b683d3ebf817b808\"\n   
     },\n    \"UseDefault\": true,\n    \"read\": true,\n    \"write\": false,\n   
-    \"fragment\": false,\n    \"depth\": false,\n    \"listIndex\": 0\n}\n\n{\n   
-    \"m_Type\": \"RenderPipelineGraph.TextureData\",\n    \"m_ObjectId\": \"ed5ab3cc52a64923b0229f628454b3b0\",\n   
-    \"type\": 0,\n    \"usage\": 0,\n    \"name\": \"TAAtest\",\n    \"category\":
-    \"\",\n    \"m_SetGlobalTextureAfterAfterWritten\": false,\n    \"shaderPropertyIdStr\":
-    \"\",\n    \"m_desc\": {\n        \"m_Id\": \"f4e92f96791d4cc691d0a79621f237fe\"\n   
-    }\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.CullingResultParameterData\",\n   
+    \"fragment\": false,\n    \"input\": false,\n    \"depth\": false,\n    \"listIndex\":
+    0,\n    \"mrtIndex\": 0\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.TextureData\",\n   
+    \"m_ObjectId\": \"ed5ab3cc52a64923b0229f628454b3b0\",\n    \"type\": 0,\n   
+    \"usage\": 0,\n    \"name\": \"TAAtest\",\n    \"category\": \"\",\n    \"m_SetGlobalTextureAfterAfterWritten\":
+    false,\n    \"shaderPropertyIdStr\": \"\",\n    \"m_desc\": {\n        \"m_Id\":
+    \"f4e92f96791d4cc691d0a79621f237fe\"\n    }\n}\n\n{\n    \"m_Type\": \"RenderPipelineGraph.CullingResultParameterData\",\n   
     \"m_ObjectId\": \"ed9e9f97ab484955ad083e16d848dbd3\",\n    \"m_DefaultResource\":
     {\n        \"m_Id\": \"\"\n    },\n    \"m_Name\": \"cullingResults\",\n    \"m_Port\":
     {\n        \"m_Id\": \"e6422582c0a24f76b499b8a3c09ff1ff\"\n    },\n    \"UseDefault\":

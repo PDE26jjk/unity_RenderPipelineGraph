@@ -15,9 +15,12 @@ float3 DecodeNormal(float4 sample, float scale) {
 	return UnpackNormalmapRGorAG(sample, scale);
 	#endif
 }
-TEXTURE2D(_NormalMap);
 float3 GetNormalTS(float2 baseUV) {
+	#if defined(RayTracePass)
+	float4 map = SAMPLE_TEXTURE2D_LOD(_NormalMap, sampler_BaseMap, baseUV, 0);
+	#else
 	float4 map = SAMPLE_TEXTURE2D(_NormalMap, sampler_BaseMap, baseUV);
+	#endif
 	float scale = _NormalScale;
 	float3 normal = DecodeNormal(map, scale);
 	return normal;
@@ -78,18 +81,18 @@ FragGBufferOutput fragGBuffer(VaryingsLit IN) {
 	#if UNITY_UV_STARTS_AT_TOP
 	cs.y = -cs.y;
 	#endif
-	
+
 	float4 cs2 = float4(IN.positionCSRaw.xyz / IN.positionCSRaw.w, IN.positionCSRaw.w);
 	// OUT.GBuffer0 = abs(cs-cs2);
 	// OUT.GBuffer0 = -v.z;
 	float4 cs_ = cs;
 	cs_.xyz *= cs.w;
-	posWS = mul(UNITY_MATRIX_I_VP,cs_);
+	posWS = mul(UNITY_MATRIX_I_VP, cs_);
 	// OUT.GBuffer0 = half4(IN.positionWS,1);
 	// OUT.GBuffer0 = half4(posWS,1);
 
 	OUT.GBuffer1 = half4(_Roughness, _Metallic, 1, baseColorTex.a);
-	OUT.GBuffer2 = float4(normalize(IN.normalWS) , 1);
+	OUT.GBuffer2 = float4(normalize(IN.normalWS), 1);
 	OUT.GBuffer3 = 0;
 	return OUT;
 }
@@ -135,9 +138,9 @@ float4 fragLit(VaryingsLit IN) : SV_TARGET {
 	brdfInput.diffColor = baseColor * (lerp(1.0 - 0.220916301, 0, _Metallic));
 	brdfInput.specColor = lerp(0.220916301, baseColor, _Metallic);
 
-	color += LitDirectionalLight(normalRaw,brdfInput);
-	color += LitOtherLight(normalRaw,brdfInput);
-	
+	color += LitDirectionalLight(normalRaw, brdfInput);
+	color += LitOtherLight(normalRaw, brdfInput);
+
 	float3 emission = _EmissionColor.rgb * SAMPLE_TEXTURE2D(_EmissionMap, sampler_BaseMap, IN.uv).rgb;
 	return float4(color + emission, 1);
 }

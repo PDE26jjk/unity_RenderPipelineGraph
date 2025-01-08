@@ -23,6 +23,8 @@ namespace RenderPipelineGraph {
         static RayTracingShader testRs;
         static int kernelID;
         public override bool Valid(Camera camera) {
+            if (camera.cameraType == CameraType.Preview)
+                return false;
             bool supportsRayTracing = SystemInfo.supportsRayTracing;
             return supportsRayTracing;
         }
@@ -66,8 +68,8 @@ namespace RenderPipelineGraph {
             _passData.cameraPosition = cameraData.m_Camera.transform.position;
             _passData.pixelToWorldMatrix = GetPixelToWorldMatrix(cameraData.m_Camera);
             var camera = cameraData.m_Camera;
-            cullingConfig.flags = RayTracingInstanceCullingFlags.EnableSphereCulling;
-            cullingConfig.sphereRadius = 10000.0f;
+            cullingConfig.flags = RayTracingInstanceCullingFlags.None;
+            cullingConfig.sphereRadius = 1000.0f;
             cullingConfig.sphereCenter = _passData.cameraPosition;
             
             cullingConfig.lodParameters.fieldOfView = camera.fieldOfView;
@@ -99,7 +101,7 @@ namespace RenderPipelineGraph {
                 var settings = new RayTracingAccelerationStructure.Settings();
                 settings.managementMode = RayTracingAccelerationStructure.ManagementMode.Manual;
                 settings.rayTracingModeMask = RayTracingAccelerationStructure.RayTracingModeMask.Everything;
-                rtas = new RayTracingAccelerationStructure(settings);
+                rtas = new RayTracingAccelerationStructure();
             }
             var cullRes = rtas.CullInstances(ref cullingConfig);
             
@@ -112,9 +114,9 @@ namespace RenderPipelineGraph {
         }
         public static void Record(PassData passData, ComputeGraphContext context) {
             var cmd = context.cmd;
-            CommandBuffer wrappedCmd = cmd.GetWrappedCommandBufferUnsafe();
+            CommandBuffer wrappedCmd = cmd.GetWrappedCommandBufferUnsafe();// Some methods of C# reflection.
             wrappedCmd.SetRayTracingShaderPass(testRs, "DXR");
-            cmd.SetRayTracingAccelerationStructure(testRs,"gRtScene",passData.accelerationStructure);
+            cmd.SetRayTracingAccelerationStructure(testRs,"_RtScene",passData.accelerationStructure);
             cmd.SetRayTracingVectorParam(testRs, "_WorldSpaceCameraPos", passData.cameraPosition);
             cmd.SetRayTracingMatrixParam(testRs, "_PixelCoordToViewDirWS", passData.pixelToWorldMatrix);
             cmd.SetRayTracingTextureParam(testRs, "_output", passData.outputTexture);

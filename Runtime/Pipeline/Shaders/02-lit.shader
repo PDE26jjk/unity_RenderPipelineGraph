@@ -17,7 +17,10 @@ Shader "MySRP/02-lit"
     CustomEditor "litGUI"
     SubShader
     {
-        Tags{ "RenderPipeline" = "RPG" "RenderType" = "Opaque"}
+        Tags
+        {
+            "RenderPipeline" = "RPG" "RenderType" = "Opaque"
+        }
         Pass
         {
             Tags
@@ -95,7 +98,8 @@ Shader "MySRP/02-lit"
             Name "DXR"
             HLSLPROGRAM
             // #pragma enable_d3d11_debug_symbols
-            #include "./RayTrace.hlsl"
+            #define RayTracePass
+            #include "./RayTrace/RayTrace.hlsl"
             struct AttributeData
             {
                 float2 barycentrics;
@@ -104,12 +108,19 @@ Shader "MySRP/02-lit"
             #pragma raytracing whyimhere
             [shader("closesthit")]
             void ClosestHitMain(inout Hit payload : SV_RayPayload, AttributeData attribs : SV_IntersectionAttributes) {
-                float3 worldRayOrigin = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
+                payload.position = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
                 payload.instanceID = InstanceID();
                 payload.primitiveIndex = PrimitiveIndex();
                 payload.uvBarycentrics = attribs.barycentrics;
                 payload.hitDistance = RayTCurrent();
                 payload.isFrontFace = (HitKind() == HIT_KIND_TRIANGLE_FRONT_FACE);
+                IntersectionVertex vertex;
+                GetCurrentIntersectionVertex(attribs.barycentrics, vertex);
+                float4 tangentWS = float4(TransformObjectToWorldDir(vertex.tangentOS.xyz), vertex.tangentOS.w);
+                float3 normalWS = TransformObjectToWorldDir(vertex.normalOS);
+                payload.normal = normalize(NormalTangentToWorld(GetNormalTS(vertex.texCoord0), normalWS, tangentWS));
+                float4 baseColorTex = SAMPLE_TEXTURE2D_LOD(_BaseMap, sampler_BaseMap, vertex.texCoord0, 0);
+                payload.baseColor = float4(baseColorTex.rgb * _BaseColor.rgb, 1);
             }
             ENDHLSL
         }
