@@ -1,0 +1,18 @@
+{
+  "name": "com.pde26jjk.render-pipeline.graph",
+  "description": "This project is designed to test Unity's Render Graph, enabling the visual editing of various passes and resource Handle nodes, along with runtime statistics.",
+  "version": "1.0.0",
+  "unity": "2023.3",
+  "unityRelease": "0b1",
+  "displayName": "Unity Render Pipeline Graph",
+  "dependencies": {
+    "com.unity.render-pipelines.core": "17.0.3"
+  },
+  "keywords": [
+    "raytracing",
+    "pathtracing",
+    "monte-carlo"
+  ],
+  "author": "PDE26jjk",
+  "_fingerprint": "5a1d74cf5b75eb9d1363e5edf46abaa55859be3d"
+}
