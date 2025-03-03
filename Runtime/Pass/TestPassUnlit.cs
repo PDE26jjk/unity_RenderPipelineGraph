@@ -17,7 +17,6 @@ namespace RenderPipelineGraph {
             [Read]
             public TextureHandle shadowMap2;
 
-
             [Default]
             public RendererListHandle rendererList;
         }

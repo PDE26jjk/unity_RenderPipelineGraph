@@ -10,7 +10,7 @@ namespace RenderPipelineGraph {
             [ListSize(2),Read(new []{0,1}),Fragment(0,0)]
             public List<TextureHandle> read1;
         }
-        public override bool Valid(Camera camera) {
+        public override bool Valid(CameraData cameraData) {
             return true;
         }
 

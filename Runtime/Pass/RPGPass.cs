@@ -1,11 +1,12 @@
-﻿using System.Runtime.CompilerServices;
-using UnityEngine;
+﻿#if UNITY_EDITOR
+using System.Runtime.CompilerServices;
+#endif
 using UnityEngine.Rendering.RenderGraphModule;
 
 namespace RenderPipelineGraph {
 
     public enum PassNodeType {
-        Legacy = 0,// not supported
+        Legacy = 0, // not supported
         Unsafe,
         Raster,
         Compute
@@ -17,7 +18,9 @@ namespace RenderPipelineGraph {
         public bool AllowPassCulling => m_AllowPassCulling;
         protected bool m_AllowGlobalStateModification = false;
         public bool AllowGlobalStateModification => m_AllowGlobalStateModification;
-        public virtual bool Valid(Camera camera) {
+        public virtual void PipelineCreate() { }
+        public virtual void PipelineDestroy() { }
+        public virtual bool Valid(CameraData cameraData) {
             return true;
         }
         public virtual void Setup(object passData, CameraData cameraData, RenderGraph renderGraph, IBaseRenderGraphBuilder builder) {
@@ -33,7 +36,7 @@ namespace RenderPipelineGraph {
         protected RPGPass(
             PassNodeType passType = PassNodeType.Raster
 #if UNITY_EDITOR // for debug in render graph viewer
-            ,[CallerFilePath] string filePath = ""
+            , [CallerFilePath] string filePath = ""
 #endif
         ) {
 #if UNITY_EDITOR

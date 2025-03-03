@@ -22,7 +22,8 @@ namespace RenderPipelineGraph {
         }
         static RayTracingShader testRs;
         static int kernelID;
-        public override bool Valid(Camera camera) {
+        public override bool Valid(CameraData cameraData) {
+            Camera camera = cameraData.camera;
             if (camera.cameraType == CameraType.Preview)
                 return false;
             bool supportsRayTracing = SystemInfo.supportsRayTracing;

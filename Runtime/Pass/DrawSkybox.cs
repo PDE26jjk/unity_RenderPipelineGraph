@@ -18,7 +18,8 @@ namespace RenderPipelineGraph {
         public DrawSkybox():base() {
         }
 
-        public override bool Valid(Camera camera) {
+        public override bool Valid(CameraData cameraData) {
+            Camera camera = cameraData.camera;
             return camera.clearFlags == CameraClearFlags.Skybox && RenderSettings.skybox != null;
         }
 

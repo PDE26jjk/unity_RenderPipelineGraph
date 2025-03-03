@@ -19,8 +19,9 @@ namespace RenderPipelineGraph {
         public DrawGizmos() : base() {
         }
 
-        public override bool Valid(Camera camera) {
+        public override bool Valid(CameraData cameraData) {
 #if UNITY_EDITOR
+            Camera camera = cameraData.camera;
             if (camera.cameraType != CameraType.SceneView)
                 return false;
             return Handles.ShouldRenderGizmos() && camera.sceneViewFilterMode != Camera.SceneViewFilterMode.ShowFiltered;

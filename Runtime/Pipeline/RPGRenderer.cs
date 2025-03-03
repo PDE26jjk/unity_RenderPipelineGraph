@@ -51,9 +51,6 @@ public class RPGRenderer : IDisposable {
     RPGAsset asset;
     RenderGraph renderGraph;
 
-
-    // Data stored by the camera 
-
     public void Render(RPGAsset asset, RenderGraph renderGraph, ScriptableRenderContext context, CameraData cameraData) {
         this.context = context;
         this.camera = cameraData.camera;
@@ -124,7 +121,11 @@ public class RPGRenderer : IDisposable {
 #endif
             var passNodeData = passSortData.passNodeData;
             var pass = passNodeData.m_Pass;
-            if (!pass.Valid(this.camera)) continue;
+            if (needReorderPass) {
+                pass.PipelineCreate();
+            }
+            if (!pass.Valid(this.cameraData)) continue;
+
             ref object[] parameters = ref passSortData.parameters;
             parameters ??= RenderGraphUtils.MakeAddRenderPassParam(renderGraph, pass, passSortData.profilingSampler);
             using (var baseBuilder = passSortData.addRenderPassMethodInfo.Invoke(renderGraph, parameters) as IBaseRenderGraphBuilder) {
@@ -136,22 +137,19 @@ public class RPGRenderer : IDisposable {
 
                 ref object passData = ref parameters[1];
                 switch (pass.PassType) {
-                    case PassNodeType.Unsafe:
-                    {
+                    case PassNodeType.Unsafe: {
                         var builder = baseBuilder as IUnsafeRenderGraphBuilder;
                         RenderGraphUtils.SetRenderFunc(builder, pass);
                         RenderGraphUtils.LoadPassData(passNodeData, passData, builder, renderGraph, this.cameraData);
                     }
                         break;
-                    case PassNodeType.Raster:
-                    {
+                    case PassNodeType.Raster: {
                         var builder = baseBuilder as IRasterRenderGraphBuilder;
                         RenderGraphUtils.SetRenderFunc(builder, pass);
                         RenderGraphUtils.LoadPassData(passNodeData, passData, builder, renderGraph, this.cameraData);
                     }
                         break;
-                    case PassNodeType.Compute:
-                    {
+                    case PassNodeType.Compute: {
                         var builder = baseBuilder as IUnsafeRenderGraphBuilder;
                         RenderGraphUtils.SetRenderFunc(builder, pass);
                         RenderGraphUtils.LoadPassData(passNodeData, passData, builder, renderGraph, this.cameraData);
@@ -548,6 +546,10 @@ public class RPGRenderer : IDisposable {
     }
 
     public void Dispose() {
-
+        foreach (PassSortData passSortData in passSorted) {
+            var passNodeData = passSortData.passNodeData;
+            var pass = passNodeData.m_Pass;
+            pass.PipelineDestroy();
+        }
     }
 }

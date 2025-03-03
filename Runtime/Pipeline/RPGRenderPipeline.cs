@@ -28,13 +28,15 @@ public partial class RPGRenderPipeline : UnityEngine.Rendering.RenderPipeline {
     }
     protected override void Dispose(bool disposing) {
         base.Dispose(disposing);
+        foreach (CameraData cameraData in CameraDataMap.Values) {
+            cameraData.Dispose();
+        }
+        _ScreenCameraData?.Dispose();
+        _PreviewCameraData?.Dispose();
         Lightmapping.ResetDelegate();
         // renderGraph.Cleanup();
         VolumeManager.instance.Deinitialize();
         Blitter.Cleanup();
-        foreach (CameraData cameraData in CameraDataMap.Values) {
-            cameraData.Dispose();
-        }
     }
 
     protected override void Render(ScriptableRenderContext context, Camera[] cameras) {

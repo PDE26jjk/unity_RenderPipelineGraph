@@ -6,7 +6,7 @@
 
 本人会用这个来测试一些渲染算法，完成后整合到现有管线中。
 
-本项目是个人项目，因为要校招就开源出来，希望能给简历加分。
+本项目是个人项目，因为要校招就开源出来，希望能给简历加分。（然而并没有找到工作
 
 本项目参考了shader graph、VFX Graph的UI设计，使用了shader graph部分代码完成持久化，所以应该遵守Unity的许可证[Unity Companion License](http://www.unity3d.com/legal/licenses/Unity_Companion_License)
 
